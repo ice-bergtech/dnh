@@ -1,4 +1,4 @@
-package lib
+package dnh
 
 import (
 	"github.com/c-robinson/iplib/v2"
