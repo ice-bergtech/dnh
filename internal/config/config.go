@@ -1,17 +1,15 @@
 package config
 
 import (
-	"encoding/json"
-	"flag"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-// AppConfig struct represents the application configuration.
 type AppConfig struct {
 	Port     int    `json:"port" env:"PORT"`
 	DBType   string `json:"db_type" env:"DB_TYPE"`
@@ -24,24 +22,41 @@ type AppConfig struct {
 	LogLevel string `json:"log_level" env:"LOG_LEVEL"`
 }
 
+func cobra_setup(cmd *cobra.Command) {
+	// Default values
+	config := AppConfig{
+		Port:     8842,
+		DBType:   "sqlite3",
+		DBHost:   "localhost",
+		DBUser:   "postgres",
+		DBName:   "dnh",
+		AppName:  "dnh",
+		LogLevel: "info",
+	}
+
+	cmd.Flags().IntVar(&config.Port, "port", config.Port, "Port to run the application on")
+	cmd.Flags().StringVar(&config.DBType, "db-type", config.DBType, "Database type (e.g. postgres, mysql)")
+	cmd.Flags().StringVar(&config.DBHost, "db-host", config.DBHost, "Database host")
+	cmd.Flags().IntVar(&config.DBPort, "db-port", config.DBPort, "Database port")
+	cmd.Flags().StringVar(&config.DBUser, "db-user", config.DBUser, "Database user")
+	cmd.Flags().StringVar(&config.DBPass, "db-pass", config.DBPass, "Database password")
+	cmd.Flags().StringVar(&config.DBName, "db-name", config.DBName, "Database name")
+	cmd.Flags().StringVar(&config.AppName, "app-name", config.AppName, "Application name")
+	cmd.Flags().StringVar(&config.LogLevel, "log-level", config.LogLevel, "Log level (e.g. debug, info, warn, error)")
+
+}
+
 // NewConfig function creates a new AppConfig instance.
 func NewConfig() (*AppConfig, error) {
+	//cmd *cobra.Command, args []string
 	var config AppConfig
 
 	// Initialize viper to use multiple configuration sources
-	viper.SetConfigName("config")
-	viper.AddConfigPath(".")
-	viper.SetConfigType("json")
+	viper.SetConfigFile(".env")
 
 	// Check if the json file exists and load it first
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
-
-		// Unmarshal the json config into the AppConfig struct
-		if err := json.Unmarshal(viper.GetBytes(), &config); err != nil {
-			return nil, fmt.Errorf("failed to unmarshal config: %w", err)
-		}
-
 	} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
@@ -143,31 +158,4 @@ func init() {
 	if err := PrintConfig(); err != nil {
 		log.Fatalf("Failed to print config: %v", err)
 	}
-}
-
-func main() {
-	flag.Parse()
-
-	// Check if help flag was provided
-	if *helpFlag {
-		fmt.Println("Usage of " + os.Args[0] + ":")
-		flag.Usage()
-		os.Exit(0)
-	}
-
-	// Get the config and print it out
-	config, err := GetConfig()
-	if err != nil {
-		log.Fatalf("Failed to get config: %v", err)
-	}
-	fmt.Printf("AppConfig:\n")
-	fmt.Printf("  Port: %d\n", config.Port)
-	fmt.Printf("  DBHost: %s\n", config.DBHost)
-	fmt.Printf("  DBPort: %d\n", config.DBPort)
-	fmt.Printf("  DBUser: %s\n", config.DBUser)
-	fmt.Printf("  DBPass: %s\n", config.DBPass)
-	fmt.Printf("  DBName: %s\n", config.DBName)
-	fmt.Printf("  AppName: %s\n", config.AppName)
-	fmt.Printf("  LogLevel: %s\n", config.LogLevel)
-
 }
