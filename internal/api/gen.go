@@ -4,7 +4,6 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"time"
@@ -13,234 +12,97 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
-const (
-	Api_keyScopes       = "api_key.Scopes"
-	Petstore_authScopes = "petstore_auth.Scopes"
-)
-
-// Defines values for OrderStatus.
-const (
-	Approved  OrderStatus = "approved"
-	Delivered OrderStatus = "delivered"
-	Placed    OrderStatus = "placed"
-)
-
-// Defines values for PetStatus.
-const (
-	PetStatusAvailable PetStatus = "available"
-	PetStatusPending   PetStatus = "pending"
-	PetStatusSold      PetStatus = "sold"
-)
-
-// Defines values for FindPetsByStatusParamsStatus.
-const (
-	FindPetsByStatusParamsStatusAvailable FindPetsByStatusParamsStatus = "available"
-	FindPetsByStatusParamsStatusPending   FindPetsByStatusParamsStatus = "pending"
-	FindPetsByStatusParamsStatusSold      FindPetsByStatusParamsStatus = "sold"
-)
-
-// ApiResponse defines model for ApiResponse.
-type ApiResponse struct {
-	Code    *int32  `json:"code,omitempty"`
-	Message *string `json:"message,omitempty"`
-	Type    *string `json:"type,omitempty"`
+// ASNinfo defines model for ASNinfo.
+type ASNinfo struct {
+	Asn       *int               `json:"asn,omitempty"`
+	Country   *string            `json:"country,omitempty"`
+	Notes     *string            `json:"notes,omitempty"`
+	Other     *string            `json:"other,omitempty"`
+	Registry  *string            `json:"registry,omitempty"`
+	Tags      *map[string]string `json:"tags,omitempty"`
+	Timestamp *time.Time         `json:"timestamp,omitempty"`
 }
 
-// Category defines model for Category.
-type Category struct {
-	Id   *int64  `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+// DNSEntry defines model for DNSEntry.
+type DNSEntry struct {
+	Name      *string            `json:"name,omitempty"`
+	Notes     *string            `json:"notes,omitempty"`
+	Other     *string            `json:"other,omitempty"`
+	Tags      *map[string]string `json:"tags,omitempty"`
+	Timestamp *time.Time         `json:"timestamp,omitempty"`
+	Ttl       *int               `json:"ttl,omitempty"`
+	Type      *string            `json:"type,omitempty"`
+	Value     *string            `json:"value,omitempty"`
 }
 
-// Order defines model for Order.
-type Order struct {
-	Complete *bool      `json:"complete,omitempty"`
-	Id       *int64     `json:"id,omitempty"`
-	PetId    *int64     `json:"petId,omitempty"`
-	Quantity *int32     `json:"quantity,omitempty"`
-	ShipDate *time.Time `json:"shipDate,omitempty"`
-
-	// Status Order Status
-	Status *OrderStatus `json:"status,omitempty"`
+// Domain defines model for Domain.
+type Domain struct {
+	Addresses *[]IPaddress       `json:"addresses,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+	Notes     *string            `json:"notes,omitempty"`
+	Other     *string            `json:"other,omitempty"`
+	Parent    *string            `json:"parent,omitempty"`
+	Paths     *[]Path            `json:"paths,omitempty"`
+	Records   *[]DNSEntry        `json:"records,omitempty"`
+	Tags      *map[string]string `json:"tags,omitempty"`
+	Timestamp *time.Time         `json:"timestamp,omitempty"`
 }
 
-// OrderStatus Order Status
-type OrderStatus string
-
-// Pet defines model for Pet.
-type Pet struct {
-	Category  *Category `json:"category,omitempty"`
-	Id        *int64    `json:"id,omitempty"`
-	Name      string    `json:"name"`
-	PhotoUrls []string  `json:"photoUrls"`
-
-	// Status pet status in the store
-	Status *PetStatus `json:"status,omitempty"`
-	Tags   *[]Tag     `json:"tags,omitempty"`
+// IPaddress defines model for IPaddress.
+type IPaddress struct {
+	Advertisers *[]ASNinfo         `json:"advertisers,omitempty"`
+	Ip          *string            `json:"ip,omitempty"`
+	Mask        *string            `json:"mask,omitempty"`
+	Notes       *string            `json:"notes,omitempty"`
+	Other       *string            `json:"other,omitempty"`
+	Tags        *map[string]string `json:"tags,omitempty"`
+	Timestamp   *time.Time         `json:"timestamp,omitempty"`
 }
 
-// PetStatus pet status in the store
-type PetStatus string
-
-// Tag defines model for Tag.
-type Tag struct {
-	Id   *int64  `json:"id,omitempty"`
-	Name *string `json:"name,omitempty"`
+// Nameserver defines model for Nameserver.
+type Nameserver struct {
+	Ip        *IPaddress         `json:"ip,omitempty"`
+	Name      *string            `json:"name,omitempty"`
+	Notes     *string            `json:"notes,omitempty"`
+	Other     *string            `json:"other,omitempty"`
+	Tags      *map[string]string `json:"tags,omitempty"`
+	Timestamp *time.Time         `json:"timestamp,omitempty"`
 }
 
-// User defines model for User.
-type User struct {
-	Email     *string `json:"email,omitempty"`
-	FirstName *string `json:"firstName,omitempty"`
-	Id        *int64  `json:"id,omitempty"`
-	LastName  *string `json:"lastName,omitempty"`
-	Password  *string `json:"password,omitempty"`
-	Phone     *string `json:"phone,omitempty"`
-
-	// UserStatus User Status
-	UserStatus *int32  `json:"userStatus,omitempty"`
-	Username   *string `json:"username,omitempty"`
+// Path defines model for Path.
+type Path struct {
+	Notes *string            `json:"notes,omitempty"`
+	Other *string            `json:"other,omitempty"`
+	Path  *string            `json:"path,omitempty"`
+	Tags  *map[string]string `json:"tags,omitempty"`
 }
 
-// FindPetsByStatusParams defines parameters for FindPetsByStatus.
-type FindPetsByStatusParams struct {
-	// Status Status values that need to be considered for filter
-	Status *FindPetsByStatusParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+// WhoisData defines model for WhoisData.
+type WhoisData struct {
+	Asn         *int          `json:"asn,omitempty"`
+	Country     *string       `json:"country,omitempty"`
+	Created     *time.Time    `json:"created,omitempty"`
+	DomainName  *string       `json:"domain_name,omitempty"`
+	IpRange     *IPaddress    `json:"ip_range,omitempty"`
+	Nameservers *[]Nameserver `json:"nameservers,omitempty"`
+	Notes       *string       `json:"notes,omitempty"`
+	Other       *string       `json:"other,omitempty"`
+	Registrar   *string       `json:"registrar,omitempty"`
+	Timestamp   *time.Time    `json:"timestamp,omitempty"`
+	Updated     *time.Time    `json:"updated,omitempty"`
 }
-
-// FindPetsByStatusParamsStatus defines parameters for FindPetsByStatus.
-type FindPetsByStatusParamsStatus string
-
-// FindPetsByTagsParams defines parameters for FindPetsByTags.
-type FindPetsByTagsParams struct {
-	// Tags Tags to filter by
-	Tags *[]string `form:"tags,omitempty" json:"tags,omitempty"`
-}
-
-// DeletePetParams defines parameters for DeletePet.
-type DeletePetParams struct {
-	ApiKey *string `json:"api_key,omitempty"`
-}
-
-// UpdatePetWithFormParams defines parameters for UpdatePetWithForm.
-type UpdatePetWithFormParams struct {
-	// Name Name of pet that needs to be updated
-	Name *string `form:"name,omitempty" json:"name,omitempty"`
-
-	// Status Status of pet that needs to be updated
-	Status *string `form:"status,omitempty" json:"status,omitempty"`
-}
-
-// UploadFileParams defines parameters for UploadFile.
-type UploadFileParams struct {
-	// AdditionalMetadata Additional Metadata
-	AdditionalMetadata *string `form:"additionalMetadata,omitempty" json:"additionalMetadata,omitempty"`
-}
-
-// CreateUsersWithListInputJSONBody defines parameters for CreateUsersWithListInput.
-type CreateUsersWithListInputJSONBody = []User
-
-// LoginUserParams defines parameters for LoginUser.
-type LoginUserParams struct {
-	// Username The user name for login
-	Username *string `form:"username,omitempty" json:"username,omitempty"`
-
-	// Password The password for login in clear text
-	Password *string `form:"password,omitempty" json:"password,omitempty"`
-}
-
-// AddPetJSONRequestBody defines body for AddPet for application/json ContentType.
-type AddPetJSONRequestBody = Pet
-
-// AddPetFormdataRequestBody defines body for AddPet for application/x-www-form-urlencoded ContentType.
-type AddPetFormdataRequestBody = Pet
-
-// UpdatePetJSONRequestBody defines body for UpdatePet for application/json ContentType.
-type UpdatePetJSONRequestBody = Pet
-
-// UpdatePetFormdataRequestBody defines body for UpdatePet for application/x-www-form-urlencoded ContentType.
-type UpdatePetFormdataRequestBody = Pet
-
-// PlaceOrderJSONRequestBody defines body for PlaceOrder for application/json ContentType.
-type PlaceOrderJSONRequestBody = Order
-
-// PlaceOrderFormdataRequestBody defines body for PlaceOrder for application/x-www-form-urlencoded ContentType.
-type PlaceOrderFormdataRequestBody = Order
-
-// CreateUserJSONRequestBody defines body for CreateUser for application/json ContentType.
-type CreateUserJSONRequestBody = User
-
-// CreateUserFormdataRequestBody defines body for CreateUser for application/x-www-form-urlencoded ContentType.
-type CreateUserFormdataRequestBody = User
-
-// CreateUsersWithListInputJSONRequestBody defines body for CreateUsersWithListInput for application/json ContentType.
-type CreateUsersWithListInputJSONRequestBody = CreateUsersWithListInputJSONBody
-
-// UpdateUserJSONRequestBody defines body for UpdateUser for application/json ContentType.
-type UpdateUserJSONRequestBody = User
-
-// UpdateUserFormdataRequestBody defines body for UpdateUser for application/x-www-form-urlencoded ContentType.
-type UpdateUserFormdataRequestBody = User
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Add a new pet to the store
-	// (POST /pet)
-	AddPet(w http.ResponseWriter, r *http.Request)
-	// Update an existing pet
-	// (PUT /pet)
-	UpdatePet(w http.ResponseWriter, r *http.Request)
-	// Finds Pets by status
-	// (GET /pet/findByStatus)
-	FindPetsByStatus(w http.ResponseWriter, r *http.Request, params FindPetsByStatusParams)
-	// Finds Pets by tags
-	// (GET /pet/findByTags)
-	FindPetsByTags(w http.ResponseWriter, r *http.Request, params FindPetsByTagsParams)
-	// Deletes a pet
-	// (DELETE /pet/{petId})
-	DeletePet(w http.ResponseWriter, r *http.Request, petId int64, params DeletePetParams)
-	// Find pet by ID
-	// (GET /pet/{petId})
-	GetPetById(w http.ResponseWriter, r *http.Request, petId int64)
-	// Updates a pet in the store with form data
-	// (POST /pet/{petId})
-	UpdatePetWithForm(w http.ResponseWriter, r *http.Request, petId int64, params UpdatePetWithFormParams)
-	// uploads an image
-	// (POST /pet/{petId}/uploadImage)
-	UploadFile(w http.ResponseWriter, r *http.Request, petId int64, params UploadFileParams)
-	// Returns pet inventories by status
-	// (GET /store/inventory)
-	GetInventory(w http.ResponseWriter, r *http.Request)
-	// Place an order for a pet
-	// (POST /store/order)
-	PlaceOrder(w http.ResponseWriter, r *http.Request)
-	// Delete purchase order by ID
-	// (DELETE /store/order/{orderId})
-	DeleteOrder(w http.ResponseWriter, r *http.Request, orderId int64)
-	// Find purchase order by ID
-	// (GET /store/order/{orderId})
-	GetOrderById(w http.ResponseWriter, r *http.Request, orderId int64)
-	// Create user
-	// (POST /user)
-	CreateUser(w http.ResponseWriter, r *http.Request)
-	// Creates list of users with given input array
-	// (POST /user/createWithList)
-	CreateUsersWithListInput(w http.ResponseWriter, r *http.Request)
-	// Logs user into the system
-	// (GET /user/login)
-	LoginUser(w http.ResponseWriter, r *http.Request, params LoginUserParams)
-	// Logs out current logged in user session
-	// (GET /user/logout)
-	LogoutUser(w http.ResponseWriter, r *http.Request)
-	// Delete user
-	// (DELETE /user/{username})
-	DeleteUser(w http.ResponseWriter, r *http.Request, username string)
-	// Get user by user name
-	// (GET /user/{username})
-	GetUserByName(w http.ResponseWriter, r *http.Request, username string)
-	// Update user
-	// (PUT /user/{username})
-	UpdateUser(w http.ResponseWriter, r *http.Request, username string)
+	// Get domain details
+	// (GET /domains/{domainName})
+	GetDomainsDomainName(w http.ResponseWriter, r *http.Request, domainName string)
+	// Get IP address details
+	// (GET /ipaddresses/{ip})
+	GetIpaddressesIp(w http.ResponseWriter, r *http.Request, ip string)
+	// Get WHOIS data for an IP range, domain, or AS
+	// (GET /whois/{query})
+	GetWhoisQuery(w http.ResponseWriter, r *http.Request, query string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -252,70 +114,22 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// AddPet operation middleware
-func (siw *ServerInterfaceWrapper) AddPet(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.AddPet(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UpdatePet operation middleware
-func (siw *ServerInterfaceWrapper) UpdatePet(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdatePet(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// FindPetsByStatus operation middleware
-func (siw *ServerInterfaceWrapper) FindPetsByStatus(w http.ResponseWriter, r *http.Request) {
+// GetDomainsDomainName operation middleware
+func (siw *ServerInterfaceWrapper) GetDomainsDomainName(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	ctx := r.Context()
+	// ------------- Path parameter "domainName" -------------
+	var domainName string
 
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsByStatusParams
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
+	err = runtime.BindStyledParameterWithOptions("simple", "domainName", mux.Vars(r)["domainName"], &domainName, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domainName", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindPetsByStatus(w, r, params)
+		siw.Handler.GetDomainsDomainName(w, r, domainName)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -325,30 +139,22 @@ func (siw *ServerInterfaceWrapper) FindPetsByStatus(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// FindPetsByTags operation middleware
-func (siw *ServerInterfaceWrapper) FindPetsByTags(w http.ResponseWriter, r *http.Request) {
+// GetIpaddressesIp operation middleware
+func (siw *ServerInterfaceWrapper) GetIpaddressesIp(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	ctx := r.Context()
+	// ------------- Path parameter "ip" -------------
+	var ip string
 
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params FindPetsByTagsParams
-
-	// ------------- Optional query parameter "tags" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "tags", r.URL.Query(), &params.Tags)
+	err = runtime.BindStyledParameterWithOptions("simple", "ip", mux.Vars(r)["ip"], &ip, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "tags", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ip", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.FindPetsByTags(w, r, params)
+		siw.Handler.GetIpaddressesIp(w, r, ip)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -358,413 +164,22 @@ func (siw *ServerInterfaceWrapper) FindPetsByTags(w http.ResponseWriter, r *http
 	handler.ServeHTTP(w, r)
 }
 
-// DeletePet operation middleware
-func (siw *ServerInterfaceWrapper) DeletePet(w http.ResponseWriter, r *http.Request) {
+// GetWhoisQuery operation middleware
+func (siw *ServerInterfaceWrapper) GetWhoisQuery(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "petId" -------------
-	var petId int64
+	// ------------- Path parameter "query" -------------
+	var query string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", mux.Vars(r)["petId"], &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "query", mux.Vars(r)["query"], &query, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeletePetParams
-
-	headers := r.Header
-
-	// ------------- Optional header parameter "api_key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("api_key")]; found {
-		var ApiKey string
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandlerFunc(w, r, &TooManyValuesForParamError{ParamName: "api_key", Count: n})
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "api_key", valueList[0], &ApiKey, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false})
-		if err != nil {
-			siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "api_key", Err: err})
-			return
-		}
-
-		params.ApiKey = &ApiKey
-
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeletePet(w, r, petId, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetPetById operation middleware
-func (siw *ServerInterfaceWrapper) GetPetById(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", mux.Vars(r)["petId"], &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Api_keyScopes, []string{})
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetPetById(w, r, petId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UpdatePetWithForm operation middleware
-func (siw *ServerInterfaceWrapper) UpdatePetWithForm(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", mux.Vars(r)["petId"], &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params UpdatePetWithFormParams
-
-	// ------------- Optional query parameter "name" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "name", r.URL.Query(), &params.Name)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "name", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "status" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "status", r.URL.Query(), &params.Status)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "status", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "query", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdatePetWithForm(w, r, petId, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UploadFile operation middleware
-func (siw *ServerInterfaceWrapper) UploadFile(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "petId" -------------
-	var petId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "petId", mux.Vars(r)["petId"], &petId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "petId", Err: err})
-		return
-	}
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Petstore_authScopes, []string{"write:pets", "read:pets"})
-
-	r = r.WithContext(ctx)
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params UploadFileParams
-
-	// ------------- Optional query parameter "additionalMetadata" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "additionalMetadata", r.URL.Query(), &params.AdditionalMetadata)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "additionalMetadata", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UploadFile(w, r, petId, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetInventory operation middleware
-func (siw *ServerInterfaceWrapper) GetInventory(w http.ResponseWriter, r *http.Request) {
-
-	ctx := r.Context()
-
-	ctx = context.WithValue(ctx, Api_keyScopes, []string{})
-
-	r = r.WithContext(ctx)
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetInventory(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// PlaceOrder operation middleware
-func (siw *ServerInterfaceWrapper) PlaceOrder(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.PlaceOrder(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// DeleteOrder operation middleware
-func (siw *ServerInterfaceWrapper) DeleteOrder(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "orderId" -------------
-	var orderId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "orderId", mux.Vars(r)["orderId"], &orderId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "orderId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteOrder(w, r, orderId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetOrderById operation middleware
-func (siw *ServerInterfaceWrapper) GetOrderById(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "orderId" -------------
-	var orderId int64
-
-	err = runtime.BindStyledParameterWithOptions("simple", "orderId", mux.Vars(r)["orderId"], &orderId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "orderId", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetOrderById(w, r, orderId)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// CreateUser operation middleware
-func (siw *ServerInterfaceWrapper) CreateUser(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateUser(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// CreateUsersWithListInput operation middleware
-func (siw *ServerInterfaceWrapper) CreateUsersWithListInput(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.CreateUsersWithListInput(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// LoginUser operation middleware
-func (siw *ServerInterfaceWrapper) LoginUser(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params LoginUserParams
-
-	// ------------- Optional query parameter "username" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "username", r.URL.Query(), &params.Username)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	// ------------- Optional query parameter "password" -------------
-
-	err = runtime.BindQueryParameter("form", true, false, "password", r.URL.Query(), &params.Password)
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "password", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LoginUser(w, r, params)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// LogoutUser operation middleware
-func (siw *ServerInterfaceWrapper) LogoutUser(w http.ResponseWriter, r *http.Request) {
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.LogoutUser(w, r)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// DeleteUser operation middleware
-func (siw *ServerInterfaceWrapper) DeleteUser(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", mux.Vars(r)["username"], &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.DeleteUser(w, r, username)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// GetUserByName operation middleware
-func (siw *ServerInterfaceWrapper) GetUserByName(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", mux.Vars(r)["username"], &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetUserByName(w, r, username)
-	}))
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		handler = middleware(handler)
-	}
-
-	handler.ServeHTTP(w, r)
-}
-
-// UpdateUser operation middleware
-func (siw *ServerInterfaceWrapper) UpdateUser(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "username" -------------
-	var username string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "username", mux.Vars(r)["username"], &username, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "username", Err: err})
-		return
-	}
-
-	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.UpdateUser(w, r, username)
+		siw.Handler.GetWhoisQuery(w, r, query)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -887,43 +302,11 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	r.HandleFunc(options.BaseURL+"/pet", wrapper.AddPet).Methods("POST")
+	r.HandleFunc(options.BaseURL+"/domains/{domainName}", wrapper.GetDomainsDomainName).Methods("GET")
 
-	r.HandleFunc(options.BaseURL+"/pet", wrapper.UpdatePet).Methods("PUT")
+	r.HandleFunc(options.BaseURL+"/ipaddresses/{ip}", wrapper.GetIpaddressesIp).Methods("GET")
 
-	r.HandleFunc(options.BaseURL+"/pet/findByStatus", wrapper.FindPetsByStatus).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/pet/findByTags", wrapper.FindPetsByTags).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/pet/{petId}", wrapper.DeletePet).Methods("DELETE")
-
-	r.HandleFunc(options.BaseURL+"/pet/{petId}", wrapper.GetPetById).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/pet/{petId}", wrapper.UpdatePetWithForm).Methods("POST")
-
-	r.HandleFunc(options.BaseURL+"/pet/{petId}/uploadImage", wrapper.UploadFile).Methods("POST")
-
-	r.HandleFunc(options.BaseURL+"/store/inventory", wrapper.GetInventory).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/store/order", wrapper.PlaceOrder).Methods("POST")
-
-	r.HandleFunc(options.BaseURL+"/store/order/{orderId}", wrapper.DeleteOrder).Methods("DELETE")
-
-	r.HandleFunc(options.BaseURL+"/store/order/{orderId}", wrapper.GetOrderById).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/user", wrapper.CreateUser).Methods("POST")
-
-	r.HandleFunc(options.BaseURL+"/user/createWithList", wrapper.CreateUsersWithListInput).Methods("POST")
-
-	r.HandleFunc(options.BaseURL+"/user/login", wrapper.LoginUser).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/user/logout", wrapper.LogoutUser).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/user/{username}", wrapper.DeleteUser).Methods("DELETE")
-
-	r.HandleFunc(options.BaseURL+"/user/{username}", wrapper.GetUserByName).Methods("GET")
-
-	r.HandleFunc(options.BaseURL+"/user/{username}", wrapper.UpdateUser).Methods("PUT")
+	r.HandleFunc(options.BaseURL+"/whois/{query}", wrapper.GetWhoisQuery).Methods("GET")
 
 	return r
 }
