@@ -1,0 +1,19 @@
+services:
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    # https://127.0.0.1:4001
+    ports:
+      - "4001:8080"
+    volumes:
+      - ../api.yml:/api.yml
+    environment:
+      - SWAGGER_FILE=/api.yml
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    # https://127.0.0.1:4000
+    ports:
+      - "4000:8080"
+    volumes:
+      - ../api.yml:/api.yml
+    environment:
+      - SWAGGER_JSON=/api.yml

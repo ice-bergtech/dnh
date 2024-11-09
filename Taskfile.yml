@@ -15,4 +15,13 @@ tasks:
     aliases:
       - b
     cmds:
+      - go mod tidy
       - goreleaser release --snapshot --clean
+
+  edit-api:
+    aliases:
+      - ea
+    cmds:
+      - docker-compose -f docker/compose-api-edit.yml up -d  
+      - echo 'Viewer - https://127.0.0.1:4000'
+      - echo 'Editor - https://127.0.0.1:4001'
