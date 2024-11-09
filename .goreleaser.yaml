@@ -22,7 +22,7 @@ builds:
       - linux
       - windows
       - darwin
-    dir: ./src
+    dir: ./cmd
 
 archives:
   - format: tar.gz
