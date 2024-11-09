@@ -23,7 +23,7 @@ func NewServer() Server {
 
 // (GET /ping)
 func (Server) GetPing(w http.ResponseWriter, r *http.Request) {
-	resp := dnh.IPaddress{}
+	resp := dnh.IPAddress{}
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)

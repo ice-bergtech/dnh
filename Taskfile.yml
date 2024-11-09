@@ -18,6 +18,11 @@ tasks:
       - go mod tidy
       - goreleaser release --snapshot --clean
 
+  setup:
+    cmds:
+      - go -version
+      - brew install goreleaser
+
   edit-api:
     aliases:
       - ea
@@ -34,5 +39,3 @@ tasks:
       # find each csv and tsv files and load into sqlite db
       - find ./data \( -name "*.csv" \) | xargs -I {} sh -c 'sqlite3 netdata.db -cmd ".mode csv" ".import {} data_{}"'
       - find ./data \( -name "*.tsv" \) | xargs -I {} sh -c 'sqlite3 netdata.db -cmd ".mode tabs" ".import {} data_{}"'
-
-  
