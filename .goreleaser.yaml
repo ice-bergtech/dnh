@@ -24,16 +24,16 @@ builds:
       - darwin
     dir: ./cmd
 
-dockers:
-    - image_templates:
-      - "ghcr.io/ice-bergtech/dnh:{{.Version}}"
-      - "ghcr.io/ice-bergtech/dnh:latest"
-      use: buildx
-      goos: linux
-      dockerfile: "docker/Dockerfile"
-      build_flag_templates:
-        - "--pull"
-        - "--platform=linux/amd64"
+# dockers:
+#     - image_templates:
+#       - "ghcr.io/ice-bergtech/dnh:{{.Version}}"
+#       - "ghcr.io/ice-bergtech/dnh:latest"
+#       use: buildx
+#       goos: linux
+#       dockerfile: "docker/Dockerfile"
+#       build_flag_templates:
+#         - "--pull"
+#         - "--platform=linux/amd64"
 
 archives:
   - format: tar.gz
