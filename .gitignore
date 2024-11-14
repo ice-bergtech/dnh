@@ -27,4 +27,4 @@ go.work.sum
 dist/
 
 urls.list
-.github_token
+.*_token
