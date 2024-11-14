@@ -10,7 +10,7 @@ tasks:
     cmds:
       - echo "{{.GREETING}}"
     silent: true
-  
+
   build:
     aliases:
       - b
@@ -18,10 +18,32 @@ tasks:
       - go mod tidy
       - goreleaser release --snapshot --clean
 
+
   setup:
     cmds:
       - go -version
       - brew install goreleaser
+      - go install github.com/caarlos0/svu@latest
+
+  release:
+    aliases:
+      - r
+    cmds:
+      - task: tag
+      - task: publish
+
+  tag:
+    aliases:
+      - t
+    cmds:
+      - git tag "$($HOME/go/bin/svu next)"
+      - git push --tags
+
+  publish:
+    aliases:
+      - p
+    cmds:
+      - goreleaser release --clean
 
   edit-api:
     aliases:
