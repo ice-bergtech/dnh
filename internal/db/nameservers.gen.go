@@ -7,6 +7,7 @@ package db
 import (
 	"context"
 
+	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -15,8 +16,6 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
-
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 )
 
 func newNameserver(db *gorm.DB, opts ...gen.DOOption) nameserver {
