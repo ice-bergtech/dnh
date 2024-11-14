@@ -61,3 +61,7 @@ release:
   github:
     owner: ice-bergtech
     name: dnh
+
+force_token: github
+env_files:
+  github_token: .github_token
