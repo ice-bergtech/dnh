@@ -6,6 +6,7 @@ package db
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newWhois(db *gorm.DB, opts ...gen.DOOption) whois {
 	_whois := whois{}
 
 	_whois.whoisDo.UseDB(db, opts...)
-	_whois.whoisDo.UseModel(&dnh.Whois{})
+	_whois.whoisDo.UseModel(&models.Whois{})
 
 	tableName := _whois.whoisDo.TableName()
 	_whois.ALL = field.NewAsterisk(tableName)
@@ -37,27 +38,28 @@ func newWhois(db *gorm.DB, opts ...gen.DOOption) whois {
 	_whois.Created = field.NewTime(tableName, "created")
 	_whois.Updated = field.NewTime(tableName, "updated")
 	_whois.Registrar = field.NewString(tableName, "registrar")
-	_whois.Timestamp = field.NewTime(tableName, "timestamp")
+	_whois.TimeFist = field.NewTime(tableName, "time_fist")
+	_whois.TimeLast = field.NewTime(tableName, "time_last")
 	_whois.Tags = field.NewField(tableName, "tags")
 	_whois.IPRange = whoisHasOneIPRange{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("IPRange", "dnh.IPAddress"),
+		RelationField: field.NewRelation("IPRange", "models.IPAddress"),
 		Advertisers: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("IPRange.Advertisers", "dnh.ASNInfo"),
+			RelationField: field.NewRelation("IPRange.Advertisers", "models.ASNInfo"),
 		},
 	}
 
 	_whois.Nameservers = whoisManyToManyNameservers{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Nameservers", "dnh.Nameserver"),
+		RelationField: field.NewRelation("Nameservers", "models.Nameserver"),
 		IP: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("Nameservers.IP", "dnh.IPAddress"),
+			RelationField: field.NewRelation("Nameservers.IP", "models.IPAddress"),
 		},
 	}
 
@@ -67,7 +69,7 @@ func newWhois(db *gorm.DB, opts ...gen.DOOption) whois {
 }
 
 type whois struct {
-	whoisDo whoisDo
+	whoisDo
 
 	ALL        field.Asterisk
 	ID         field.Uint
@@ -80,7 +82,8 @@ type whois struct {
 	Created    field.Time
 	Updated    field.Time
 	Registrar  field.String
-	Timestamp  field.Time
+	TimeFist   field.Time
+	TimeLast   field.Time
 	Tags       field.Field
 	IPRange    whoisHasOneIPRange
 
@@ -111,21 +114,14 @@ func (w *whois) updateTableName(table string) *whois {
 	w.Created = field.NewTime(table, "created")
 	w.Updated = field.NewTime(table, "updated")
 	w.Registrar = field.NewString(table, "registrar")
-	w.Timestamp = field.NewTime(table, "timestamp")
+	w.TimeFist = field.NewTime(table, "time_fist")
+	w.TimeLast = field.NewTime(table, "time_last")
 	w.Tags = field.NewField(table, "tags")
 
 	w.fillFieldMap()
 
 	return w
 }
-
-func (w *whois) WithContext(ctx context.Context) IWhoisDo { return w.whoisDo.WithContext(ctx) }
-
-func (w whois) TableName() string { return w.whoisDo.TableName() }
-
-func (w whois) Alias() string { return w.whoisDo.Alias() }
-
-func (w whois) Columns(cols ...field.Expr) gen.Columns { return w.whoisDo.Columns(cols...) }
 
 func (w *whois) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := w.fieldMap[fieldName]
@@ -137,7 +133,7 @@ func (w *whois) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (w *whois) fillFieldMap() {
-	w.fieldMap = make(map[string]field.Expr, 14)
+	w.fieldMap = make(map[string]field.Expr, 15)
 	w.fieldMap["id"] = w.ID
 	w.fieldMap["created_at"] = w.CreatedAt
 	w.fieldMap["updated_at"] = w.UpdatedAt
@@ -148,7 +144,8 @@ func (w *whois) fillFieldMap() {
 	w.fieldMap["created"] = w.Created
 	w.fieldMap["updated"] = w.Updated
 	w.fieldMap["registrar"] = w.Registrar
-	w.fieldMap["timestamp"] = w.Timestamp
+	w.fieldMap["time_fist"] = w.TimeFist
+	w.fieldMap["time_last"] = w.TimeLast
 	w.fieldMap["tags"] = w.Tags
 
 }
@@ -196,17 +193,17 @@ func (a whoisHasOneIPRange) Session(session *gorm.Session) *whoisHasOneIPRange {
 	return &a
 }
 
-func (a whoisHasOneIPRange) Model(m *dnh.Whois) *whoisHasOneIPRangeTx {
+func (a whoisHasOneIPRange) Model(m *models.Whois) *whoisHasOneIPRangeTx {
 	return &whoisHasOneIPRangeTx{a.db.Model(m).Association(a.Name())}
 }
 
 type whoisHasOneIPRangeTx struct{ tx *gorm.Association }
 
-func (a whoisHasOneIPRangeTx) Find() (result *dnh.IPAddress, err error) {
+func (a whoisHasOneIPRangeTx) Find() (result *models.IPAddress, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a whoisHasOneIPRangeTx) Append(values ...*dnh.IPAddress) (err error) {
+func (a whoisHasOneIPRangeTx) Append(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -214,7 +211,7 @@ func (a whoisHasOneIPRangeTx) Append(values ...*dnh.IPAddress) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a whoisHasOneIPRangeTx) Replace(values ...*dnh.IPAddress) (err error) {
+func (a whoisHasOneIPRangeTx) Replace(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -222,7 +219,7 @@ func (a whoisHasOneIPRangeTx) Replace(values ...*dnh.IPAddress) (err error) {
 	return a.tx.Replace(targetValues...)
 }
 
-func (a whoisHasOneIPRangeTx) Delete(values ...*dnh.IPAddress) (err error) {
+func (a whoisHasOneIPRangeTx) Delete(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -271,17 +268,17 @@ func (a whoisManyToManyNameservers) Session(session *gorm.Session) *whoisManyToM
 	return &a
 }
 
-func (a whoisManyToManyNameservers) Model(m *dnh.Whois) *whoisManyToManyNameserversTx {
+func (a whoisManyToManyNameservers) Model(m *models.Whois) *whoisManyToManyNameserversTx {
 	return &whoisManyToManyNameserversTx{a.db.Model(m).Association(a.Name())}
 }
 
 type whoisManyToManyNameserversTx struct{ tx *gorm.Association }
 
-func (a whoisManyToManyNameserversTx) Find() (result []*dnh.Nameserver, err error) {
+func (a whoisManyToManyNameserversTx) Find() (result []*models.Nameserver, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a whoisManyToManyNameserversTx) Append(values ...*dnh.Nameserver) (err error) {
+func (a whoisManyToManyNameserversTx) Append(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -289,7 +286,7 @@ func (a whoisManyToManyNameserversTx) Append(values ...*dnh.Nameserver) (err err
 	return a.tx.Append(targetValues...)
 }
 
-func (a whoisManyToManyNameserversTx) Replace(values ...*dnh.Nameserver) (err error) {
+func (a whoisManyToManyNameserversTx) Replace(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -297,7 +294,7 @@ func (a whoisManyToManyNameserversTx) Replace(values ...*dnh.Nameserver) (err er
 	return a.tx.Replace(targetValues...)
 }
 
-func (a whoisManyToManyNameserversTx) Delete(values ...*dnh.Nameserver) (err error) {
+func (a whoisManyToManyNameserversTx) Delete(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -344,17 +341,17 @@ type IWhoisDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IWhoisDo
 	Unscoped() IWhoisDo
-	Create(values ...*dnh.Whois) error
-	CreateInBatches(values []*dnh.Whois, batchSize int) error
-	Save(values ...*dnh.Whois) error
-	First() (*dnh.Whois, error)
-	Take() (*dnh.Whois, error)
-	Last() (*dnh.Whois, error)
-	Find() ([]*dnh.Whois, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Whois, err error)
-	FindInBatches(result *[]*dnh.Whois, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Whois) error
+	CreateInBatches(values []*models.Whois, batchSize int) error
+	Save(values ...*models.Whois) error
+	First() (*models.Whois, error)
+	Take() (*models.Whois, error)
+	Last() (*models.Whois, error)
+	Find() ([]*models.Whois, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Whois, err error)
+	FindInBatches(result *[]*models.Whois, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.Whois) (info gen.ResultInfo, err error)
+	Delete(...*models.Whois) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -366,14 +363,35 @@ type IWhoisDo interface {
 	Assign(attrs ...field.AssignExpr) IWhoisDo
 	Joins(fields ...field.RelationField) IWhoisDo
 	Preload(fields ...field.RelationField) IWhoisDo
-	FirstOrInit() (*dnh.Whois, error)
-	FirstOrCreate() (*dnh.Whois, error)
-	FindByPage(offset int, limit int) (result []*dnh.Whois, count int64, err error)
+	FirstOrInit() (*models.Whois, error)
+	FirstOrCreate() (*models.Whois, error)
+	FindByPage(offset int, limit int) (result []*models.Whois, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IWhoisDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.Whois, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (w whoisDo) FilterWithNameAndRole(name string, role string) (result []models.Whois, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM whois WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = w.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (w whoisDo) Debug() IWhoisDo {
@@ -468,57 +486,57 @@ func (w whoisDo) Unscoped() IWhoisDo {
 	return w.withDO(w.DO.Unscoped())
 }
 
-func (w whoisDo) Create(values ...*dnh.Whois) error {
+func (w whoisDo) Create(values ...*models.Whois) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return w.DO.Create(values)
 }
 
-func (w whoisDo) CreateInBatches(values []*dnh.Whois, batchSize int) error {
+func (w whoisDo) CreateInBatches(values []*models.Whois, batchSize int) error {
 	return w.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (w whoisDo) Save(values ...*dnh.Whois) error {
+func (w whoisDo) Save(values ...*models.Whois) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return w.DO.Save(values)
 }
 
-func (w whoisDo) First() (*dnh.Whois, error) {
+func (w whoisDo) First() (*models.Whois, error) {
 	if result, err := w.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Whois), nil
+		return result.(*models.Whois), nil
 	}
 }
 
-func (w whoisDo) Take() (*dnh.Whois, error) {
+func (w whoisDo) Take() (*models.Whois, error) {
 	if result, err := w.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Whois), nil
+		return result.(*models.Whois), nil
 	}
 }
 
-func (w whoisDo) Last() (*dnh.Whois, error) {
+func (w whoisDo) Last() (*models.Whois, error) {
 	if result, err := w.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Whois), nil
+		return result.(*models.Whois), nil
 	}
 }
 
-func (w whoisDo) Find() ([]*dnh.Whois, error) {
+func (w whoisDo) Find() ([]*models.Whois, error) {
 	result, err := w.DO.Find()
-	return result.([]*dnh.Whois), err
+	return result.([]*models.Whois), err
 }
 
-func (w whoisDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Whois, err error) {
-	buf := make([]*dnh.Whois, 0, batchSize)
+func (w whoisDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Whois, err error) {
+	buf := make([]*models.Whois, 0, batchSize)
 	err = w.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -526,7 +544,7 @@ func (w whoisDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error
 	return results, err
 }
 
-func (w whoisDo) FindInBatches(result *[]*dnh.Whois, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (w whoisDo) FindInBatches(result *[]*models.Whois, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return w.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -552,23 +570,23 @@ func (w whoisDo) Preload(fields ...field.RelationField) IWhoisDo {
 	return &w
 }
 
-func (w whoisDo) FirstOrInit() (*dnh.Whois, error) {
+func (w whoisDo) FirstOrInit() (*models.Whois, error) {
 	if result, err := w.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Whois), nil
+		return result.(*models.Whois), nil
 	}
 }
 
-func (w whoisDo) FirstOrCreate() (*dnh.Whois, error) {
+func (w whoisDo) FirstOrCreate() (*models.Whois, error) {
 	if result, err := w.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Whois), nil
+		return result.(*models.Whois), nil
 	}
 }
 
-func (w whoisDo) FindByPage(offset int, limit int) (result []*dnh.Whois, count int64, err error) {
+func (w whoisDo) FindByPage(offset int, limit int) (result []*models.Whois, count int64, err error) {
 	result, err = w.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -597,7 +615,7 @@ func (w whoisDo) Scan(result interface{}) (err error) {
 	return w.DO.Scan(result)
 }
 
-func (w whoisDo) Delete(models ...*dnh.Whois) (result gen.ResultInfo, err error) {
+func (w whoisDo) Delete(models ...*models.Whois) (result gen.ResultInfo, err error) {
 	return w.DO.Delete(models)
 }
 

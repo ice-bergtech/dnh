@@ -6,6 +6,7 @@ package db
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newDomain(db *gorm.DB, opts ...gen.DOOption) domain {
 	_domain := domain{}
 
 	_domain.domainDo.UseDB(db, opts...)
-	_domain.domainDo.UseModel(&dnh.Domain{})
+	_domain.domainDo.UseModel(&models.Domain{})
 
 	tableName := _domain.domainDo.TableName()
 	_domain.ALL = field.NewAsterisk(tableName)
@@ -33,39 +34,40 @@ func newDomain(db *gorm.DB, opts ...gen.DOOption) domain {
 	_domain.DeletedAt = field.NewField(tableName, "deleted_at")
 	_domain.Name = field.NewString(tableName, "name")
 	_domain.Parent = field.NewString(tableName, "parent")
-	_domain.Timestamp = field.NewTime(tableName, "timestamp")
+	_domain.TimeFist = field.NewTime(tableName, "time_fist")
+	_domain.TimeLast = field.NewTime(tableName, "time_last")
 	_domain.Tags = field.NewField(tableName, "tags")
 	_domain.Records = domainManyToManyRecords{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Records", "dnh.DNSEntry"),
+		RelationField: field.NewRelation("Records", "models.DNSEntry"),
 	}
 
 	_domain.Paths = domainManyToManyPaths{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Paths", "dnh.Path"),
+		RelationField: field.NewRelation("Paths", "models.Path"),
 	}
 
 	_domain.Addresses = domainManyToManyAddresses{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Addresses", "dnh.IPAddress"),
+		RelationField: field.NewRelation("Addresses", "models.IPAddress"),
 		Advertisers: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("Addresses.Advertisers", "dnh.ASNInfo"),
+			RelationField: field.NewRelation("Addresses.Advertisers", "models.ASNInfo"),
 		},
 	}
 
 	_domain.Nameservers = domainManyToManyNameservers{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Nameservers", "dnh.Nameserver"),
+		RelationField: field.NewRelation("Nameservers", "models.Nameserver"),
 		IP: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("Nameservers.IP", "dnh.IPAddress"),
+			RelationField: field.NewRelation("Nameservers.IP", "models.IPAddress"),
 		},
 	}
 
@@ -75,7 +77,7 @@ func newDomain(db *gorm.DB, opts ...gen.DOOption) domain {
 }
 
 type domain struct {
-	domainDo domainDo
+	domainDo
 
 	ALL       field.Asterisk
 	ID        field.Uint
@@ -84,7 +86,8 @@ type domain struct {
 	DeletedAt field.Field
 	Name      field.String
 	Parent    field.String
-	Timestamp field.Time
+	TimeFist  field.Time
+	TimeLast  field.Time
 	Tags      field.Field
 	Records   domainManyToManyRecords
 
@@ -115,21 +118,14 @@ func (d *domain) updateTableName(table string) *domain {
 	d.DeletedAt = field.NewField(table, "deleted_at")
 	d.Name = field.NewString(table, "name")
 	d.Parent = field.NewString(table, "parent")
-	d.Timestamp = field.NewTime(table, "timestamp")
+	d.TimeFist = field.NewTime(table, "time_fist")
+	d.TimeLast = field.NewTime(table, "time_last")
 	d.Tags = field.NewField(table, "tags")
 
 	d.fillFieldMap()
 
 	return d
 }
-
-func (d *domain) WithContext(ctx context.Context) IDomainDo { return d.domainDo.WithContext(ctx) }
-
-func (d domain) TableName() string { return d.domainDo.TableName() }
-
-func (d domain) Alias() string { return d.domainDo.Alias() }
-
-func (d domain) Columns(cols ...field.Expr) gen.Columns { return d.domainDo.Columns(cols...) }
 
 func (d *domain) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := d.fieldMap[fieldName]
@@ -141,14 +137,15 @@ func (d *domain) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (d *domain) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 12)
+	d.fieldMap = make(map[string]field.Expr, 13)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["created_at"] = d.CreatedAt
 	d.fieldMap["updated_at"] = d.UpdatedAt
 	d.fieldMap["deleted_at"] = d.DeletedAt
 	d.fieldMap["name"] = d.Name
 	d.fieldMap["parent"] = d.Parent
-	d.fieldMap["timestamp"] = d.Timestamp
+	d.fieldMap["time_fist"] = d.TimeFist
+	d.fieldMap["time_last"] = d.TimeLast
 	d.fieldMap["tags"] = d.Tags
 
 }
@@ -192,17 +189,17 @@ func (a domainManyToManyRecords) Session(session *gorm.Session) *domainManyToMan
 	return &a
 }
 
-func (a domainManyToManyRecords) Model(m *dnh.Domain) *domainManyToManyRecordsTx {
+func (a domainManyToManyRecords) Model(m *models.Domain) *domainManyToManyRecordsTx {
 	return &domainManyToManyRecordsTx{a.db.Model(m).Association(a.Name())}
 }
 
 type domainManyToManyRecordsTx struct{ tx *gorm.Association }
 
-func (a domainManyToManyRecordsTx) Find() (result []*dnh.DNSEntry, err error) {
+func (a domainManyToManyRecordsTx) Find() (result []*models.DNSEntry, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a domainManyToManyRecordsTx) Append(values ...*dnh.DNSEntry) (err error) {
+func (a domainManyToManyRecordsTx) Append(values ...*models.DNSEntry) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -210,7 +207,7 @@ func (a domainManyToManyRecordsTx) Append(values ...*dnh.DNSEntry) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a domainManyToManyRecordsTx) Replace(values ...*dnh.DNSEntry) (err error) {
+func (a domainManyToManyRecordsTx) Replace(values ...*models.DNSEntry) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -218,7 +215,7 @@ func (a domainManyToManyRecordsTx) Replace(values ...*dnh.DNSEntry) (err error) 
 	return a.tx.Replace(targetValues...)
 }
 
-func (a domainManyToManyRecordsTx) Delete(values ...*dnh.DNSEntry) (err error) {
+func (a domainManyToManyRecordsTx) Delete(values ...*models.DNSEntry) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -263,17 +260,17 @@ func (a domainManyToManyPaths) Session(session *gorm.Session) *domainManyToManyP
 	return &a
 }
 
-func (a domainManyToManyPaths) Model(m *dnh.Domain) *domainManyToManyPathsTx {
+func (a domainManyToManyPaths) Model(m *models.Domain) *domainManyToManyPathsTx {
 	return &domainManyToManyPathsTx{a.db.Model(m).Association(a.Name())}
 }
 
 type domainManyToManyPathsTx struct{ tx *gorm.Association }
 
-func (a domainManyToManyPathsTx) Find() (result []*dnh.Path, err error) {
+func (a domainManyToManyPathsTx) Find() (result []*models.Path, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a domainManyToManyPathsTx) Append(values ...*dnh.Path) (err error) {
+func (a domainManyToManyPathsTx) Append(values ...*models.Path) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -281,7 +278,7 @@ func (a domainManyToManyPathsTx) Append(values ...*dnh.Path) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a domainManyToManyPathsTx) Replace(values ...*dnh.Path) (err error) {
+func (a domainManyToManyPathsTx) Replace(values ...*models.Path) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -289,7 +286,7 @@ func (a domainManyToManyPathsTx) Replace(values ...*dnh.Path) (err error) {
 	return a.tx.Replace(targetValues...)
 }
 
-func (a domainManyToManyPathsTx) Delete(values ...*dnh.Path) (err error) {
+func (a domainManyToManyPathsTx) Delete(values ...*models.Path) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -338,17 +335,17 @@ func (a domainManyToManyAddresses) Session(session *gorm.Session) *domainManyToM
 	return &a
 }
 
-func (a domainManyToManyAddresses) Model(m *dnh.Domain) *domainManyToManyAddressesTx {
+func (a domainManyToManyAddresses) Model(m *models.Domain) *domainManyToManyAddressesTx {
 	return &domainManyToManyAddressesTx{a.db.Model(m).Association(a.Name())}
 }
 
 type domainManyToManyAddressesTx struct{ tx *gorm.Association }
 
-func (a domainManyToManyAddressesTx) Find() (result []*dnh.IPAddress, err error) {
+func (a domainManyToManyAddressesTx) Find() (result []*models.IPAddress, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a domainManyToManyAddressesTx) Append(values ...*dnh.IPAddress) (err error) {
+func (a domainManyToManyAddressesTx) Append(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -356,7 +353,7 @@ func (a domainManyToManyAddressesTx) Append(values ...*dnh.IPAddress) (err error
 	return a.tx.Append(targetValues...)
 }
 
-func (a domainManyToManyAddressesTx) Replace(values ...*dnh.IPAddress) (err error) {
+func (a domainManyToManyAddressesTx) Replace(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -364,7 +361,7 @@ func (a domainManyToManyAddressesTx) Replace(values ...*dnh.IPAddress) (err erro
 	return a.tx.Replace(targetValues...)
 }
 
-func (a domainManyToManyAddressesTx) Delete(values ...*dnh.IPAddress) (err error) {
+func (a domainManyToManyAddressesTx) Delete(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -413,17 +410,17 @@ func (a domainManyToManyNameservers) Session(session *gorm.Session) *domainManyT
 	return &a
 }
 
-func (a domainManyToManyNameservers) Model(m *dnh.Domain) *domainManyToManyNameserversTx {
+func (a domainManyToManyNameservers) Model(m *models.Domain) *domainManyToManyNameserversTx {
 	return &domainManyToManyNameserversTx{a.db.Model(m).Association(a.Name())}
 }
 
 type domainManyToManyNameserversTx struct{ tx *gorm.Association }
 
-func (a domainManyToManyNameserversTx) Find() (result []*dnh.Nameserver, err error) {
+func (a domainManyToManyNameserversTx) Find() (result []*models.Nameserver, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a domainManyToManyNameserversTx) Append(values ...*dnh.Nameserver) (err error) {
+func (a domainManyToManyNameserversTx) Append(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -431,7 +428,7 @@ func (a domainManyToManyNameserversTx) Append(values ...*dnh.Nameserver) (err er
 	return a.tx.Append(targetValues...)
 }
 
-func (a domainManyToManyNameserversTx) Replace(values ...*dnh.Nameserver) (err error) {
+func (a domainManyToManyNameserversTx) Replace(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -439,7 +436,7 @@ func (a domainManyToManyNameserversTx) Replace(values ...*dnh.Nameserver) (err e
 	return a.tx.Replace(targetValues...)
 }
 
-func (a domainManyToManyNameserversTx) Delete(values ...*dnh.Nameserver) (err error) {
+func (a domainManyToManyNameserversTx) Delete(values ...*models.Nameserver) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -486,17 +483,17 @@ type IDomainDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IDomainDo
 	Unscoped() IDomainDo
-	Create(values ...*dnh.Domain) error
-	CreateInBatches(values []*dnh.Domain, batchSize int) error
-	Save(values ...*dnh.Domain) error
-	First() (*dnh.Domain, error)
-	Take() (*dnh.Domain, error)
-	Last() (*dnh.Domain, error)
-	Find() ([]*dnh.Domain, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Domain, err error)
-	FindInBatches(result *[]*dnh.Domain, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Domain) error
+	CreateInBatches(values []*models.Domain, batchSize int) error
+	Save(values ...*models.Domain) error
+	First() (*models.Domain, error)
+	Take() (*models.Domain, error)
+	Last() (*models.Domain, error)
+	Find() ([]*models.Domain, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Domain, err error)
+	FindInBatches(result *[]*models.Domain, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.Domain) (info gen.ResultInfo, err error)
+	Delete(...*models.Domain) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -508,14 +505,35 @@ type IDomainDo interface {
 	Assign(attrs ...field.AssignExpr) IDomainDo
 	Joins(fields ...field.RelationField) IDomainDo
 	Preload(fields ...field.RelationField) IDomainDo
-	FirstOrInit() (*dnh.Domain, error)
-	FirstOrCreate() (*dnh.Domain, error)
-	FindByPage(offset int, limit int) (result []*dnh.Domain, count int64, err error)
+	FirstOrInit() (*models.Domain, error)
+	FirstOrCreate() (*models.Domain, error)
+	FindByPage(offset int, limit int) (result []*models.Domain, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IDomainDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.Domain, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (d domainDo) FilterWithNameAndRole(name string, role string) (result []models.Domain, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM domains WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (d domainDo) Debug() IDomainDo {
@@ -610,57 +628,57 @@ func (d domainDo) Unscoped() IDomainDo {
 	return d.withDO(d.DO.Unscoped())
 }
 
-func (d domainDo) Create(values ...*dnh.Domain) error {
+func (d domainDo) Create(values ...*models.Domain) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Create(values)
 }
 
-func (d domainDo) CreateInBatches(values []*dnh.Domain, batchSize int) error {
+func (d domainDo) CreateInBatches(values []*models.Domain, batchSize int) error {
 	return d.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (d domainDo) Save(values ...*dnh.Domain) error {
+func (d domainDo) Save(values ...*models.Domain) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Save(values)
 }
 
-func (d domainDo) First() (*dnh.Domain, error) {
+func (d domainDo) First() (*models.Domain, error) {
 	if result, err := d.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Domain), nil
+		return result.(*models.Domain), nil
 	}
 }
 
-func (d domainDo) Take() (*dnh.Domain, error) {
+func (d domainDo) Take() (*models.Domain, error) {
 	if result, err := d.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Domain), nil
+		return result.(*models.Domain), nil
 	}
 }
 
-func (d domainDo) Last() (*dnh.Domain, error) {
+func (d domainDo) Last() (*models.Domain, error) {
 	if result, err := d.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Domain), nil
+		return result.(*models.Domain), nil
 	}
 }
 
-func (d domainDo) Find() ([]*dnh.Domain, error) {
+func (d domainDo) Find() ([]*models.Domain, error) {
 	result, err := d.DO.Find()
-	return result.([]*dnh.Domain), err
+	return result.([]*models.Domain), err
 }
 
-func (d domainDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Domain, err error) {
-	buf := make([]*dnh.Domain, 0, batchSize)
+func (d domainDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Domain, err error) {
+	buf := make([]*models.Domain, 0, batchSize)
 	err = d.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -668,7 +686,7 @@ func (d domainDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) erro
 	return results, err
 }
 
-func (d domainDo) FindInBatches(result *[]*dnh.Domain, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (d domainDo) FindInBatches(result *[]*models.Domain, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return d.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -694,23 +712,23 @@ func (d domainDo) Preload(fields ...field.RelationField) IDomainDo {
 	return &d
 }
 
-func (d domainDo) FirstOrInit() (*dnh.Domain, error) {
+func (d domainDo) FirstOrInit() (*models.Domain, error) {
 	if result, err := d.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Domain), nil
+		return result.(*models.Domain), nil
 	}
 }
 
-func (d domainDo) FirstOrCreate() (*dnh.Domain, error) {
+func (d domainDo) FirstOrCreate() (*models.Domain, error) {
 	if result, err := d.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Domain), nil
+		return result.(*models.Domain), nil
 	}
 }
 
-func (d domainDo) FindByPage(offset int, limit int) (result []*dnh.Domain, count int64, err error) {
+func (d domainDo) FindByPage(offset int, limit int) (result []*models.Domain, count int64, err error) {
 	result, err = d.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -739,7 +757,7 @@ func (d domainDo) Scan(result interface{}) (err error) {
 	return d.DO.Scan(result)
 }
 
-func (d domainDo) Delete(models ...*dnh.Domain) (result gen.ResultInfo, err error) {
+func (d domainDo) Delete(models ...*models.Domain) (result gen.ResultInfo, err error) {
 	return d.DO.Delete(models)
 }
 

@@ -6,8 +6,8 @@ package db
 
 import (
 	"context"
+	"strings"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newASNInfo(db *gorm.DB, opts ...gen.DOOption) aSNInfo {
 	_aSNInfo := aSNInfo{}
 
 	_aSNInfo.aSNInfoDo.UseDB(db, opts...)
-	_aSNInfo.aSNInfoDo.UseModel(&dnh.ASNInfo{})
+	_aSNInfo.aSNInfoDo.UseModel(&models.ASNInfo{})
 
 	tableName := _aSNInfo.aSNInfoDo.TableName()
 	_aSNInfo.ALL = field.NewAsterisk(tableName)
@@ -41,7 +43,7 @@ func newASNInfo(db *gorm.DB, opts ...gen.DOOption) aSNInfo {
 }
 
 type aSNInfo struct {
-	aSNInfoDo aSNInfoDo
+	aSNInfoDo
 
 	ALL       field.Asterisk
 	ID        field.Uint
@@ -81,14 +83,6 @@ func (a *aSNInfo) updateTableName(table string) *aSNInfo {
 
 	return a
 }
-
-func (a *aSNInfo) WithContext(ctx context.Context) IASNInfoDo { return a.aSNInfoDo.WithContext(ctx) }
-
-func (a aSNInfo) TableName() string { return a.aSNInfoDo.TableName() }
-
-func (a aSNInfo) Alias() string { return a.aSNInfoDo.Alias() }
-
-func (a aSNInfo) Columns(cols ...field.Expr) gen.Columns { return a.aSNInfoDo.Columns(cols...) }
 
 func (a *aSNInfo) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := a.fieldMap[fieldName]
@@ -152,17 +146,17 @@ type IASNInfoDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IASNInfoDo
 	Unscoped() IASNInfoDo
-	Create(values ...*dnh.ASNInfo) error
-	CreateInBatches(values []*dnh.ASNInfo, batchSize int) error
-	Save(values ...*dnh.ASNInfo) error
-	First() (*dnh.ASNInfo, error)
-	Take() (*dnh.ASNInfo, error)
-	Last() (*dnh.ASNInfo, error)
-	Find() ([]*dnh.ASNInfo, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.ASNInfo, err error)
-	FindInBatches(result *[]*dnh.ASNInfo, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.ASNInfo) error
+	CreateInBatches(values []*models.ASNInfo, batchSize int) error
+	Save(values ...*models.ASNInfo) error
+	First() (*models.ASNInfo, error)
+	Take() (*models.ASNInfo, error)
+	Last() (*models.ASNInfo, error)
+	Find() ([]*models.ASNInfo, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.ASNInfo, err error)
+	FindInBatches(result *[]*models.ASNInfo, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.ASNInfo) (info gen.ResultInfo, err error)
+	Delete(...*models.ASNInfo) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -174,14 +168,35 @@ type IASNInfoDo interface {
 	Assign(attrs ...field.AssignExpr) IASNInfoDo
 	Joins(fields ...field.RelationField) IASNInfoDo
 	Preload(fields ...field.RelationField) IASNInfoDo
-	FirstOrInit() (*dnh.ASNInfo, error)
-	FirstOrCreate() (*dnh.ASNInfo, error)
-	FindByPage(offset int, limit int) (result []*dnh.ASNInfo, count int64, err error)
+	FirstOrInit() (*models.ASNInfo, error)
+	FirstOrCreate() (*models.ASNInfo, error)
+	FindByPage(offset int, limit int) (result []*models.ASNInfo, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IASNInfoDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.ASNInfo, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (a aSNInfoDo) FilterWithNameAndRole(name string, role string) (result []models.ASNInfo, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM asn_infos WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = a.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (a aSNInfoDo) Debug() IASNInfoDo {
@@ -276,57 +291,57 @@ func (a aSNInfoDo) Unscoped() IASNInfoDo {
 	return a.withDO(a.DO.Unscoped())
 }
 
-func (a aSNInfoDo) Create(values ...*dnh.ASNInfo) error {
+func (a aSNInfoDo) Create(values ...*models.ASNInfo) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return a.DO.Create(values)
 }
 
-func (a aSNInfoDo) CreateInBatches(values []*dnh.ASNInfo, batchSize int) error {
+func (a aSNInfoDo) CreateInBatches(values []*models.ASNInfo, batchSize int) error {
 	return a.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (a aSNInfoDo) Save(values ...*dnh.ASNInfo) error {
+func (a aSNInfoDo) Save(values ...*models.ASNInfo) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return a.DO.Save(values)
 }
 
-func (a aSNInfoDo) First() (*dnh.ASNInfo, error) {
+func (a aSNInfoDo) First() (*models.ASNInfo, error) {
 	if result, err := a.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.ASNInfo), nil
+		return result.(*models.ASNInfo), nil
 	}
 }
 
-func (a aSNInfoDo) Take() (*dnh.ASNInfo, error) {
+func (a aSNInfoDo) Take() (*models.ASNInfo, error) {
 	if result, err := a.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.ASNInfo), nil
+		return result.(*models.ASNInfo), nil
 	}
 }
 
-func (a aSNInfoDo) Last() (*dnh.ASNInfo, error) {
+func (a aSNInfoDo) Last() (*models.ASNInfo, error) {
 	if result, err := a.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.ASNInfo), nil
+		return result.(*models.ASNInfo), nil
 	}
 }
 
-func (a aSNInfoDo) Find() ([]*dnh.ASNInfo, error) {
+func (a aSNInfoDo) Find() ([]*models.ASNInfo, error) {
 	result, err := a.DO.Find()
-	return result.([]*dnh.ASNInfo), err
+	return result.([]*models.ASNInfo), err
 }
 
-func (a aSNInfoDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.ASNInfo, err error) {
-	buf := make([]*dnh.ASNInfo, 0, batchSize)
+func (a aSNInfoDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.ASNInfo, err error) {
+	buf := make([]*models.ASNInfo, 0, batchSize)
 	err = a.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -334,7 +349,7 @@ func (a aSNInfoDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) err
 	return results, err
 }
 
-func (a aSNInfoDo) FindInBatches(result *[]*dnh.ASNInfo, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (a aSNInfoDo) FindInBatches(result *[]*models.ASNInfo, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return a.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -360,23 +375,23 @@ func (a aSNInfoDo) Preload(fields ...field.RelationField) IASNInfoDo {
 	return &a
 }
 
-func (a aSNInfoDo) FirstOrInit() (*dnh.ASNInfo, error) {
+func (a aSNInfoDo) FirstOrInit() (*models.ASNInfo, error) {
 	if result, err := a.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.ASNInfo), nil
+		return result.(*models.ASNInfo), nil
 	}
 }
 
-func (a aSNInfoDo) FirstOrCreate() (*dnh.ASNInfo, error) {
+func (a aSNInfoDo) FirstOrCreate() (*models.ASNInfo, error) {
 	if result, err := a.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.ASNInfo), nil
+		return result.(*models.ASNInfo), nil
 	}
 }
 
-func (a aSNInfoDo) FindByPage(offset int, limit int) (result []*dnh.ASNInfo, count int64, err error) {
+func (a aSNInfoDo) FindByPage(offset int, limit int) (result []*models.ASNInfo, count int64, err error) {
 	result, err = a.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -405,7 +420,7 @@ func (a aSNInfoDo) Scan(result interface{}) (err error) {
 	return a.DO.Scan(result)
 }
 
-func (a aSNInfoDo) Delete(models ...*dnh.ASNInfo) (result gen.ResultInfo, err error) {
+func (a aSNInfoDo) Delete(models ...*models.ASNInfo) (result gen.ResultInfo, err error) {
 	return a.DO.Delete(models)
 }
 

@@ -24,6 +24,7 @@ var (
 	Nameserver *nameserver
 	Path       *path
 	Registrar  *registrar
+	Scan       *scan
 	Whois      *whois
 )
 
@@ -36,6 +37,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	Nameserver = &Q.Nameserver
 	Path = &Q.Path
 	Registrar = &Q.Registrar
+	Scan = &Q.Scan
 	Whois = &Q.Whois
 }
 
@@ -49,6 +51,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		Nameserver: newNameserver(db, opts...),
 		Path:       newPath(db, opts...),
 		Registrar:  newRegistrar(db, opts...),
+		Scan:       newScan(db, opts...),
 		Whois:      newWhois(db, opts...),
 	}
 }
@@ -63,6 +66,7 @@ type Query struct {
 	Nameserver nameserver
 	Path       path
 	Registrar  registrar
+	Scan       scan
 	Whois      whois
 }
 
@@ -78,6 +82,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		Nameserver: q.Nameserver.clone(db),
 		Path:       q.Path.clone(db),
 		Registrar:  q.Registrar.clone(db),
+		Scan:       q.Scan.clone(db),
 		Whois:      q.Whois.clone(db),
 	}
 }
@@ -100,6 +105,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		Nameserver: q.Nameserver.replaceDB(db),
 		Path:       q.Path.replaceDB(db),
 		Registrar:  q.Registrar.replaceDB(db),
+		Scan:       q.Scan.replaceDB(db),
 		Whois:      q.Whois.replaceDB(db),
 	}
 }
@@ -112,6 +118,7 @@ type queryCtx struct {
 	Nameserver INameserverDo
 	Path       IPathDo
 	Registrar  IRegistrarDo
+	Scan       IScanDo
 	Whois      IWhoisDo
 }
 
@@ -124,6 +131,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		Nameserver: q.Nameserver.WithContext(ctx),
 		Path:       q.Path.WithContext(ctx),
 		Registrar:  q.Registrar.WithContext(ctx),
+		Scan:       q.Scan.WithContext(ctx),
 		Whois:      q.Whois.WithContext(ctx),
 	}
 }

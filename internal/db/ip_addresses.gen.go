@@ -6,8 +6,8 @@ package db
 
 import (
 	"context"
+	"strings"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newIPAddress(db *gorm.DB, opts ...gen.DOOption) iPAddress {
 	_iPAddress := iPAddress{}
 
 	_iPAddress.iPAddressDo.UseDB(db, opts...)
-	_iPAddress.iPAddressDo.UseModel(&dnh.IPAddress{})
+	_iPAddress.iPAddressDo.UseModel(&models.IPAddress{})
 
 	tableName := _iPAddress.iPAddressDo.TableName()
 	_iPAddress.ALL = field.NewAsterisk(tableName)
@@ -36,7 +38,7 @@ func newIPAddress(db *gorm.DB, opts ...gen.DOOption) iPAddress {
 	_iPAddress.Advertisers = iPAddressManyToManyAdvertisers{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Advertisers", "dnh.ASNInfo"),
+		RelationField: field.NewRelation("Advertisers", "models.ASNInfo"),
 	}
 
 	_iPAddress.fillFieldMap()
@@ -45,7 +47,7 @@ func newIPAddress(db *gorm.DB, opts ...gen.DOOption) iPAddress {
 }
 
 type iPAddress struct {
-	iPAddressDo iPAddressDo
+	iPAddressDo
 
 	ALL         field.Asterisk
 	ID          field.Uint
@@ -84,16 +86,6 @@ func (i *iPAddress) updateTableName(table string) *iPAddress {
 
 	return i
 }
-
-func (i *iPAddress) WithContext(ctx context.Context) IIPAddressDo {
-	return i.iPAddressDo.WithContext(ctx)
-}
-
-func (i iPAddress) TableName() string { return i.iPAddressDo.TableName() }
-
-func (i iPAddress) Alias() string { return i.iPAddressDo.Alias() }
-
-func (i iPAddress) Columns(cols ...field.Expr) gen.Columns { return i.iPAddressDo.Columns(cols...) }
 
 func (i *iPAddress) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := i.fieldMap[fieldName]
@@ -155,17 +147,17 @@ func (a iPAddressManyToManyAdvertisers) Session(session *gorm.Session) *iPAddres
 	return &a
 }
 
-func (a iPAddressManyToManyAdvertisers) Model(m *dnh.IPAddress) *iPAddressManyToManyAdvertisersTx {
+func (a iPAddressManyToManyAdvertisers) Model(m *models.IPAddress) *iPAddressManyToManyAdvertisersTx {
 	return &iPAddressManyToManyAdvertisersTx{a.db.Model(m).Association(a.Name())}
 }
 
 type iPAddressManyToManyAdvertisersTx struct{ tx *gorm.Association }
 
-func (a iPAddressManyToManyAdvertisersTx) Find() (result []*dnh.ASNInfo, err error) {
+func (a iPAddressManyToManyAdvertisersTx) Find() (result []*models.ASNInfo, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a iPAddressManyToManyAdvertisersTx) Append(values ...*dnh.ASNInfo) (err error) {
+func (a iPAddressManyToManyAdvertisersTx) Append(values ...*models.ASNInfo) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -173,7 +165,7 @@ func (a iPAddressManyToManyAdvertisersTx) Append(values ...*dnh.ASNInfo) (err er
 	return a.tx.Append(targetValues...)
 }
 
-func (a iPAddressManyToManyAdvertisersTx) Replace(values ...*dnh.ASNInfo) (err error) {
+func (a iPAddressManyToManyAdvertisersTx) Replace(values ...*models.ASNInfo) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -181,7 +173,7 @@ func (a iPAddressManyToManyAdvertisersTx) Replace(values ...*dnh.ASNInfo) (err e
 	return a.tx.Replace(targetValues...)
 }
 
-func (a iPAddressManyToManyAdvertisersTx) Delete(values ...*dnh.ASNInfo) (err error) {
+func (a iPAddressManyToManyAdvertisersTx) Delete(values ...*models.ASNInfo) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -228,17 +220,17 @@ type IIPAddressDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IIPAddressDo
 	Unscoped() IIPAddressDo
-	Create(values ...*dnh.IPAddress) error
-	CreateInBatches(values []*dnh.IPAddress, batchSize int) error
-	Save(values ...*dnh.IPAddress) error
-	First() (*dnh.IPAddress, error)
-	Take() (*dnh.IPAddress, error)
-	Last() (*dnh.IPAddress, error)
-	Find() ([]*dnh.IPAddress, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.IPAddress, err error)
-	FindInBatches(result *[]*dnh.IPAddress, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.IPAddress) error
+	CreateInBatches(values []*models.IPAddress, batchSize int) error
+	Save(values ...*models.IPAddress) error
+	First() (*models.IPAddress, error)
+	Take() (*models.IPAddress, error)
+	Last() (*models.IPAddress, error)
+	Find() ([]*models.IPAddress, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.IPAddress, err error)
+	FindInBatches(result *[]*models.IPAddress, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.IPAddress) (info gen.ResultInfo, err error)
+	Delete(...*models.IPAddress) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -250,14 +242,35 @@ type IIPAddressDo interface {
 	Assign(attrs ...field.AssignExpr) IIPAddressDo
 	Joins(fields ...field.RelationField) IIPAddressDo
 	Preload(fields ...field.RelationField) IIPAddressDo
-	FirstOrInit() (*dnh.IPAddress, error)
-	FirstOrCreate() (*dnh.IPAddress, error)
-	FindByPage(offset int, limit int) (result []*dnh.IPAddress, count int64, err error)
+	FirstOrInit() (*models.IPAddress, error)
+	FirstOrCreate() (*models.IPAddress, error)
+	FindByPage(offset int, limit int) (result []*models.IPAddress, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IIPAddressDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.IPAddress, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (i iPAddressDo) FilterWithNameAndRole(name string, role string) (result []models.IPAddress, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM ip_addresses WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = i.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (i iPAddressDo) Debug() IIPAddressDo {
@@ -352,57 +365,57 @@ func (i iPAddressDo) Unscoped() IIPAddressDo {
 	return i.withDO(i.DO.Unscoped())
 }
 
-func (i iPAddressDo) Create(values ...*dnh.IPAddress) error {
+func (i iPAddressDo) Create(values ...*models.IPAddress) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return i.DO.Create(values)
 }
 
-func (i iPAddressDo) CreateInBatches(values []*dnh.IPAddress, batchSize int) error {
+func (i iPAddressDo) CreateInBatches(values []*models.IPAddress, batchSize int) error {
 	return i.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (i iPAddressDo) Save(values ...*dnh.IPAddress) error {
+func (i iPAddressDo) Save(values ...*models.IPAddress) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return i.DO.Save(values)
 }
 
-func (i iPAddressDo) First() (*dnh.IPAddress, error) {
+func (i iPAddressDo) First() (*models.IPAddress, error) {
 	if result, err := i.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.IPAddress), nil
+		return result.(*models.IPAddress), nil
 	}
 }
 
-func (i iPAddressDo) Take() (*dnh.IPAddress, error) {
+func (i iPAddressDo) Take() (*models.IPAddress, error) {
 	if result, err := i.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.IPAddress), nil
+		return result.(*models.IPAddress), nil
 	}
 }
 
-func (i iPAddressDo) Last() (*dnh.IPAddress, error) {
+func (i iPAddressDo) Last() (*models.IPAddress, error) {
 	if result, err := i.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.IPAddress), nil
+		return result.(*models.IPAddress), nil
 	}
 }
 
-func (i iPAddressDo) Find() ([]*dnh.IPAddress, error) {
+func (i iPAddressDo) Find() ([]*models.IPAddress, error) {
 	result, err := i.DO.Find()
-	return result.([]*dnh.IPAddress), err
+	return result.([]*models.IPAddress), err
 }
 
-func (i iPAddressDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.IPAddress, err error) {
-	buf := make([]*dnh.IPAddress, 0, batchSize)
+func (i iPAddressDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.IPAddress, err error) {
+	buf := make([]*models.IPAddress, 0, batchSize)
 	err = i.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -410,7 +423,7 @@ func (i iPAddressDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) e
 	return results, err
 }
 
-func (i iPAddressDo) FindInBatches(result *[]*dnh.IPAddress, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (i iPAddressDo) FindInBatches(result *[]*models.IPAddress, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return i.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -436,23 +449,23 @@ func (i iPAddressDo) Preload(fields ...field.RelationField) IIPAddressDo {
 	return &i
 }
 
-func (i iPAddressDo) FirstOrInit() (*dnh.IPAddress, error) {
+func (i iPAddressDo) FirstOrInit() (*models.IPAddress, error) {
 	if result, err := i.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.IPAddress), nil
+		return result.(*models.IPAddress), nil
 	}
 }
 
-func (i iPAddressDo) FirstOrCreate() (*dnh.IPAddress, error) {
+func (i iPAddressDo) FirstOrCreate() (*models.IPAddress, error) {
 	if result, err := i.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.IPAddress), nil
+		return result.(*models.IPAddress), nil
 	}
 }
 
-func (i iPAddressDo) FindByPage(offset int, limit int) (result []*dnh.IPAddress, count int64, err error) {
+func (i iPAddressDo) FindByPage(offset int, limit int) (result []*models.IPAddress, count int64, err error) {
 	result, err = i.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -481,7 +494,7 @@ func (i iPAddressDo) Scan(result interface{}) (err error) {
 	return i.DO.Scan(result)
 }
 
-func (i iPAddressDo) Delete(models ...*dnh.IPAddress) (result gen.ResultInfo, err error) {
+func (i iPAddressDo) Delete(models ...*models.IPAddress) (result gen.ResultInfo, err error) {
 	return i.DO.Delete(models)
 }
 

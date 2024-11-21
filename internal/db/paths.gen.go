@@ -6,8 +6,8 @@ package db
 
 import (
 	"context"
+	"strings"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newPath(db *gorm.DB, opts ...gen.DOOption) path {
 	_path := path{}
 
 	_path.pathDo.UseDB(db, opts...)
-	_path.pathDo.UseModel(&dnh.Path{})
+	_path.pathDo.UseModel(&models.Path{})
 
 	tableName := _path.pathDo.TableName()
 	_path.ALL = field.NewAsterisk(tableName)
@@ -39,7 +41,7 @@ func newPath(db *gorm.DB, opts ...gen.DOOption) path {
 }
 
 type path struct {
-	pathDo pathDo
+	pathDo
 
 	ALL       field.Asterisk
 	ID        field.Uint
@@ -75,14 +77,6 @@ func (p *path) updateTableName(table string) *path {
 
 	return p
 }
-
-func (p *path) WithContext(ctx context.Context) IPathDo { return p.pathDo.WithContext(ctx) }
-
-func (p path) TableName() string { return p.pathDo.TableName() }
-
-func (p path) Alias() string { return p.pathDo.Alias() }
-
-func (p path) Columns(cols ...field.Expr) gen.Columns { return p.pathDo.Columns(cols...) }
 
 func (p *path) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := p.fieldMap[fieldName]
@@ -144,17 +138,17 @@ type IPathDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IPathDo
 	Unscoped() IPathDo
-	Create(values ...*dnh.Path) error
-	CreateInBatches(values []*dnh.Path, batchSize int) error
-	Save(values ...*dnh.Path) error
-	First() (*dnh.Path, error)
-	Take() (*dnh.Path, error)
-	Last() (*dnh.Path, error)
-	Find() ([]*dnh.Path, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Path, err error)
-	FindInBatches(result *[]*dnh.Path, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Path) error
+	CreateInBatches(values []*models.Path, batchSize int) error
+	Save(values ...*models.Path) error
+	First() (*models.Path, error)
+	Take() (*models.Path, error)
+	Last() (*models.Path, error)
+	Find() ([]*models.Path, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Path, err error)
+	FindInBatches(result *[]*models.Path, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.Path) (info gen.ResultInfo, err error)
+	Delete(...*models.Path) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -166,14 +160,35 @@ type IPathDo interface {
 	Assign(attrs ...field.AssignExpr) IPathDo
 	Joins(fields ...field.RelationField) IPathDo
 	Preload(fields ...field.RelationField) IPathDo
-	FirstOrInit() (*dnh.Path, error)
-	FirstOrCreate() (*dnh.Path, error)
-	FindByPage(offset int, limit int) (result []*dnh.Path, count int64, err error)
+	FirstOrInit() (*models.Path, error)
+	FirstOrCreate() (*models.Path, error)
+	FindByPage(offset int, limit int) (result []*models.Path, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IPathDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.Path, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (p pathDo) FilterWithNameAndRole(name string, role string) (result []models.Path, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM paths WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = p.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (p pathDo) Debug() IPathDo {
@@ -268,57 +283,57 @@ func (p pathDo) Unscoped() IPathDo {
 	return p.withDO(p.DO.Unscoped())
 }
 
-func (p pathDo) Create(values ...*dnh.Path) error {
+func (p pathDo) Create(values ...*models.Path) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Create(values)
 }
 
-func (p pathDo) CreateInBatches(values []*dnh.Path, batchSize int) error {
+func (p pathDo) CreateInBatches(values []*models.Path, batchSize int) error {
 	return p.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (p pathDo) Save(values ...*dnh.Path) error {
+func (p pathDo) Save(values ...*models.Path) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return p.DO.Save(values)
 }
 
-func (p pathDo) First() (*dnh.Path, error) {
+func (p pathDo) First() (*models.Path, error) {
 	if result, err := p.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Path), nil
+		return result.(*models.Path), nil
 	}
 }
 
-func (p pathDo) Take() (*dnh.Path, error) {
+func (p pathDo) Take() (*models.Path, error) {
 	if result, err := p.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Path), nil
+		return result.(*models.Path), nil
 	}
 }
 
-func (p pathDo) Last() (*dnh.Path, error) {
+func (p pathDo) Last() (*models.Path, error) {
 	if result, err := p.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Path), nil
+		return result.(*models.Path), nil
 	}
 }
 
-func (p pathDo) Find() ([]*dnh.Path, error) {
+func (p pathDo) Find() ([]*models.Path, error) {
 	result, err := p.DO.Find()
-	return result.([]*dnh.Path), err
+	return result.([]*models.Path), err
 }
 
-func (p pathDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Path, err error) {
-	buf := make([]*dnh.Path, 0, batchSize)
+func (p pathDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Path, err error) {
+	buf := make([]*models.Path, 0, batchSize)
 	err = p.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -326,7 +341,7 @@ func (p pathDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error)
 	return results, err
 }
 
-func (p pathDo) FindInBatches(result *[]*dnh.Path, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (p pathDo) FindInBatches(result *[]*models.Path, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return p.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -352,23 +367,23 @@ func (p pathDo) Preload(fields ...field.RelationField) IPathDo {
 	return &p
 }
 
-func (p pathDo) FirstOrInit() (*dnh.Path, error) {
+func (p pathDo) FirstOrInit() (*models.Path, error) {
 	if result, err := p.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Path), nil
+		return result.(*models.Path), nil
 	}
 }
 
-func (p pathDo) FirstOrCreate() (*dnh.Path, error) {
+func (p pathDo) FirstOrCreate() (*models.Path, error) {
 	if result, err := p.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Path), nil
+		return result.(*models.Path), nil
 	}
 }
 
-func (p pathDo) FindByPage(offset int, limit int) (result []*dnh.Path, count int64, err error) {
+func (p pathDo) FindByPage(offset int, limit int) (result []*models.Path, count int64, err error) {
 	result, err = p.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -397,7 +412,7 @@ func (p pathDo) Scan(result interface{}) (err error) {
 	return p.DO.Scan(result)
 }
 
-func (p pathDo) Delete(models ...*dnh.Path) (result gen.ResultInfo, err error) {
+func (p pathDo) Delete(models ...*models.Path) (result gen.ResultInfo, err error) {
 	return p.DO.Delete(models)
 }
 

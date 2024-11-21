@@ -6,6 +6,7 @@ package db
 
 import (
 	"context"
+	"strings"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,14 +17,14 @@ import (
 
 	"gorm.io/plugin/dbresolver"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newRegistrar(db *gorm.DB, opts ...gen.DOOption) registrar {
 	_registrar := registrar{}
 
 	_registrar.registrarDo.UseDB(db, opts...)
-	_registrar.registrarDo.UseModel(&dnh.Registrar{})
+	_registrar.registrarDo.UseModel(&models.Registrar{})
 
 	tableName := _registrar.registrarDo.TableName()
 	_registrar.ALL = field.NewAsterisk(tableName)
@@ -36,16 +37,17 @@ func newRegistrar(db *gorm.DB, opts ...gen.DOOption) registrar {
 	_registrar.CountryCode = field.NewString(tableName, "country_code")
 	_registrar.Phone = field.NewString(tableName, "phone")
 	_registrar.Fax = field.NewString(tableName, "fax")
-	_registrar.Timestamp = field.NewTime(tableName, "timestamp")
+	_registrar.TimeFist = field.NewTime(tableName, "time_fist")
+	_registrar.TimeLast = field.NewTime(tableName, "time_last")
 	_registrar.Tags = field.NewField(tableName, "tags")
 	_registrar.Address = registrarManyToManyAddress{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("Address", "dnh.IPAddress"),
+		RelationField: field.NewRelation("Address", "models.IPAddress"),
 		Advertisers: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("Address.Advertisers", "dnh.ASNInfo"),
+			RelationField: field.NewRelation("Address.Advertisers", "models.ASNInfo"),
 		},
 	}
 
@@ -55,7 +57,7 @@ func newRegistrar(db *gorm.DB, opts ...gen.DOOption) registrar {
 }
 
 type registrar struct {
-	registrarDo registrarDo
+	registrarDo
 
 	ALL         field.Asterisk
 	ID          field.Uint
@@ -67,7 +69,8 @@ type registrar struct {
 	CountryCode field.String
 	Phone       field.String
 	Fax         field.String
-	Timestamp   field.Time
+	TimeFist    field.Time
+	TimeLast    field.Time
 	Tags        field.Field
 	Address     registrarManyToManyAddress
 
@@ -95,23 +98,14 @@ func (r *registrar) updateTableName(table string) *registrar {
 	r.CountryCode = field.NewString(table, "country_code")
 	r.Phone = field.NewString(table, "phone")
 	r.Fax = field.NewString(table, "fax")
-	r.Timestamp = field.NewTime(table, "timestamp")
+	r.TimeFist = field.NewTime(table, "time_fist")
+	r.TimeLast = field.NewTime(table, "time_last")
 	r.Tags = field.NewField(table, "tags")
 
 	r.fillFieldMap()
 
 	return r
 }
-
-func (r *registrar) WithContext(ctx context.Context) IRegistrarDo {
-	return r.registrarDo.WithContext(ctx)
-}
-
-func (r registrar) TableName() string { return r.registrarDo.TableName() }
-
-func (r registrar) Alias() string { return r.registrarDo.Alias() }
-
-func (r registrar) Columns(cols ...field.Expr) gen.Columns { return r.registrarDo.Columns(cols...) }
 
 func (r *registrar) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := r.fieldMap[fieldName]
@@ -123,7 +117,7 @@ func (r *registrar) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (r *registrar) fillFieldMap() {
-	r.fieldMap = make(map[string]field.Expr, 12)
+	r.fieldMap = make(map[string]field.Expr, 13)
 	r.fieldMap["id"] = r.ID
 	r.fieldMap["created_at"] = r.CreatedAt
 	r.fieldMap["updated_at"] = r.UpdatedAt
@@ -133,7 +127,8 @@ func (r *registrar) fillFieldMap() {
 	r.fieldMap["country_code"] = r.CountryCode
 	r.fieldMap["phone"] = r.Phone
 	r.fieldMap["fax"] = r.Fax
-	r.fieldMap["timestamp"] = r.Timestamp
+	r.fieldMap["time_fist"] = r.TimeFist
+	r.fieldMap["time_last"] = r.TimeLast
 	r.fieldMap["tags"] = r.Tags
 
 }
@@ -181,17 +176,17 @@ func (a registrarManyToManyAddress) Session(session *gorm.Session) *registrarMan
 	return &a
 }
 
-func (a registrarManyToManyAddress) Model(m *dnh.Registrar) *registrarManyToManyAddressTx {
+func (a registrarManyToManyAddress) Model(m *models.Registrar) *registrarManyToManyAddressTx {
 	return &registrarManyToManyAddressTx{a.db.Model(m).Association(a.Name())}
 }
 
 type registrarManyToManyAddressTx struct{ tx *gorm.Association }
 
-func (a registrarManyToManyAddressTx) Find() (result []*dnh.IPAddress, err error) {
+func (a registrarManyToManyAddressTx) Find() (result []*models.IPAddress, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a registrarManyToManyAddressTx) Append(values ...*dnh.IPAddress) (err error) {
+func (a registrarManyToManyAddressTx) Append(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -199,7 +194,7 @@ func (a registrarManyToManyAddressTx) Append(values ...*dnh.IPAddress) (err erro
 	return a.tx.Append(targetValues...)
 }
 
-func (a registrarManyToManyAddressTx) Replace(values ...*dnh.IPAddress) (err error) {
+func (a registrarManyToManyAddressTx) Replace(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -207,7 +202,7 @@ func (a registrarManyToManyAddressTx) Replace(values ...*dnh.IPAddress) (err err
 	return a.tx.Replace(targetValues...)
 }
 
-func (a registrarManyToManyAddressTx) Delete(values ...*dnh.IPAddress) (err error) {
+func (a registrarManyToManyAddressTx) Delete(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -254,17 +249,17 @@ type IRegistrarDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IRegistrarDo
 	Unscoped() IRegistrarDo
-	Create(values ...*dnh.Registrar) error
-	CreateInBatches(values []*dnh.Registrar, batchSize int) error
-	Save(values ...*dnh.Registrar) error
-	First() (*dnh.Registrar, error)
-	Take() (*dnh.Registrar, error)
-	Last() (*dnh.Registrar, error)
-	Find() ([]*dnh.Registrar, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Registrar, err error)
-	FindInBatches(result *[]*dnh.Registrar, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Registrar) error
+	CreateInBatches(values []*models.Registrar, batchSize int) error
+	Save(values ...*models.Registrar) error
+	First() (*models.Registrar, error)
+	Take() (*models.Registrar, error)
+	Last() (*models.Registrar, error)
+	Find() ([]*models.Registrar, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Registrar, err error)
+	FindInBatches(result *[]*models.Registrar, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.Registrar) (info gen.ResultInfo, err error)
+	Delete(...*models.Registrar) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -276,14 +271,35 @@ type IRegistrarDo interface {
 	Assign(attrs ...field.AssignExpr) IRegistrarDo
 	Joins(fields ...field.RelationField) IRegistrarDo
 	Preload(fields ...field.RelationField) IRegistrarDo
-	FirstOrInit() (*dnh.Registrar, error)
-	FirstOrCreate() (*dnh.Registrar, error)
-	FindByPage(offset int, limit int) (result []*dnh.Registrar, count int64, err error)
+	FirstOrInit() (*models.Registrar, error)
+	FirstOrCreate() (*models.Registrar, error)
+	FindByPage(offset int, limit int) (result []*models.Registrar, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IRegistrarDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.Registrar, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (r registrarDo) FilterWithNameAndRole(name string, role string) (result []models.Registrar, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM registrars WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = r.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (r registrarDo) Debug() IRegistrarDo {
@@ -378,57 +394,57 @@ func (r registrarDo) Unscoped() IRegistrarDo {
 	return r.withDO(r.DO.Unscoped())
 }
 
-func (r registrarDo) Create(values ...*dnh.Registrar) error {
+func (r registrarDo) Create(values ...*models.Registrar) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return r.DO.Create(values)
 }
 
-func (r registrarDo) CreateInBatches(values []*dnh.Registrar, batchSize int) error {
+func (r registrarDo) CreateInBatches(values []*models.Registrar, batchSize int) error {
 	return r.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (r registrarDo) Save(values ...*dnh.Registrar) error {
+func (r registrarDo) Save(values ...*models.Registrar) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return r.DO.Save(values)
 }
 
-func (r registrarDo) First() (*dnh.Registrar, error) {
+func (r registrarDo) First() (*models.Registrar, error) {
 	if result, err := r.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Registrar), nil
+		return result.(*models.Registrar), nil
 	}
 }
 
-func (r registrarDo) Take() (*dnh.Registrar, error) {
+func (r registrarDo) Take() (*models.Registrar, error) {
 	if result, err := r.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Registrar), nil
+		return result.(*models.Registrar), nil
 	}
 }
 
-func (r registrarDo) Last() (*dnh.Registrar, error) {
+func (r registrarDo) Last() (*models.Registrar, error) {
 	if result, err := r.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Registrar), nil
+		return result.(*models.Registrar), nil
 	}
 }
 
-func (r registrarDo) Find() ([]*dnh.Registrar, error) {
+func (r registrarDo) Find() ([]*models.Registrar, error) {
 	result, err := r.DO.Find()
-	return result.([]*dnh.Registrar), err
+	return result.([]*models.Registrar), err
 }
 
-func (r registrarDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Registrar, err error) {
-	buf := make([]*dnh.Registrar, 0, batchSize)
+func (r registrarDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Registrar, err error) {
+	buf := make([]*models.Registrar, 0, batchSize)
 	err = r.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -436,7 +452,7 @@ func (r registrarDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) e
 	return results, err
 }
 
-func (r registrarDo) FindInBatches(result *[]*dnh.Registrar, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (r registrarDo) FindInBatches(result *[]*models.Registrar, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return r.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -462,23 +478,23 @@ func (r registrarDo) Preload(fields ...field.RelationField) IRegistrarDo {
 	return &r
 }
 
-func (r registrarDo) FirstOrInit() (*dnh.Registrar, error) {
+func (r registrarDo) FirstOrInit() (*models.Registrar, error) {
 	if result, err := r.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Registrar), nil
+		return result.(*models.Registrar), nil
 	}
 }
 
-func (r registrarDo) FirstOrCreate() (*dnh.Registrar, error) {
+func (r registrarDo) FirstOrCreate() (*models.Registrar, error) {
 	if result, err := r.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Registrar), nil
+		return result.(*models.Registrar), nil
 	}
 }
 
-func (r registrarDo) FindByPage(offset int, limit int) (result []*dnh.Registrar, count int64, err error) {
+func (r registrarDo) FindByPage(offset int, limit int) (result []*models.Registrar, count int64, err error) {
 	result, err = r.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -507,7 +523,7 @@ func (r registrarDo) Scan(result interface{}) (err error) {
 	return r.DO.Scan(result)
 }
 
-func (r registrarDo) Delete(models ...*dnh.Registrar) (result gen.ResultInfo, err error) {
+func (r registrarDo) Delete(models ...*models.Registrar) (result gen.ResultInfo, err error) {
 	return r.DO.Delete(models)
 }
 

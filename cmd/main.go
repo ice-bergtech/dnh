@@ -4,7 +4,10 @@ package main
 import (
 	"github.com/ice-bergtech/dnh/src/internal/config"
 	"github.com/ice-bergtech/dnh/src/internal/db"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 	"github.com/spf13/cobra"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -22,14 +25,27 @@ examples and usage of using your application.`,
 	rootCmd.Execute()
 
 	// println("Ba dum, tss!")
-	cfg, err := config.NewConfig()
+	_, err := config.NewConfig()
 	if err != nil {
 		return
 	}
 
 	//setup db
-	_, err = db.OpenSqlite(cfg)
-	if err != nil {
-		return
-	}
+	// Initialize a *gorm.DB instance
+	database, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+
+	db.SetDefault(database)
+
+	// query the first user
+	database.AutoMigrate(
+		models.Scan{},
+		models.ASNInfo{},
+		models.DNSEntry{},
+		models.Domain{},
+		models.IPAddress{},
+		models.Nameserver{},
+		models.Path{},
+		models.Registrar{},
+		models.Whois{},
+	)
 }

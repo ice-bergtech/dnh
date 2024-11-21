@@ -6,8 +6,8 @@ package db
 
 import (
 	"context"
+	"strings"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newDNSEntry(db *gorm.DB, opts ...gen.DOOption) dNSEntry {
 	_dNSEntry := dNSEntry{}
 
 	_dNSEntry.dNSEntryDo.UseDB(db, opts...)
-	_dNSEntry.dNSEntryDo.UseModel(&dnh.DNSEntry{})
+	_dNSEntry.dNSEntryDo.UseModel(&models.DNSEntry{})
 
 	tableName := _dNSEntry.dNSEntryDo.TableName()
 	_dNSEntry.ALL = field.NewAsterisk(tableName)
@@ -34,7 +36,8 @@ func newDNSEntry(db *gorm.DB, opts ...gen.DOOption) dNSEntry {
 	_dNSEntry.Type = field.NewString(tableName, "type")
 	_dNSEntry.Value = field.NewString(tableName, "value")
 	_dNSEntry.TTL = field.NewInt(tableName, "ttl")
-	_dNSEntry.Timestamp = field.NewTime(tableName, "timestamp")
+	_dNSEntry.TimeFist = field.NewTime(tableName, "time_fist")
+	_dNSEntry.TimeLast = field.NewTime(tableName, "time_last")
 	_dNSEntry.Tags = field.NewField(tableName, "tags")
 
 	_dNSEntry.fillFieldMap()
@@ -43,7 +46,7 @@ func newDNSEntry(db *gorm.DB, opts ...gen.DOOption) dNSEntry {
 }
 
 type dNSEntry struct {
-	dNSEntryDo dNSEntryDo
+	dNSEntryDo
 
 	ALL       field.Asterisk
 	ID        field.Uint
@@ -54,7 +57,8 @@ type dNSEntry struct {
 	Type      field.String
 	Value     field.String
 	TTL       field.Int
-	Timestamp field.Time
+	TimeFist  field.Time
+	TimeLast  field.Time
 	Tags      field.Field
 
 	fieldMap map[string]field.Expr
@@ -80,21 +84,14 @@ func (d *dNSEntry) updateTableName(table string) *dNSEntry {
 	d.Type = field.NewString(table, "type")
 	d.Value = field.NewString(table, "value")
 	d.TTL = field.NewInt(table, "ttl")
-	d.Timestamp = field.NewTime(table, "timestamp")
+	d.TimeFist = field.NewTime(table, "time_fist")
+	d.TimeLast = field.NewTime(table, "time_last")
 	d.Tags = field.NewField(table, "tags")
 
 	d.fillFieldMap()
 
 	return d
 }
-
-func (d *dNSEntry) WithContext(ctx context.Context) IDNSEntryDo { return d.dNSEntryDo.WithContext(ctx) }
-
-func (d dNSEntry) TableName() string { return d.dNSEntryDo.TableName() }
-
-func (d dNSEntry) Alias() string { return d.dNSEntryDo.Alias() }
-
-func (d dNSEntry) Columns(cols ...field.Expr) gen.Columns { return d.dNSEntryDo.Columns(cols...) }
 
 func (d *dNSEntry) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := d.fieldMap[fieldName]
@@ -106,7 +103,7 @@ func (d *dNSEntry) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (d *dNSEntry) fillFieldMap() {
-	d.fieldMap = make(map[string]field.Expr, 10)
+	d.fieldMap = make(map[string]field.Expr, 11)
 	d.fieldMap["id"] = d.ID
 	d.fieldMap["created_at"] = d.CreatedAt
 	d.fieldMap["updated_at"] = d.UpdatedAt
@@ -115,7 +112,8 @@ func (d *dNSEntry) fillFieldMap() {
 	d.fieldMap["type"] = d.Type
 	d.fieldMap["value"] = d.Value
 	d.fieldMap["ttl"] = d.TTL
-	d.fieldMap["timestamp"] = d.Timestamp
+	d.fieldMap["time_fist"] = d.TimeFist
+	d.fieldMap["time_last"] = d.TimeLast
 	d.fieldMap["tags"] = d.Tags
 }
 
@@ -160,17 +158,17 @@ type IDNSEntryDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) IDNSEntryDo
 	Unscoped() IDNSEntryDo
-	Create(values ...*dnh.DNSEntry) error
-	CreateInBatches(values []*dnh.DNSEntry, batchSize int) error
-	Save(values ...*dnh.DNSEntry) error
-	First() (*dnh.DNSEntry, error)
-	Take() (*dnh.DNSEntry, error)
-	Last() (*dnh.DNSEntry, error)
-	Find() ([]*dnh.DNSEntry, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.DNSEntry, err error)
-	FindInBatches(result *[]*dnh.DNSEntry, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.DNSEntry) error
+	CreateInBatches(values []*models.DNSEntry, batchSize int) error
+	Save(values ...*models.DNSEntry) error
+	First() (*models.DNSEntry, error)
+	Take() (*models.DNSEntry, error)
+	Last() (*models.DNSEntry, error)
+	Find() ([]*models.DNSEntry, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.DNSEntry, err error)
+	FindInBatches(result *[]*models.DNSEntry, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.DNSEntry) (info gen.ResultInfo, err error)
+	Delete(...*models.DNSEntry) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -182,14 +180,35 @@ type IDNSEntryDo interface {
 	Assign(attrs ...field.AssignExpr) IDNSEntryDo
 	Joins(fields ...field.RelationField) IDNSEntryDo
 	Preload(fields ...field.RelationField) IDNSEntryDo
-	FirstOrInit() (*dnh.DNSEntry, error)
-	FirstOrCreate() (*dnh.DNSEntry, error)
-	FindByPage(offset int, limit int) (result []*dnh.DNSEntry, count int64, err error)
+	FirstOrInit() (*models.DNSEntry, error)
+	FirstOrCreate() (*models.DNSEntry, error)
+	FindByPage(offset int, limit int) (result []*models.DNSEntry, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) IDNSEntryDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.DNSEntry, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (d dNSEntryDo) FilterWithNameAndRole(name string, role string) (result []models.DNSEntry, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM dns_entries WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = d.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (d dNSEntryDo) Debug() IDNSEntryDo {
@@ -284,57 +303,57 @@ func (d dNSEntryDo) Unscoped() IDNSEntryDo {
 	return d.withDO(d.DO.Unscoped())
 }
 
-func (d dNSEntryDo) Create(values ...*dnh.DNSEntry) error {
+func (d dNSEntryDo) Create(values ...*models.DNSEntry) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Create(values)
 }
 
-func (d dNSEntryDo) CreateInBatches(values []*dnh.DNSEntry, batchSize int) error {
+func (d dNSEntryDo) CreateInBatches(values []*models.DNSEntry, batchSize int) error {
 	return d.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (d dNSEntryDo) Save(values ...*dnh.DNSEntry) error {
+func (d dNSEntryDo) Save(values ...*models.DNSEntry) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return d.DO.Save(values)
 }
 
-func (d dNSEntryDo) First() (*dnh.DNSEntry, error) {
+func (d dNSEntryDo) First() (*models.DNSEntry, error) {
 	if result, err := d.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.DNSEntry), nil
+		return result.(*models.DNSEntry), nil
 	}
 }
 
-func (d dNSEntryDo) Take() (*dnh.DNSEntry, error) {
+func (d dNSEntryDo) Take() (*models.DNSEntry, error) {
 	if result, err := d.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.DNSEntry), nil
+		return result.(*models.DNSEntry), nil
 	}
 }
 
-func (d dNSEntryDo) Last() (*dnh.DNSEntry, error) {
+func (d dNSEntryDo) Last() (*models.DNSEntry, error) {
 	if result, err := d.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.DNSEntry), nil
+		return result.(*models.DNSEntry), nil
 	}
 }
 
-func (d dNSEntryDo) Find() ([]*dnh.DNSEntry, error) {
+func (d dNSEntryDo) Find() ([]*models.DNSEntry, error) {
 	result, err := d.DO.Find()
-	return result.([]*dnh.DNSEntry), err
+	return result.([]*models.DNSEntry), err
 }
 
-func (d dNSEntryDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.DNSEntry, err error) {
-	buf := make([]*dnh.DNSEntry, 0, batchSize)
+func (d dNSEntryDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.DNSEntry, err error) {
+	buf := make([]*models.DNSEntry, 0, batchSize)
 	err = d.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -342,7 +361,7 @@ func (d dNSEntryDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) er
 	return results, err
 }
 
-func (d dNSEntryDo) FindInBatches(result *[]*dnh.DNSEntry, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (d dNSEntryDo) FindInBatches(result *[]*models.DNSEntry, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return d.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -368,23 +387,23 @@ func (d dNSEntryDo) Preload(fields ...field.RelationField) IDNSEntryDo {
 	return &d
 }
 
-func (d dNSEntryDo) FirstOrInit() (*dnh.DNSEntry, error) {
+func (d dNSEntryDo) FirstOrInit() (*models.DNSEntry, error) {
 	if result, err := d.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.DNSEntry), nil
+		return result.(*models.DNSEntry), nil
 	}
 }
 
-func (d dNSEntryDo) FirstOrCreate() (*dnh.DNSEntry, error) {
+func (d dNSEntryDo) FirstOrCreate() (*models.DNSEntry, error) {
 	if result, err := d.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.DNSEntry), nil
+		return result.(*models.DNSEntry), nil
 	}
 }
 
-func (d dNSEntryDo) FindByPage(offset int, limit int) (result []*dnh.DNSEntry, count int64, err error) {
+func (d dNSEntryDo) FindByPage(offset int, limit int) (result []*models.DNSEntry, count int64, err error) {
 	result, err = d.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -413,7 +432,7 @@ func (d dNSEntryDo) Scan(result interface{}) (err error) {
 	return d.DO.Scan(result)
 }
 
-func (d dNSEntryDo) Delete(models ...*dnh.DNSEntry) (result gen.ResultInfo, err error) {
+func (d dNSEntryDo) Delete(models ...*models.DNSEntry) (result gen.ResultInfo, err error) {
 	return d.DO.Delete(models)
 }
 

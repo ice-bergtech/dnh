@@ -6,8 +6,8 @@ package db
 
 import (
 	"context"
+	"strings"
 
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
@@ -16,13 +16,15 @@ import (
 	"gorm.io/gen/field"
 
 	"gorm.io/plugin/dbresolver"
+
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 func newNameserver(db *gorm.DB, opts ...gen.DOOption) nameserver {
 	_nameserver := nameserver{}
 
 	_nameserver.nameserverDo.UseDB(db, opts...)
-	_nameserver.nameserverDo.UseModel(&dnh.Nameserver{})
+	_nameserver.nameserverDo.UseModel(&models.Nameserver{})
 
 	tableName := _nameserver.nameserverDo.TableName()
 	_nameserver.ALL = field.NewAsterisk(tableName)
@@ -31,16 +33,17 @@ func newNameserver(db *gorm.DB, opts ...gen.DOOption) nameserver {
 	_nameserver.UpdatedAt = field.NewTime(tableName, "updated_at")
 	_nameserver.DeletedAt = field.NewField(tableName, "deleted_at")
 	_nameserver.Name = field.NewString(tableName, "name")
-	_nameserver.Timestamp = field.NewTime(tableName, "timestamp")
+	_nameserver.TimeFist = field.NewTime(tableName, "time_fist")
+	_nameserver.TimeLast = field.NewTime(tableName, "time_last")
 	_nameserver.Tags = field.NewField(tableName, "tags")
 	_nameserver.IP = nameserverManyToManyIP{
 		db: db.Session(&gorm.Session{}),
 
-		RelationField: field.NewRelation("IP", "dnh.IPAddress"),
+		RelationField: field.NewRelation("IP", "models.IPAddress"),
 		Advertisers: struct {
 			field.RelationField
 		}{
-			RelationField: field.NewRelation("IP.Advertisers", "dnh.ASNInfo"),
+			RelationField: field.NewRelation("IP.Advertisers", "models.ASNInfo"),
 		},
 	}
 
@@ -50,7 +53,7 @@ func newNameserver(db *gorm.DB, opts ...gen.DOOption) nameserver {
 }
 
 type nameserver struct {
-	nameserverDo nameserverDo
+	nameserverDo
 
 	ALL       field.Asterisk
 	ID        field.Uint
@@ -58,7 +61,8 @@ type nameserver struct {
 	UpdatedAt field.Time
 	DeletedAt field.Field
 	Name      field.String
-	Timestamp field.Time
+	TimeFist  field.Time
+	TimeLast  field.Time
 	Tags      field.Field
 	IP        nameserverManyToManyIP
 
@@ -82,23 +86,14 @@ func (n *nameserver) updateTableName(table string) *nameserver {
 	n.UpdatedAt = field.NewTime(table, "updated_at")
 	n.DeletedAt = field.NewField(table, "deleted_at")
 	n.Name = field.NewString(table, "name")
-	n.Timestamp = field.NewTime(table, "timestamp")
+	n.TimeFist = field.NewTime(table, "time_fist")
+	n.TimeLast = field.NewTime(table, "time_last")
 	n.Tags = field.NewField(table, "tags")
 
 	n.fillFieldMap()
 
 	return n
 }
-
-func (n *nameserver) WithContext(ctx context.Context) INameserverDo {
-	return n.nameserverDo.WithContext(ctx)
-}
-
-func (n nameserver) TableName() string { return n.nameserverDo.TableName() }
-
-func (n nameserver) Alias() string { return n.nameserverDo.Alias() }
-
-func (n nameserver) Columns(cols ...field.Expr) gen.Columns { return n.nameserverDo.Columns(cols...) }
 
 func (n *nameserver) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 	_f, ok := n.fieldMap[fieldName]
@@ -110,13 +105,14 @@ func (n *nameserver) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (n *nameserver) fillFieldMap() {
-	n.fieldMap = make(map[string]field.Expr, 8)
+	n.fieldMap = make(map[string]field.Expr, 9)
 	n.fieldMap["id"] = n.ID
 	n.fieldMap["created_at"] = n.CreatedAt
 	n.fieldMap["updated_at"] = n.UpdatedAt
 	n.fieldMap["deleted_at"] = n.DeletedAt
 	n.fieldMap["name"] = n.Name
-	n.fieldMap["timestamp"] = n.Timestamp
+	n.fieldMap["time_fist"] = n.TimeFist
+	n.fieldMap["time_last"] = n.TimeLast
 	n.fieldMap["tags"] = n.Tags
 
 }
@@ -164,17 +160,17 @@ func (a nameserverManyToManyIP) Session(session *gorm.Session) *nameserverManyTo
 	return &a
 }
 
-func (a nameserverManyToManyIP) Model(m *dnh.Nameserver) *nameserverManyToManyIPTx {
+func (a nameserverManyToManyIP) Model(m *models.Nameserver) *nameserverManyToManyIPTx {
 	return &nameserverManyToManyIPTx{a.db.Model(m).Association(a.Name())}
 }
 
 type nameserverManyToManyIPTx struct{ tx *gorm.Association }
 
-func (a nameserverManyToManyIPTx) Find() (result []*dnh.IPAddress, err error) {
+func (a nameserverManyToManyIPTx) Find() (result []*models.IPAddress, err error) {
 	return result, a.tx.Find(&result)
 }
 
-func (a nameserverManyToManyIPTx) Append(values ...*dnh.IPAddress) (err error) {
+func (a nameserverManyToManyIPTx) Append(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -182,7 +178,7 @@ func (a nameserverManyToManyIPTx) Append(values ...*dnh.IPAddress) (err error) {
 	return a.tx.Append(targetValues...)
 }
 
-func (a nameserverManyToManyIPTx) Replace(values ...*dnh.IPAddress) (err error) {
+func (a nameserverManyToManyIPTx) Replace(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -190,7 +186,7 @@ func (a nameserverManyToManyIPTx) Replace(values ...*dnh.IPAddress) (err error) 
 	return a.tx.Replace(targetValues...)
 }
 
-func (a nameserverManyToManyIPTx) Delete(values ...*dnh.IPAddress) (err error) {
+func (a nameserverManyToManyIPTx) Delete(values ...*models.IPAddress) (err error) {
 	targetValues := make([]interface{}, len(values))
 	for i, v := range values {
 		targetValues[i] = v
@@ -237,17 +233,17 @@ type INameserverDo interface {
 	Count() (count int64, err error)
 	Scopes(funcs ...func(gen.Dao) gen.Dao) INameserverDo
 	Unscoped() INameserverDo
-	Create(values ...*dnh.Nameserver) error
-	CreateInBatches(values []*dnh.Nameserver, batchSize int) error
-	Save(values ...*dnh.Nameserver) error
-	First() (*dnh.Nameserver, error)
-	Take() (*dnh.Nameserver, error)
-	Last() (*dnh.Nameserver, error)
-	Find() ([]*dnh.Nameserver, error)
-	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Nameserver, err error)
-	FindInBatches(result *[]*dnh.Nameserver, batchSize int, fc func(tx gen.Dao, batch int) error) error
+	Create(values ...*models.Nameserver) error
+	CreateInBatches(values []*models.Nameserver, batchSize int) error
+	Save(values ...*models.Nameserver) error
+	First() (*models.Nameserver, error)
+	Take() (*models.Nameserver, error)
+	Last() (*models.Nameserver, error)
+	Find() ([]*models.Nameserver, error)
+	FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Nameserver, err error)
+	FindInBatches(result *[]*models.Nameserver, batchSize int, fc func(tx gen.Dao, batch int) error) error
 	Pluck(column field.Expr, dest interface{}) error
-	Delete(...*dnh.Nameserver) (info gen.ResultInfo, err error)
+	Delete(...*models.Nameserver) (info gen.ResultInfo, err error)
 	Update(column field.Expr, value interface{}) (info gen.ResultInfo, err error)
 	UpdateSimple(columns ...field.AssignExpr) (info gen.ResultInfo, err error)
 	Updates(value interface{}) (info gen.ResultInfo, err error)
@@ -259,14 +255,35 @@ type INameserverDo interface {
 	Assign(attrs ...field.AssignExpr) INameserverDo
 	Joins(fields ...field.RelationField) INameserverDo
 	Preload(fields ...field.RelationField) INameserverDo
-	FirstOrInit() (*dnh.Nameserver, error)
-	FirstOrCreate() (*dnh.Nameserver, error)
-	FindByPage(offset int, limit int) (result []*dnh.Nameserver, count int64, err error)
+	FirstOrInit() (*models.Nameserver, error)
+	FirstOrCreate() (*models.Nameserver, error)
+	FindByPage(offset int, limit int) (result []*models.Nameserver, count int64, err error)
 	ScanByPage(result interface{}, offset int, limit int) (count int64, err error)
 	Scan(result interface{}) (err error)
 	Returning(value interface{}, columns ...string) INameserverDo
 	UnderlyingDB() *gorm.DB
 	schema.Tabler
+
+	FilterWithNameAndRole(name string, role string) (result []models.Nameserver, err error)
+}
+
+// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+func (n nameserverDo) FilterWithNameAndRole(name string, role string) (result []models.Nameserver, err error) {
+	var params []interface{}
+
+	var generateSQL strings.Builder
+	params = append(params, name)
+	generateSQL.WriteString("SELECT * FROM nameservers WHERE name = ? ")
+	if role != "" {
+		params = append(params, role)
+		generateSQL.WriteString("AND role = ? ")
+	}
+
+	var executeSQL *gorm.DB
+	executeSQL = n.UnderlyingDB().Raw(generateSQL.String(), params...).Find(&result) // ignore_security_alert
+	err = executeSQL.Error
+
+	return
 }
 
 func (n nameserverDo) Debug() INameserverDo {
@@ -361,57 +378,57 @@ func (n nameserverDo) Unscoped() INameserverDo {
 	return n.withDO(n.DO.Unscoped())
 }
 
-func (n nameserverDo) Create(values ...*dnh.Nameserver) error {
+func (n nameserverDo) Create(values ...*models.Nameserver) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return n.DO.Create(values)
 }
 
-func (n nameserverDo) CreateInBatches(values []*dnh.Nameserver, batchSize int) error {
+func (n nameserverDo) CreateInBatches(values []*models.Nameserver, batchSize int) error {
 	return n.DO.CreateInBatches(values, batchSize)
 }
 
 // Save : !!! underlying implementation is different with GORM
 // The method is equivalent to executing the statement: db.Clauses(clause.OnConflict{UpdateAll: true}).Create(values)
-func (n nameserverDo) Save(values ...*dnh.Nameserver) error {
+func (n nameserverDo) Save(values ...*models.Nameserver) error {
 	if len(values) == 0 {
 		return nil
 	}
 	return n.DO.Save(values)
 }
 
-func (n nameserverDo) First() (*dnh.Nameserver, error) {
+func (n nameserverDo) First() (*models.Nameserver, error) {
 	if result, err := n.DO.First(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Nameserver), nil
+		return result.(*models.Nameserver), nil
 	}
 }
 
-func (n nameserverDo) Take() (*dnh.Nameserver, error) {
+func (n nameserverDo) Take() (*models.Nameserver, error) {
 	if result, err := n.DO.Take(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Nameserver), nil
+		return result.(*models.Nameserver), nil
 	}
 }
 
-func (n nameserverDo) Last() (*dnh.Nameserver, error) {
+func (n nameserverDo) Last() (*models.Nameserver, error) {
 	if result, err := n.DO.Last(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Nameserver), nil
+		return result.(*models.Nameserver), nil
 	}
 }
 
-func (n nameserverDo) Find() ([]*dnh.Nameserver, error) {
+func (n nameserverDo) Find() ([]*models.Nameserver, error) {
 	result, err := n.DO.Find()
-	return result.([]*dnh.Nameserver), err
+	return result.([]*models.Nameserver), err
 }
 
-func (n nameserverDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*dnh.Nameserver, err error) {
-	buf := make([]*dnh.Nameserver, 0, batchSize)
+func (n nameserverDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) error) (results []*models.Nameserver, err error) {
+	buf := make([]*models.Nameserver, 0, batchSize)
 	err = n.DO.FindInBatches(&buf, batchSize, func(tx gen.Dao, batch int) error {
 		defer func() { results = append(results, buf...) }()
 		return fc(tx, batch)
@@ -419,7 +436,7 @@ func (n nameserverDo) FindInBatch(batchSize int, fc func(tx gen.Dao, batch int) 
 	return results, err
 }
 
-func (n nameserverDo) FindInBatches(result *[]*dnh.Nameserver, batchSize int, fc func(tx gen.Dao, batch int) error) error {
+func (n nameserverDo) FindInBatches(result *[]*models.Nameserver, batchSize int, fc func(tx gen.Dao, batch int) error) error {
 	return n.DO.FindInBatches(result, batchSize, fc)
 }
 
@@ -445,23 +462,23 @@ func (n nameserverDo) Preload(fields ...field.RelationField) INameserverDo {
 	return &n
 }
 
-func (n nameserverDo) FirstOrInit() (*dnh.Nameserver, error) {
+func (n nameserverDo) FirstOrInit() (*models.Nameserver, error) {
 	if result, err := n.DO.FirstOrInit(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Nameserver), nil
+		return result.(*models.Nameserver), nil
 	}
 }
 
-func (n nameserverDo) FirstOrCreate() (*dnh.Nameserver, error) {
+func (n nameserverDo) FirstOrCreate() (*models.Nameserver, error) {
 	if result, err := n.DO.FirstOrCreate(); err != nil {
 		return nil, err
 	} else {
-		return result.(*dnh.Nameserver), nil
+		return result.(*models.Nameserver), nil
 	}
 }
 
-func (n nameserverDo) FindByPage(offset int, limit int) (result []*dnh.Nameserver, count int64, err error) {
+func (n nameserverDo) FindByPage(offset int, limit int) (result []*models.Nameserver, count int64, err error) {
 	result, err = n.Offset(offset).Limit(limit).Find()
 	if err != nil {
 		return
@@ -490,7 +507,7 @@ func (n nameserverDo) Scan(result interface{}) (err error) {
 	return n.DO.Scan(result)
 }
 
-func (n nameserverDo) Delete(models ...*dnh.Nameserver) (result gen.ResultInfo, err error) {
+func (n nameserverDo) Delete(models ...*models.Nameserver) (result gen.ResultInfo, err error) {
 	return n.DO.Delete(models)
 }
 

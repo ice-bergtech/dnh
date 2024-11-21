@@ -1,4 +1,4 @@
-package dnh
+package models
 
 import (
 	"net"
@@ -9,8 +9,13 @@ import (
 
 type Scan struct {
 	gorm.Model
-	ScanID  string      `json:"scanid"`
-	Results ScanResults `json:"results" gorm:"serializer:json"`
+	ScanID    string      `json:"scanid"`
+	Timestamp time.Time   `json:"timestamp"`
+	Results   ScanResults `json:"results" gorm:"serializer:json"`
+}
+
+func (Scan) TableName() string {
+	return "scan"
 }
 
 type ScanResults struct {
@@ -28,7 +33,7 @@ type IPAddress struct {
 	gorm.Model
 	IP          net.IP     `json:"ip"`
 	Mask        net.IPMask `json:"mask"`
-	Advertisers []ASNInfo  `json:"advertisers" gorm:"many2many:ip_asn;"`
+	Advertisers []ASNInfo  `json:"advertisers" gorm:"many2many:asninfo_asn;"`
 	Tags        []Tags     `json:"tags" gorm:"serializer:json"`
 }
 
@@ -42,12 +47,13 @@ type ASNInfo struct {
 
 type DNSEntry struct {
 	gorm.Model
-	Name      string    `json:"name"`
-	Type      string    `json:"type"`
-	Value     string    `json:"value"`
-	TTL       int       `json:"ttl"`
-	Timestamp time.Time `json:"timestamp"`
-	Tags      []Tags    `json:"tags"  gorm:"serializer:json"`
+	Name     string    `json:"name"`
+	Type     string    `json:"type"`
+	Value    string    `json:"value"`
+	TTL      int       `json:"ttl"`
+	TimeFist time.Time `json:"time_first"`
+	TimeLast time.Time `json:"time_last"`
+	Tags     []Tags    `json:"tags"  gorm:"serializer:json"`
 }
 
 type Domain struct {
@@ -58,7 +64,8 @@ type Domain struct {
 	Paths       []Path       `json:"paths" gorm:"many2many:domain_path"`
 	Addresses   []IPAddress  `json:"addresses" gorm:"many2many:domain_address"`
 	Nameservers []Nameserver `json:"nameservers" gorm:"many2many:domain_ns"`
-	Timestamp   time.Time    `json:"timestamp"`
+	TimeFist    time.Time    `json:"time_first"`
+	TimeLast    time.Time    `json:"time_last"`
 	Tags        []Tags       `json:"tags"  gorm:"serializer:json"`
 }
 
@@ -70,10 +77,11 @@ type Path struct {
 
 type Nameserver struct {
 	gorm.Model
-	Name      string    `json:"name"`
-	IP        IPAddress `json:"ip" gorm:"many2many:ns_ip"`
-	Timestamp time.Time `json:"timestamp"`
-	Tags      []Tags    `json:"tags"  gorm:"serializer:json"`
+	Name     string    `json:"name"`
+	IP       IPAddress `json:"ip" gorm:"many2many:ns_ip"`
+	TimeFist time.Time `json:"time_first"`
+	TimeLast time.Time `json:"time_last"`
+	Tags     []Tags    `json:"tags"  gorm:"serializer:json"`
 }
 
 type Registrar struct {
@@ -84,7 +92,8 @@ type Registrar struct {
 	Phone       string      `json:"phone,omitempty"`
 	Fax         string      `json:"fax,omitempty"`
 	Address     []IPAddress `json:"address" gorm:"many2many:registrar_ip"`
-	Timestamp   time.Time   `json:"timestamp"`
+	TimeFist    time.Time   `json:"time_first"`
+	TimeLast    time.Time   `json:"time_last"`
 	Tags        []Tags      `json:"tags" gorm:"serializer:json"`
 }
 
@@ -99,7 +108,8 @@ type Whois struct {
 	Updated     time.Time    `json:"updated,omitempty"`                               // Optional: WHOIS data last update timestamp
 	Registrar   string       `json:"registrar,omitempty"`                             // Optional: Domain registrar
 	Nameservers []Nameserver `json:"nameservers,omitempty" gorm:"many2many:whois_ns"` // Optional: List of nameservers associated with the domain or IP range
-	Timestamp   time.Time    `json:"timestamp"`
+	TimeFist    time.Time    `json:"time_first"`
+	TimeLast    time.Time    `json:"time_last"`
 	Tags        []Tags       `json:"tags"  gorm:"serializer:json"`
 }
 

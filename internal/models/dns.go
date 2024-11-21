@@ -1,4 +1,4 @@
-package dnh
+package models
 
 import (
 	"fmt"

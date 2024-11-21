@@ -1,20 +1,25 @@
-//go:generate go run db-configuration.go
-
 // configuration.go
 package main
 
 import (
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gen"
 	"gorm.io/gorm"
 )
 
+// Dynamic SQL
+type Querier interface {
+	// SELECT * FROM @@table WHERE name = @name{{if role !=""}} AND role = @role{{end}}
+	FilterWithNameAndRole(name, role string) ([]gen.T, error)
+}
+
+// This is ran to generate the gorm DB
 func main() {
 	// Initialize the generator with configuration
 	g := gen.NewGenerator(gen.Config{
 		OutPath:       "../db", // output directory, default value is ./query
-		Mode:          gen.WithDefaultQuery | gen.WithQueryInterface,
+		Mode:          gen.WithDefaultQuery | gen.WithQueryInterface | gen.WithoutContext,
 		FieldNullable: true,
 	})
 
@@ -27,15 +32,29 @@ func main() {
 
 	// Generate default DAO interface for those specified structs
 	g.ApplyBasic(
-		dnh.IPAddress{},
-		dnh.ASNInfo{},
-		dnh.DNSEntry{},
-		dnh.Domain{},
-		dnh.Path{},
-		dnh.Nameserver{},
-		dnh.Registrar{},
-		dnh.Whois{},
+		models.Scan{},
+		models.IPAddress{},
+		models.ASNInfo{},
+		models.DNSEntry{},
+		models.Domain{},
+		models.Path{},
+		models.Nameserver{},
+		models.Registrar{},
+		models.Whois{},
 	)
+
+	// Generate Type Safe API with Dynamic SQL defined on Querier interface for `model.User` and `model.Company`
+	g.ApplyInterface(
+		func(Querier) {},
+		models.Scan{},
+		models.IPAddress{},
+		models.ASNInfo{},
+		models.DNSEntry{},
+		models.Domain{},
+		models.Path{},
+		models.Nameserver{},
+		models.Registrar{},
+		models.Whois{})
 
 	// Generate default DAO interface for those generated structs from database
 	// companyGenerator := g.GenerateModelAs("company", "MyCompany")
