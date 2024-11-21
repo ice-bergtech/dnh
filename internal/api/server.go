@@ -1,6 +1,6 @@
 package api
 
-//go:generate go run -modfile=../../tools/go.mod github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=config.yaml ../../api.yml
+//go:generate go run -modfile=../../tools/go.mod github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen --config=config.yaml ../../api/api.yml
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ice-bergtech/dnh/src/internal/config"
-	dnh "github.com/ice-bergtech/dnh/src/internal/lib"
+	"github.com/ice-bergtech/dnh/src/internal/models"
 )
 
 // optional code omitted
@@ -23,7 +23,7 @@ func NewServer() Server {
 
 // (GET /ping)
 func (Server) GetPing(w http.ResponseWriter, r *http.Request) {
-	resp := dnh.IPAddress{}
+	resp := models.IPAddress{}
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)

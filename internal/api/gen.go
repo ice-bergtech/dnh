@@ -6,91 +6,10 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/oapi-codegen/runtime"
 )
-
-// ASNinfo defines model for ASNinfo.
-type ASNinfo struct {
-	Asn       *int               `json:"asn,omitempty"`
-	Country   *string            `json:"country,omitempty"`
-	Notes     *string            `json:"notes,omitempty"`
-	Other     *string            `json:"other,omitempty"`
-	Registry  *string            `json:"registry,omitempty"`
-	Tags      *map[string]string `json:"tags,omitempty"`
-	Timestamp *time.Time         `json:"timestamp,omitempty"`
-}
-
-// DNSEntry defines model for DNSEntry.
-type DNSEntry struct {
-	Name      *string            `json:"name,omitempty"`
-	Notes     *string            `json:"notes,omitempty"`
-	Other     *string            `json:"other,omitempty"`
-	Tags      *map[string]string `json:"tags,omitempty"`
-	Timestamp *time.Time         `json:"timestamp,omitempty"`
-	Ttl       *int               `json:"ttl,omitempty"`
-	Type      *string            `json:"type,omitempty"`
-	Value     *string            `json:"value,omitempty"`
-}
-
-// Domain defines model for Domain.
-type Domain struct {
-	Addresses *[]IPaddress       `json:"addresses,omitempty"`
-	Name      *string            `json:"name,omitempty"`
-	Notes     *string            `json:"notes,omitempty"`
-	Other     *string            `json:"other,omitempty"`
-	Parent    *string            `json:"parent,omitempty"`
-	Paths     *[]Path            `json:"paths,omitempty"`
-	Records   *[]DNSEntry        `json:"records,omitempty"`
-	Tags      *map[string]string `json:"tags,omitempty"`
-	Timestamp *time.Time         `json:"timestamp,omitempty"`
-}
-
-// IPaddress defines model for IPaddress.
-type IPaddress struct {
-	Advertisers *[]ASNinfo         `json:"advertisers,omitempty"`
-	Ip          *string            `json:"ip,omitempty"`
-	Mask        *string            `json:"mask,omitempty"`
-	Notes       *string            `json:"notes,omitempty"`
-	Other       *string            `json:"other,omitempty"`
-	Tags        *map[string]string `json:"tags,omitempty"`
-	Timestamp   *time.Time         `json:"timestamp,omitempty"`
-}
-
-// Nameserver defines model for Nameserver.
-type Nameserver struct {
-	Ip        *IPaddress         `json:"ip,omitempty"`
-	Name      *string            `json:"name,omitempty"`
-	Notes     *string            `json:"notes,omitempty"`
-	Other     *string            `json:"other,omitempty"`
-	Tags      *map[string]string `json:"tags,omitempty"`
-	Timestamp *time.Time         `json:"timestamp,omitempty"`
-}
-
-// Path defines model for Path.
-type Path struct {
-	Notes *string            `json:"notes,omitempty"`
-	Other *string            `json:"other,omitempty"`
-	Path  *string            `json:"path,omitempty"`
-	Tags  *map[string]string `json:"tags,omitempty"`
-}
-
-// WhoisData defines model for WhoisData.
-type WhoisData struct {
-	Asn         *int          `json:"asn,omitempty"`
-	Country     *string       `json:"country,omitempty"`
-	Created     *time.Time    `json:"created,omitempty"`
-	DomainName  *string       `json:"domain_name,omitempty"`
-	IpRange     *IPaddress    `json:"ip_range,omitempty"`
-	Nameservers *[]Nameserver `json:"nameservers,omitempty"`
-	Notes       *string       `json:"notes,omitempty"`
-	Other       *string       `json:"other,omitempty"`
-	Registrar   *string       `json:"registrar,omitempty"`
-	Timestamp   *time.Time    `json:"timestamp,omitempty"`
-	Updated     *time.Time    `json:"updated,omitempty"`
-}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {

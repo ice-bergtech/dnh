@@ -1,5 +1,5 @@
 package: api
 generate:
   gorilla-server: true
-  models: true
+  models: false
 output: gen.go
