@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ice-bergtech/dnh/src/internal/config"
-	"github.com/ice-bergtech/dnh/src/internal/models"
+	models "github.com/ice-bergtech/dnh/src/internal/model_ent"
 )
 
 // optional code omitted

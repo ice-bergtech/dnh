@@ -2,7 +2,7 @@
 package main
 
 import (
-	"github.com/ice-bergtech/dnh/src/internal/models"
+	models "github.com/ice-bergtech/dnh/src/internal/model_ent"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gen"
 	"gorm.io/gorm"
