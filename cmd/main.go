@@ -13,9 +13,8 @@ import (
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "dnh",
-		Short: "A brief description of your application",
-		Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application.`,
+		Short: "A tool to collect data about a domain",
+		Long:  `Provided a property of a domain, will collect `,
 		Run: func(cmd *cobra.Command, args []string) {
 			println("Log line")
 
