@@ -3,11 +3,8 @@ package main
 
 import (
 	"github.com/ice-bergtech/dnh/src/internal/config"
-	"github.com/ice-bergtech/dnh/src/internal/db"
-	"github.com/ice-bergtech/dnh/src/internal/models"
+	_ "github.com/ice-bergtech/dnh/src/internal/model_ent"
 	"github.com/spf13/cobra"
-	"gorm.io/driver/sqlite"
-	"gorm.io/gorm"
 )
 
 func main() {
@@ -31,20 +28,4 @@ func main() {
 
 	//setup db
 	// Initialize a *gorm.DB instance
-	database, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
-
-	db.SetDefault(database)
-
-	// query the first user
-	database.AutoMigrate(
-		models.Scan{},
-		models.ASNInfo{},
-		models.DNSEntry{},
-		models.Domain{},
-		models.IPAddress{},
-		models.Nameserver{},
-		models.Path{},
-		models.Registrar{},
-		models.Whois{},
-	)
 }
