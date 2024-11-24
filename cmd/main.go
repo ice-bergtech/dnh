@@ -14,6 +14,7 @@ func main() {
 	}
 
 	rootCmd.AddCommand(
+		//InitCmd(),
 		ServerCmd(),
 		ScanCmd(),
 		QueryCmd(),

@@ -22,18 +22,17 @@ type AppConfig struct {
 	LogLevel string `json:"log_level" env:"LOG_LEVEL"`
 }
 
-func cobra_setup(cmd *cobra.Command) {
+func (AppConfig) CobraSetup(cmd *cobra.Command) {
 	// Default values
-	config := AppConfig{
-		Port:     8842,
-		DBType:   "sqlite3",
-		DBHost:   "localhost",
-		DBUser:   "postgres",
-		DBName:   "dnh",
-		AppName:  "dnh",
-		LogLevel: "info",
-	}
 
+	// Load default values
+	// Load config file
+	// Load parameters
+	// Load env vars
+
+	cfgPath := ""
+
+	cmd.Flags().StringVarP(&cfgPath, "config", "c", cfgPath, "Path to a config file")
 	cmd.Flags().IntVar(&config.Port, "port", config.Port, "Port to run the application on")
 	cmd.Flags().StringVar(&config.DBType, "db-type", config.DBType, "Database type (e.g. postgres, mysql)")
 	cmd.Flags().StringVar(&config.DBHost, "db-host", config.DBHost, "Database host")
