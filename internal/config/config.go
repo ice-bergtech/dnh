@@ -58,7 +58,7 @@ func NewConfig() (*AppConfig, error) {
 	if err := viper.ReadInConfig(); err == nil {
 		fmt.Println("Using config file:", viper.ConfigFileUsed())
 	} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-		return nil, fmt.Errorf("failed to read config file: %w", err)
+		fmt.Println("Failed to read config file: %w", err)
 	}
 
 	// Set the default values for any missing fields
