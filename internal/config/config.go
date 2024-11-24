@@ -3,26 +3,30 @@ package config
 import (
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
-	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-type AppConfig struct {
-	Port     int    `json:"port" env:"PORT"`
-	DBType   string `json:"db_type" env:"DB_TYPE"`
-	DBHost   string `json:"db_host" env:"DB_HOST"`
-	DBPort   int    `json:"db_port" env:"DB_PORT"`
-	DBUser   string `json:"db_user" env:"DB_USER"`
-	DBPass   string `json:"db_pass" env:"DB_PASS"`
-	DBName   string `json:"db_name" env:"DB_NAME"`
-	AppName  string `json:"app_name" env:"APP_NAME"`
-	LogLevel string `json:"log_level" env:"LOG_LEVEL"`
+type DBConfig struct {
+	Type string `json:"db_type" mapstructure:"type"`
+	Host string `json:"db_host" mapstructure:"host"`
+	Port int    `json:"db_port" mapstructure:"port"`
+	User string `json:"db_user" mapstructure:"user"`
+	Pass string `json:"db_pass" mapstructure:"pass"`
+	Name string `json:"db_name" mapstructure:"name"`
 }
 
-func (AppConfig) CobraSetup(cmd *cobra.Command) {
+type AppConfig struct {
+	DB       DBConfig `mapstructure:"db"`
+	Port     int      `json:"port" mapstructure:"port"`
+	LogLevel int      `json:"log_level" mapstructure:"log_level"`
+}
+
+func CobraSetup(cmd *cobra.Command) {
 	// Default values
 
 	// Load default values
@@ -30,97 +34,69 @@ func (AppConfig) CobraSetup(cmd *cobra.Command) {
 	// Load parameters
 	// Load env vars
 
-	cfgPath := ""
-
-	cmd.Flags().StringVarP(&cfgPath, "config", "c", cfgPath, "Path to a config file")
+	//cmd.Flags().StringVarP(&cfgPath, "config", "c", "", "Path to a config file")
+	cmd.Flags().IntVar(&config.LogLevel, "log-level", int(slog.LevelInfo), "Log level (e.g. debug, info, warn, error)")
 	cmd.Flags().IntVar(&config.Port, "port", config.Port, "Port to run the application on")
-	cmd.Flags().StringVar(&config.DBType, "db-type", config.DBType, "Database type (e.g. postgres, mysql)")
-	cmd.Flags().StringVar(&config.DBHost, "db-host", config.DBHost, "Database host")
-	cmd.Flags().IntVar(&config.DBPort, "db-port", config.DBPort, "Database port")
-	cmd.Flags().StringVar(&config.DBUser, "db-user", config.DBUser, "Database user")
-	cmd.Flags().StringVar(&config.DBPass, "db-pass", config.DBPass, "Database password")
-	cmd.Flags().StringVar(&config.DBName, "db-name", config.DBName, "Database name")
-	cmd.Flags().StringVar(&config.AppName, "app-name", config.AppName, "Application name")
-	cmd.Flags().StringVar(&config.LogLevel, "log-level", config.LogLevel, "Log level (e.g. debug, info, warn, error)")
+	cmd.Flags().StringVar(&config.DB.Type, "db-type", config.DB.Type, "Database type (e.g. postgres, mysql)")
+	cmd.Flags().StringVar(&config.DB.Host, "db-host", config.DB.Host, "Database host")
+	cmd.Flags().IntVar(&config.DB.Port, "db-port", config.DB.Port, "Database port")
+	cmd.Flags().StringVar(&config.DB.User, "db-user", config.DB.User, "Database user")
+	cmd.Flags().StringVar(&config.DB.Pass, "db-pass", config.DB.Pass, "Database password")
+	cmd.Flags().StringVar(&config.DB.Name, "db-name", config.DB.Name, "Database name")
 
+	SetLoggingLevel(config.LogLevel)
 }
 
-// NewConfig function creates a new AppConfig instance.
-func NewConfig() (*AppConfig, error) {
+func SetLoggingLevel(level int) {
+	// Set logging level
+	lvl := new(slog.LevelVar)
+	lvl.Set(slog.Level(level))
+	handler := slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{Level: lvl})
+	slog.SetDefault(slog.New(handler))
+	slog.Info(fmt.Sprintf("Set log level to %d", level))
+}
+
+// LoadConfig function creates a new AppConfig instance.
+func LoadConfig() (*AppConfig, error) {
 	//cmd *cobra.Command, args []string
-	var config AppConfig
+	config = &AppConfig{}
 
 	// Initialize viper to use multiple configuration sources
+	viper.SetEnvPrefix("dnh")
 	viper.SetConfigFile(".env")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(`.`, `_`))
+	viper.AutomaticEnv()
 
 	// Check if the json file exists and load it first
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+		slog.Info(fmt.Sprintf("Using config file: %s", viper.ConfigFileUsed()))
 	} else if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-		fmt.Println("Failed to read config file: %w", err)
+		slog.Warn(fmt.Sprintf("Failed to read config file: %s", err.Error()))
 	}
 
 	// Set the default values for any missing fields
-	if config.Port == 0 {
-		config.Port = 8080
-	}
-	if config.DBType == "" {
-		config.DBType = "sqlite3"
-	}
-	if config.DBHost == "" {
-		config.DBHost = "localhost"
-	}
-	if config.DBPort == 0 {
-		config.DBPort = 5432
-	}
-	if config.DBUser == "" {
-		config.DBUser = "postgres"
-	}
-	if config.DBName == "" {
-		config.DBName = "mydb"
-	}
-	if config.AppName == "" {
-		config.AppName = "myapp"
-	}
-	if config.LogLevel == "" {
-		config.LogLevel = "info"
-	}
+	viper.SetDefault("port", 8088)
+	viper.SetDefault("log_level", new(slog.LevelVar)) // Info by default
+	viper.SetDefault("db_type", "sqlite3")
+	viper.SetDefault("db_host", "localhost")
+	viper.SetDefault("db_port", 5432)
+	viper.SetDefault("db_user", "postrges")
+	viper.SetDefault("db_name", "dnh")
 
 	// Override the default values with environment variables if they are set
-	viper.AutomaticEnv()
-	if port := os.Getenv("PORT"); port != "" {
-		config.Port, _ = strconv.Atoi(port)
+	err := viper.Unmarshal(config)
+	if err != nil {
+		slog.Error("")
+		return config, fmt.Errorf("Unable to decode into config struct, %v", err)
 	}
-	if dbHost := os.Getenv("DB_HOST"); dbHost != "" {
-		config.DBHost = dbHost
-	}
-	if dbPort := os.Getenv("DB_PORT"); dbPort != "" {
-		config.DBPort, _ = strconv.Atoi(dbPort)
-	}
-	if dbUser := os.Getenv("DB_USER"); dbUser != "" {
-		config.DBUser = dbUser
-	}
-	if dbPass := os.Getenv("DB_PASS"); dbPass != "" {
-		config.DBPass = dbPass
-	}
-	if dbName := os.Getenv("DB_NAME"); dbName != "" {
-		config.DBName = dbName
-	}
-	if appName := os.Getenv("APP_NAME"); appName != "" {
-		config.AppName = appName
-	}
-	if logLevel := os.Getenv("LOG_LEVEL"); logLevel != "" {
-		config.LogLevel = logLevel
-	}
-
-	return &config, nil
+	return config, nil
 }
 
 // GetConfig function returns the AppConfig instance.
 func GetConfig() (*AppConfig, error) {
 	if config == nil {
 		var err error
-		config, err = NewConfig()
+		config, err = LoadConfig()
 		if err != nil {
 			return nil, fmt.Errorf("failed to create config: %w", err)
 		}
@@ -138,13 +114,12 @@ func PrintConfig() error {
 
 	fmt.Printf("AppConfig:\n")
 	fmt.Printf("  Port: %d\n", config.Port)
-	fmt.Printf("  DBHost: %s\n", config.DBHost)
-	fmt.Printf("  DBPort: %d\n", config.DBPort)
-	fmt.Printf("  DBUser: %s\n", config.DBUser)
-	fmt.Printf("  DBPass: %s\n", config.DBPass)
-	fmt.Printf("  DBName: %s\n", config.DBName)
-	fmt.Printf("  AppName: %s\n", config.AppName)
-	fmt.Printf("  LogLevel: %s\n", config.LogLevel)
+	fmt.Printf("  DBHost: %s\n", config.DB.Host)
+	fmt.Printf("  DBPort: %d\n", config.DB.Port)
+	fmt.Printf("  DBUser: %s\n", config.DB.User)
+	fmt.Printf("  DBPass: %s\n", config.DB.Pass)
+	fmt.Printf("  DBName: %s\n", config.DB.Name)
+	fmt.Printf("  LogLevel: %d\n", config.LogLevel)
 
 	return nil
 }

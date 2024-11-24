@@ -2,8 +2,12 @@
 package main
 
 import (
+	"fmt"
+
+	"github.com/ice-bergtech/dnh/src/internal/config"
 	_ "github.com/ice-bergtech/dnh/src/internal/model_ent"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/slog"
 )
 
 func main() {
@@ -20,6 +24,11 @@ func main() {
 		QueryCmd(),
 		//GenerateCmd(),
 	)
+
+	_, err := config.LoadConfig()
+	if err != nil {
+		slog.Error(fmt.Sprintf("Failed to read config file: %s", err.Error()))
+	}
 
 	_ = rootCmd.Execute()
 }

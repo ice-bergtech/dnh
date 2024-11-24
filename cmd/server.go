@@ -11,7 +11,7 @@ func ServerCmd() *cobra.Command {
 		Use:   "server",
 		Short: "Start a http server to serve/process data",
 		Run: func(cmd *cobra.Command, args []string) {
-			cfg, _ := config.NewConfig()
+			cfg, _ := config.LoadConfig()
 			api.Start(*cfg)
 		},
 	}

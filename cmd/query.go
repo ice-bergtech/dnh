@@ -10,7 +10,7 @@ func QueryCmd() *cobra.Command {
 		Use:   "query [flags] value",
 		Short: "Run a query against scanned data",
 		Run: func(cmd *cobra.Command, args []string) {
-			config.NewConfig()
+			config.LoadConfig()
 		},
 	}
 
