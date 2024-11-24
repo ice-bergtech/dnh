@@ -10,7 +10,7 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/ice-bergtech/dnh/src/internal/config"
-	models "github.com/ice-bergtech/dnh/src/internal/model_ent"
+	model "github.com/ice-bergtech/dnh/src/internal/model_ent"
 )
 
 // optional code omitted
@@ -23,13 +23,38 @@ func NewServer() Server {
 
 // (GET /ping)
 func (Server) GetPing(w http.ResponseWriter, r *http.Request) {
-	resp := models.IPAddress{}
+	resp := model.IPAddress{}
 
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode(resp)
 }
 
-func StartServer(cfg config.AppConfig) {
+func (Server) GetDomainsDomainName(w http.ResponseWriter, r *http.Request, domainName string) {
+	resp := model.Domain{}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// Get IP address details
+// (GET /ipaddresses/{ip})
+func (Server) GetIpaddressesIp(w http.ResponseWriter, r *http.Request, ip string) {
+	resp := model.IPAddress{}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+// Get WHOIS data for an IP range, domain, or AS
+// (GET /whois/{query})
+func (Server) GetWhoisQuery(w http.ResponseWriter, r *http.Request, query string) {
+	resp := model.Whois{}
+
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(resp)
+}
+
+func Start(cfg config.AppConfig) {
 	// create a type that satisfies the `api.ServerInterface`, which contains an implementation of every operation from the generated code
 	server := NewServer()
 
