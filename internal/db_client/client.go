@@ -11,17 +11,17 @@ import (
 func NewClientSqlite(cfg *config.AppConfig) (*model_ent.Client, error) {
 	return model_ent.Open("sqlite3",
 		//dnh_data.db
-		fmt.Sprintf("file:%s?cache=shared&_fk=1", cfg.DBName))
+		fmt.Sprintf("file:%s?cache=shared&_fk=1", cfg.DB.Name))
 }
 
 func NewClientPostgres(cfg *config.AppConfig) (*model_ent.Client, error) {
 	return model_ent.Open("postgres",
 		fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s",
-			cfg.DBHost,
-			cfg.DBPort,
-			cfg.DBUser,
-			cfg.DBName,
-			cfg.DBPass))
+			cfg.DB.Host,
+			cfg.DB.Port,
+			cfg.DB.User,
+			cfg.DB.Name,
+			cfg.DB.Pass))
 }
 
 func NewClient(cfg *config.AppConfig) (*model_ent.Client, error) {
@@ -29,7 +29,7 @@ func NewClient(cfg *config.AppConfig) (*model_ent.Client, error) {
 		client *model_ent.Client
 		err    error
 	)
-	switch cfg.DBType {
+	switch cfg.DB.Type {
 	case "sqlite":
 		fallthrough
 	case "sqlite3":
