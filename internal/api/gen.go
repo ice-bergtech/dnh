@@ -11,17 +11,48 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// DataResponse defines model for DataResponse.
+type DataResponse struct {
+	Data *map[string]interface{} `json:"data,omitempty"`
+	Meta *map[string]interface{} `json:"meta,omitempty"`
+}
+
+// Error defines model for Error.
+type Error struct {
+	Code   *string `json:"code,omitempty"`
+	Detail *string `json:"detail,omitempty"`
+	Id     *string `json:"id,omitempty"`
+	Status *string `json:"status,omitempty"`
+	Title  *string `json:"title,omitempty"`
+}
+
+// ErrorResponse defines model for ErrorResponse.
+type ErrorResponse struct {
+	Errors *[]struct {
+		Type *Error `json:"type,omitempty"`
+	} `json:"errors,omitempty"`
+	Meta *map[string]interface{} `json:"meta,omitempty"`
+}
+
+// GetDataDetailsParams defines parameters for GetDataDetails.
+type GetDataDetailsParams struct {
+	Id     *string `form:"id,omitempty" json:"id,omitempty"`
+	Domain *string `form:"domain,omitempty" json:"domain,omitempty"`
+	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
+	Offset *int    `form:"offset,omitempty" json:"offset,omitempty"`
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
-	// Get domain details
-	// (GET /domains/{domainName})
-	GetDomainsDomainName(w http.ResponseWriter, r *http.Request, domainName string)
-	// Get IP address details
-	// (GET /ipaddresses/{ip})
-	GetIpaddressesIp(w http.ResponseWriter, r *http.Request, ip string)
-	// Get WHOIS data for an IP range, domain, or AS
-	// (GET /whois/{query})
-	GetWhoisQuery(w http.ResponseWriter, r *http.Request, query string)
+	// Get information about available data types
+	// (GET /data)
+	GetDataMeta(w http.ResponseWriter, r *http.Request)
+	// Get data details
+	// (GET /data/{type})
+	GetDataDetails(w http.ResponseWriter, r *http.Request, pType string, params GetDataDetailsParams)
+	// Start a Scan
+	// (POST /scan)
+	StartScan(w http.ResponseWriter, r *http.Request)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -33,22 +64,11 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetDomainsDomainName operation middleware
-func (siw *ServerInterfaceWrapper) GetDomainsDomainName(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "domainName" -------------
-	var domainName string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "domainName", mux.Vars(r)["domainName"], &domainName, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domainName", Err: err})
-		return
-	}
+// GetDataMeta operation middleware
+func (siw *ServerInterfaceWrapper) GetDataMeta(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetDomainsDomainName(w, r, domainName)
+		siw.Handler.GetDataMeta(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -58,22 +78,57 @@ func (siw *ServerInterfaceWrapper) GetDomainsDomainName(w http.ResponseWriter, r
 	handler.ServeHTTP(w, r)
 }
 
-// GetIpaddressesIp operation middleware
-func (siw *ServerInterfaceWrapper) GetIpaddressesIp(w http.ResponseWriter, r *http.Request) {
+// GetDataDetails operation middleware
+func (siw *ServerInterfaceWrapper) GetDataDetails(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
-	// ------------- Path parameter "ip" -------------
-	var ip string
+	// ------------- Path parameter "type" -------------
+	var pType string
 
-	err = runtime.BindStyledParameterWithOptions("simple", "ip", mux.Vars(r)["ip"], &ip, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "type", mux.Vars(r)["type"], &pType, runtime.BindStyledParameterOptions{Explode: false, Required: true})
 	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "ip", Err: err})
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "type", Err: err})
+		return
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetDataDetailsParams
+
+	// ------------- Optional query parameter "id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "id", r.URL.Query(), &params.Id)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "domain" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "domain", r.URL.Query(), &params.Domain)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "domain", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "limit" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "limit", r.URL.Query(), &params.Limit)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "limit", Err: err})
+		return
+	}
+
+	// ------------- Optional query parameter "offset" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "offset", r.URL.Query(), &params.Offset)
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "offset", Err: err})
 		return
 	}
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetIpaddressesIp(w, r, ip)
+		siw.Handler.GetDataDetails(w, r, pType, params)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -83,22 +138,11 @@ func (siw *ServerInterfaceWrapper) GetIpaddressesIp(w http.ResponseWriter, r *ht
 	handler.ServeHTTP(w, r)
 }
 
-// GetWhoisQuery operation middleware
-func (siw *ServerInterfaceWrapper) GetWhoisQuery(w http.ResponseWriter, r *http.Request) {
-
-	var err error
-
-	// ------------- Path parameter "query" -------------
-	var query string
-
-	err = runtime.BindStyledParameterWithOptions("simple", "query", mux.Vars(r)["query"], &query, runtime.BindStyledParameterOptions{Explode: false, Required: true})
-	if err != nil {
-		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "query", Err: err})
-		return
-	}
+// StartScan operation middleware
+func (siw *ServerInterfaceWrapper) StartScan(w http.ResponseWriter, r *http.Request) {
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetWhoisQuery(w, r, query)
+		siw.Handler.StartScan(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -221,11 +265,11 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
-	r.HandleFunc(options.BaseURL+"/domains/{domainName}", wrapper.GetDomainsDomainName).Methods("GET")
+	r.HandleFunc(options.BaseURL+"/data", wrapper.GetDataMeta).Methods("GET")
 
-	r.HandleFunc(options.BaseURL+"/ipaddresses/{ip}", wrapper.GetIpaddressesIp).Methods("GET")
+	r.HandleFunc(options.BaseURL+"/data/{type}", wrapper.GetDataDetails).Methods("GET")
 
-	r.HandleFunc(options.BaseURL+"/whois/{query}", wrapper.GetWhoisQuery).Methods("GET")
+	r.HandleFunc(options.BaseURL+"/scan", wrapper.StartScan).Methods("POST")
 
 	return r
 }
