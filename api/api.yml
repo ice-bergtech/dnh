@@ -1,238 +1,156 @@
 openapi: 3.0.0
 info:
-  title: ICETECH DNS API
+  title: Domain Name Hist API
   version: 1.0.0
 paths:
-  /domains/{domainName}:
+  /data:
     get:
-      summary: Get domain details
-      parameters:
-        - name: domainName
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: Get information about available data types
+      tags:
+        - Query Data
+      operationId: getDataMeta
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Domain'
-  /ipaddresses/{ip}:
+                $ref: '#/components/schemas/DataResponse'
+        '400':
+          description: Generic request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server side error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /data/{type}:
     get:
-      summary: Get IP address details
+      summary: Get data details
+      operationId: getDataDetails
+      tags:
+        - Query Data
       parameters:
-        - name: ip
+        - name: type
           in: path
           required: true
           schema:
             type: string
+        - name: id
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: domain
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/IPaddress'
-  /whois/{query}:
-    get:
-      summary: Get WHOIS data for an IP range, domain, or AS
-      parameters:
-        - name: query
-          in: path
-          required: true
-          schema:
-            type: string
+                $ref: '#/components/schemas/DataResponse'
+        '400':
+          description: Generic request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Not found error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Malformed request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server side error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /scan:
+    summary: Scan-related functions
+    post:
+      summary: Start a Scan
+      tags:
+        - Scanning
+
+      operationId: startScan
       responses:
         '200':
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WhoisData'
+                $ref: '#/components/schemas/DataResponse'
+        '422':
+          description: Malformed request error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server side error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
 components:
   schemas:
-    IPaddress:
+    DataResponse:
       type: object
       properties:
-        ip:
-          type: string
-        mask:
-          type: string
-        advertisers:
+        data:
+          type: object
+        meta:
+          type: object
+    ErrorResponse:
+      type: object
+      properties:
+        meta:
+          type: object
+        errors:
           type: array
           items:
-            $ref: '#/components/schemas/ASNinfo'
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    ASNinfo:
+            properties:
+              type:
+                $ref: '#/components/schemas/Error'
+    Error:
       type: object
       properties:
-        asn:
-          type: integer
-        country:
+        id:
           type: string
-        registry:
+        status:
           type: string
-        timestamp:
+        code:
           type: string
-          format: date-time
-        other:
+        title:
           type: string
-        notes:
+        detail:
           type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    DNSEntry:
-      type: object
-      properties:
-        name:
-          type: string
-        type:
-          type: string
-        value:
-          type: string
-        ttl:
-          type: integer
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    Domain:
-      type: object
-      properties:
-        name:
-          type: string
-        records:
-          type: array
-          items:
-            $ref: '#/components/schemas/DNSEntry'
-        parent:
-          type: string
-        paths:
-          type: array
-          items:
-            $ref: '#/components/schemas/Path'
-        addresses:
-          type: array
-          items:
-            $ref: '#/components/schemas/IPaddress'
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    Path:
-      type: object
-      properties:
-        path:
-          type: string
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    Nameserver:
-      type: object
-      properties:
-        name:
-          type: string
-        ip:
-          $ref: '#/components/schemas/IPaddress'
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    RegistrarData:
-      type: object
-      properties:
-        name:
-          type: string
-        url:
-          type: string
-        countryCode:
-          type: string
-        phone:
-          type: string
-        fax:
-          type: string
-        address:
-          type: array
-          items:
-            $ref: '#/components/schemas/IPaddress'
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        tags:
-          type: object
-          additionalProperties:
-            type: string
-    WhoisData:
-      type: object
-      properties:
-        ip_range:
-          $ref: '#/components/schemas/IPaddress'
-        domain_name:
-          type: string
-        asn:
-          type: integer
-        country:
-          type: string
-        created:
-          type: string
-          format: date-time
-        updated:
-          type: string
-          format: date-time
-        registrar:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        other:
-          type: string
-        notes:
-          type: string
-        nameservers:
-          type: array
-          items:
-            $ref: '#/components/schemas/Nameserver'
