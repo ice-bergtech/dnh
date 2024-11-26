@@ -22,5 +22,12 @@ func (IPAddress) Fields() []ent.Field {
 func (IPAddress) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("asninfo", ASNInfo.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("ipaddress"),
+		edge.From("dnsentry", Scan.Type).Ref("ipaddress"),
+		edge.From("domain", Domain.Type).Ref("ipaddress"),
+		edge.From("nameserver", Nameserver.Type).Ref("ipaddress"),
+		edge.From("registrar", Registrar.Type).Ref("ipaddress"),
+		edge.From("whois", Whois.Type).Ref("iprange"),
 	}
 }

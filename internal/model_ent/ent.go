@@ -15,6 +15,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/example"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
@@ -84,6 +85,7 @@ func checkColumn(table, column string) error {
 			asninfo.Table:    asninfo.ValidColumn,
 			dnsentry.Table:   dnsentry.ValidColumn,
 			domain.Table:     domain.ValidColumn,
+			example.Table:    example.ValidColumn,
 			ipaddress.Table:  ipaddress.ValidColumn,
 			nameserver.Table: nameserver.ValidColumn,
 			path.Table:       path.ValidColumn,

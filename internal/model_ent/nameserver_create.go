@@ -10,8 +10,11 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // NameserverCreate is the builder for creating a Nameserver entity.
@@ -52,6 +55,66 @@ func (nc *NameserverCreate) AddIpaddress(i ...*IPAddress) *NameserverCreate {
 		ids[j] = i[j].ID
 	}
 	return nc.AddIpaddresIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (nc *NameserverCreate) AddScanIDs(ids ...int) *NameserverCreate {
+	nc.mutation.AddScanIDs(ids...)
+	return nc
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (nc *NameserverCreate) AddScan(s ...*Scan) *NameserverCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nc.AddScanIDs(ids...)
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+func (nc *NameserverCreate) AddDnsentryIDs(ids ...int) *NameserverCreate {
+	nc.mutation.AddDnsentryIDs(ids...)
+	return nc
+}
+
+// AddDnsentry adds the "dnsentry" edges to the Scan entity.
+func (nc *NameserverCreate) AddDnsentry(s ...*Scan) *NameserverCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return nc.AddDnsentryIDs(ids...)
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (nc *NameserverCreate) AddDomainIDs(ids ...int) *NameserverCreate {
+	nc.mutation.AddDomainIDs(ids...)
+	return nc
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (nc *NameserverCreate) AddDomain(d ...*Domain) *NameserverCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return nc.AddDomainIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (nc *NameserverCreate) AddWhoiIDs(ids ...int) *NameserverCreate {
+	nc.mutation.AddWhoiIDs(ids...)
+	return nc
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (nc *NameserverCreate) AddWhois(w ...*Whois) *NameserverCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return nc.AddWhoiIDs(ids...)
 }
 
 // Mutation returns the NameserverMutation object of the builder.
@@ -137,13 +200,77 @@ func (nc *NameserverCreate) createSpec() (*Nameserver, *sqlgraph.CreateSpec) {
 	}
 	if nodes := nc.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   nameserver.IpaddressTable,
-			Columns: []string{nameserver.IpaddressColumn},
+			Columns: nameserver.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   nameserver.ScanTable,
+			Columns: nameserver.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.DnsentryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   nameserver.DnsentryTable,
+			Columns: nameserver.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   nameserver.DomainTable,
+			Columns: nameserver.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := nc.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   nameserver.WhoisTable,
+			Columns: nameserver.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

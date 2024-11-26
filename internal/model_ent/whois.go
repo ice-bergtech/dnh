@@ -35,9 +35,9 @@ type Whois struct {
 	TimeLast time.Time `json:"time_last,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the WhoisQuery when eager-loading is set.
-	Edges        WhoisEdges `json:"edges"`
-	scan_whois   *int
-	selectValues sql.SelectValues
+	Edges         WhoisEdges `json:"edges"`
+	example_whois *string
+	selectValues  sql.SelectValues
 }
 
 // WhoisEdges holds the relations/edges for other nodes in the graph.
@@ -50,11 +50,13 @@ type WhoisEdges struct {
 	Asn []*ASNInfo `json:"asn,omitempty"`
 	// Registrar holds the value of the registrar edge.
 	Registrar []*Registrar `json:"registrar,omitempty"`
-	// Nameservers holds the value of the nameservers edge.
-	Nameservers []*Nameserver `json:"nameservers,omitempty"`
+	// Nameserver holds the value of the nameserver edge.
+	Nameserver []*Nameserver `json:"nameserver,omitempty"`
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [6]bool
 }
 
 // IprangeOrErr returns the Iprange value or an error if the edge
@@ -93,13 +95,22 @@ func (e WhoisEdges) RegistrarOrErr() ([]*Registrar, error) {
 	return nil, &NotLoadedError{edge: "registrar"}
 }
 
-// NameserversOrErr returns the Nameservers value or an error if the edge
+// NameserverOrErr returns the Nameserver value or an error if the edge
 // was not loaded in eager-loading.
-func (e WhoisEdges) NameserversOrErr() ([]*Nameserver, error) {
+func (e WhoisEdges) NameserverOrErr() ([]*Nameserver, error) {
 	if e.loadedTypes[4] {
-		return e.Nameservers, nil
+		return e.Nameserver, nil
 	}
-	return nil, &NotLoadedError{edge: "nameservers"}
+	return nil, &NotLoadedError{edge: "nameserver"}
+}
+
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e WhoisEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[5] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -113,8 +124,8 @@ func (*Whois) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case whois.FieldCreated, whois.FieldUpdated, whois.FieldTimeFirst, whois.FieldTimeLast:
 			values[i] = new(sql.NullTime)
-		case whois.ForeignKeys[0]: // scan_whois
-			values[i] = new(sql.NullInt64)
+		case whois.ForeignKeys[0]: // example_whois
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -185,11 +196,11 @@ func (w *Whois) assignValues(columns []string, values []any) error {
 				w.TimeLast = value.Time
 			}
 		case whois.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_whois", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field example_whois", values[i])
 			} else if value.Valid {
-				w.scan_whois = new(int)
-				*w.scan_whois = int(value.Int64)
+				w.example_whois = new(string)
+				*w.example_whois = value.String
 			}
 		default:
 			w.selectValues.Set(columns[i], values[i])
@@ -224,9 +235,14 @@ func (w *Whois) QueryRegistrar() *RegistrarQuery {
 	return NewWhoisClient(w.config).QueryRegistrar(w)
 }
 
-// QueryNameservers queries the "nameservers" edge of the Whois entity.
-func (w *Whois) QueryNameservers() *NameserverQuery {
-	return NewWhoisClient(w.config).QueryNameservers(w)
+// QueryNameserver queries the "nameserver" edge of the Whois entity.
+func (w *Whois) QueryNameserver() *NameserverQuery {
+	return NewWhoisClient(w.config).QueryNameserver(w)
+}
+
+// QueryScan queries the "scan" edge of the Whois entity.
+func (w *Whois) QueryScan() *ScanQuery {
+	return NewWhoisClient(w.config).QueryScan(w)
 }
 
 // Update returns a builder for updating this Whois.

@@ -60,6 +60,16 @@ func Scanid(v string) predicate.Scan {
 	return predicate.Scan(sql.FieldEQ(FieldScanid, v))
 }
 
+// Input applies equality check predicate on the "input" field. It's identical to InputEQ.
+func Input(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEQ(FieldInput, v))
+}
+
+// Type applies equality check predicate on the "type" field. It's identical to TypeEQ.
+func Type(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEQ(FieldType, v))
+}
+
 // Timestamp applies equality check predicate on the "timestamp" field. It's identical to TimestampEQ.
 func Timestamp(v time.Time) predicate.Scan {
 	return predicate.Scan(sql.FieldEQ(FieldTimestamp, v))
@@ -130,6 +140,136 @@ func ScanidContainsFold(v string) predicate.Scan {
 	return predicate.Scan(sql.FieldContainsFold(FieldScanid, v))
 }
 
+// InputEQ applies the EQ predicate on the "input" field.
+func InputEQ(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEQ(FieldInput, v))
+}
+
+// InputNEQ applies the NEQ predicate on the "input" field.
+func InputNEQ(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldNEQ(FieldInput, v))
+}
+
+// InputIn applies the In predicate on the "input" field.
+func InputIn(vs ...string) predicate.Scan {
+	return predicate.Scan(sql.FieldIn(FieldInput, vs...))
+}
+
+// InputNotIn applies the NotIn predicate on the "input" field.
+func InputNotIn(vs ...string) predicate.Scan {
+	return predicate.Scan(sql.FieldNotIn(FieldInput, vs...))
+}
+
+// InputGT applies the GT predicate on the "input" field.
+func InputGT(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldGT(FieldInput, v))
+}
+
+// InputGTE applies the GTE predicate on the "input" field.
+func InputGTE(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldGTE(FieldInput, v))
+}
+
+// InputLT applies the LT predicate on the "input" field.
+func InputLT(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldLT(FieldInput, v))
+}
+
+// InputLTE applies the LTE predicate on the "input" field.
+func InputLTE(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldLTE(FieldInput, v))
+}
+
+// InputContains applies the Contains predicate on the "input" field.
+func InputContains(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldContains(FieldInput, v))
+}
+
+// InputHasPrefix applies the HasPrefix predicate on the "input" field.
+func InputHasPrefix(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldHasPrefix(FieldInput, v))
+}
+
+// InputHasSuffix applies the HasSuffix predicate on the "input" field.
+func InputHasSuffix(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldHasSuffix(FieldInput, v))
+}
+
+// InputEqualFold applies the EqualFold predicate on the "input" field.
+func InputEqualFold(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEqualFold(FieldInput, v))
+}
+
+// InputContainsFold applies the ContainsFold predicate on the "input" field.
+func InputContainsFold(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldContainsFold(FieldInput, v))
+}
+
+// TypeEQ applies the EQ predicate on the "type" field.
+func TypeEQ(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEQ(FieldType, v))
+}
+
+// TypeNEQ applies the NEQ predicate on the "type" field.
+func TypeNEQ(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldNEQ(FieldType, v))
+}
+
+// TypeIn applies the In predicate on the "type" field.
+func TypeIn(vs ...string) predicate.Scan {
+	return predicate.Scan(sql.FieldIn(FieldType, vs...))
+}
+
+// TypeNotIn applies the NotIn predicate on the "type" field.
+func TypeNotIn(vs ...string) predicate.Scan {
+	return predicate.Scan(sql.FieldNotIn(FieldType, vs...))
+}
+
+// TypeGT applies the GT predicate on the "type" field.
+func TypeGT(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldGT(FieldType, v))
+}
+
+// TypeGTE applies the GTE predicate on the "type" field.
+func TypeGTE(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldGTE(FieldType, v))
+}
+
+// TypeLT applies the LT predicate on the "type" field.
+func TypeLT(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldLT(FieldType, v))
+}
+
+// TypeLTE applies the LTE predicate on the "type" field.
+func TypeLTE(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldLTE(FieldType, v))
+}
+
+// TypeContains applies the Contains predicate on the "type" field.
+func TypeContains(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldContains(FieldType, v))
+}
+
+// TypeHasPrefix applies the HasPrefix predicate on the "type" field.
+func TypeHasPrefix(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldHasPrefix(FieldType, v))
+}
+
+// TypeHasSuffix applies the HasSuffix predicate on the "type" field.
+func TypeHasSuffix(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldHasSuffix(FieldType, v))
+}
+
+// TypeEqualFold applies the EqualFold predicate on the "type" field.
+func TypeEqualFold(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldEqualFold(FieldType, v))
+}
+
+// TypeContainsFold applies the ContainsFold predicate on the "type" field.
+func TypeContainsFold(v string) predicate.Scan {
+	return predicate.Scan(sql.FieldContainsFold(FieldType, v))
+}
+
 // TimestampEQ applies the EQ predicate on the "timestamp" field.
 func TimestampEQ(v time.Time) predicate.Scan {
 	return predicate.Scan(sql.FieldEQ(FieldTimestamp, v))
@@ -175,7 +315,7 @@ func HasIpaddress() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -198,7 +338,7 @@ func HasAsninfo() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AsninfoTable, AsninfoColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, AsninfoTable, AsninfoPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -221,7 +361,7 @@ func HasDnsentry() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DnsentryTable, DnsentryColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, DnsentryTable, DnsentryPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -244,7 +384,7 @@ func HasDomain() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -262,21 +402,21 @@ func HasDomainWith(preds ...predicate.Domain) predicate.Scan {
 	})
 }
 
-// HasPaths applies the HasEdge predicate on the "paths" edge.
-func HasPaths() predicate.Scan {
+// HasPath applies the HasEdge predicate on the "path" edge.
+func HasPath() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, PathsTable, PathsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, PathTable, PathPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPathsWith applies the HasEdge predicate on the "paths" edge with a given conditions (other predicates).
-func HasPathsWith(preds ...predicate.Path) predicate.Scan {
+// HasPathWith applies the HasEdge predicate on the "path" edge with a given conditions (other predicates).
+func HasPathWith(preds ...predicate.Path) predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
-		step := newPathsStep()
+		step := newPathStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -290,7 +430,7 @@ func HasNameserver() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -313,7 +453,7 @@ func HasRegistrar() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, RegistrarTable, RegistrarColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, RegistrarTable, RegistrarPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -336,7 +476,7 @@ func HasWhois() predicate.Scan {
 	return predicate.Scan(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, WhoisTable, WhoisColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, WhoisTable, WhoisPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})

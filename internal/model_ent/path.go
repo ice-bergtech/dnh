@@ -17,10 +17,41 @@ type Path struct {
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
 	// Path holds the value of the "path" field.
-	Path         string `json:"path,omitempty"`
-	domain_path  *int
-	scan_paths   *int
-	selectValues sql.SelectValues
+	Path string `json:"path,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the PathQuery when eager-loading is set.
+	Edges         PathEdges `json:"edges"`
+	example_paths *string
+	selectValues  sql.SelectValues
+}
+
+// PathEdges holds the relations/edges for other nodes in the graph.
+type PathEdges struct {
+	// Domain holds the value of the domain edge.
+	Domain []*Domain `json:"domain,omitempty"`
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// DomainOrErr returns the Domain value or an error if the edge
+// was not loaded in eager-loading.
+func (e PathEdges) DomainOrErr() ([]*Domain, error) {
+	if e.loadedTypes[0] {
+		return e.Domain, nil
+	}
+	return nil, &NotLoadedError{edge: "domain"}
+}
+
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e PathEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[1] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -32,10 +63,8 @@ func (*Path) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case path.FieldPath:
 			values[i] = new(sql.NullString)
-		case path.ForeignKeys[0]: // domain_path
-			values[i] = new(sql.NullInt64)
-		case path.ForeignKeys[1]: // scan_paths
-			values[i] = new(sql.NullInt64)
+		case path.ForeignKeys[0]: // example_paths
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -64,18 +93,11 @@ func (pa *Path) assignValues(columns []string, values []any) error {
 				pa.Path = value.String
 			}
 		case path.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field domain_path", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field example_paths", values[i])
 			} else if value.Valid {
-				pa.domain_path = new(int)
-				*pa.domain_path = int(value.Int64)
-			}
-		case path.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_paths", value)
-			} else if value.Valid {
-				pa.scan_paths = new(int)
-				*pa.scan_paths = int(value.Int64)
+				pa.example_paths = new(string)
+				*pa.example_paths = value.String
 			}
 		default:
 			pa.selectValues.Set(columns[i], values[i])
@@ -88,6 +110,16 @@ func (pa *Path) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (pa *Path) Value(name string) (ent.Value, error) {
 	return pa.selectValues.Get(name)
+}
+
+// QueryDomain queries the "domain" edge of the Path entity.
+func (pa *Path) QueryDomain() *DomainQuery {
+	return NewPathClient(pa.config).QueryDomain(pa)
+}
+
+// QueryScan queries the "scan" edge of the Path entity.
+func (pa *Path) QueryScan() *ScanQuery {
+	return NewPathClient(pa.config).QueryScan(pa)
 }
 
 // Update returns a builder for updating this Path.

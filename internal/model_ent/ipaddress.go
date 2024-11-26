@@ -22,21 +22,30 @@ type IPAddress struct {
 	Mask string `json:"mask,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IPAddressQuery when eager-loading is set.
-	Edges                IPAddressEdges `json:"edges"`
-	domain_ipaddress     *int
-	nameserver_ipaddress *int
-	scan_ipaddress       *int
-	whois_iprange        *int
-	selectValues         sql.SelectValues
+	Edges               IPAddressEdges `json:"edges"`
+	dns_entry_ipaddress *int
+	selectValues        sql.SelectValues
 }
 
 // IPAddressEdges holds the relations/edges for other nodes in the graph.
 type IPAddressEdges struct {
 	// Asninfo holds the value of the asninfo edge.
 	Asninfo []*ASNInfo `json:"asninfo,omitempty"`
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
+	// Dnsentry holds the value of the dnsentry edge.
+	Dnsentry []*Scan `json:"dnsentry,omitempty"`
+	// Domain holds the value of the domain edge.
+	Domain []*Domain `json:"domain,omitempty"`
+	// Nameserver holds the value of the nameserver edge.
+	Nameserver []*Nameserver `json:"nameserver,omitempty"`
+	// Registrar holds the value of the registrar edge.
+	Registrar []*Registrar `json:"registrar,omitempty"`
+	// Whois holds the value of the whois edge.
+	Whois []*Whois `json:"whois,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [7]bool
 }
 
 // AsninfoOrErr returns the Asninfo value or an error if the edge
@@ -48,6 +57,60 @@ func (e IPAddressEdges) AsninfoOrErr() ([]*ASNInfo, error) {
 	return nil, &NotLoadedError{edge: "asninfo"}
 }
 
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[1] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
+}
+
+// DnsentryOrErr returns the Dnsentry value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) DnsentryOrErr() ([]*Scan, error) {
+	if e.loadedTypes[2] {
+		return e.Dnsentry, nil
+	}
+	return nil, &NotLoadedError{edge: "dnsentry"}
+}
+
+// DomainOrErr returns the Domain value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) DomainOrErr() ([]*Domain, error) {
+	if e.loadedTypes[3] {
+		return e.Domain, nil
+	}
+	return nil, &NotLoadedError{edge: "domain"}
+}
+
+// NameserverOrErr returns the Nameserver value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) NameserverOrErr() ([]*Nameserver, error) {
+	if e.loadedTypes[4] {
+		return e.Nameserver, nil
+	}
+	return nil, &NotLoadedError{edge: "nameserver"}
+}
+
+// RegistrarOrErr returns the Registrar value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) RegistrarOrErr() ([]*Registrar, error) {
+	if e.loadedTypes[5] {
+		return e.Registrar, nil
+	}
+	return nil, &NotLoadedError{edge: "registrar"}
+}
+
+// WhoisOrErr returns the Whois value or an error if the edge
+// was not loaded in eager-loading.
+func (e IPAddressEdges) WhoisOrErr() ([]*Whois, error) {
+	if e.loadedTypes[6] {
+		return e.Whois, nil
+	}
+	return nil, &NotLoadedError{edge: "whois"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*IPAddress) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -57,13 +120,7 @@ func (*IPAddress) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case ipaddress.FieldIP, ipaddress.FieldMask:
 			values[i] = new(sql.NullString)
-		case ipaddress.ForeignKeys[0]: // domain_ipaddress
-			values[i] = new(sql.NullInt64)
-		case ipaddress.ForeignKeys[1]: // nameserver_ipaddress
-			values[i] = new(sql.NullInt64)
-		case ipaddress.ForeignKeys[2]: // scan_ipaddress
-			values[i] = new(sql.NullInt64)
-		case ipaddress.ForeignKeys[3]: // whois_iprange
+		case ipaddress.ForeignKeys[0]: // dns_entry_ipaddress
 			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -100,31 +157,10 @@ func (ia *IPAddress) assignValues(columns []string, values []any) error {
 			}
 		case ipaddress.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field domain_ipaddress", value)
+				return fmt.Errorf("unexpected type %T for edge-field dns_entry_ipaddress", value)
 			} else if value.Valid {
-				ia.domain_ipaddress = new(int)
-				*ia.domain_ipaddress = int(value.Int64)
-			}
-		case ipaddress.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field nameserver_ipaddress", value)
-			} else if value.Valid {
-				ia.nameserver_ipaddress = new(int)
-				*ia.nameserver_ipaddress = int(value.Int64)
-			}
-		case ipaddress.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_ipaddress", value)
-			} else if value.Valid {
-				ia.scan_ipaddress = new(int)
-				*ia.scan_ipaddress = int(value.Int64)
-			}
-		case ipaddress.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field whois_iprange", value)
-			} else if value.Valid {
-				ia.whois_iprange = new(int)
-				*ia.whois_iprange = int(value.Int64)
+				ia.dns_entry_ipaddress = new(int)
+				*ia.dns_entry_ipaddress = int(value.Int64)
 			}
 		default:
 			ia.selectValues.Set(columns[i], values[i])
@@ -142,6 +178,36 @@ func (ia *IPAddress) Value(name string) (ent.Value, error) {
 // QueryAsninfo queries the "asninfo" edge of the IPAddress entity.
 func (ia *IPAddress) QueryAsninfo() *ASNInfoQuery {
 	return NewIPAddressClient(ia.config).QueryAsninfo(ia)
+}
+
+// QueryScan queries the "scan" edge of the IPAddress entity.
+func (ia *IPAddress) QueryScan() *ScanQuery {
+	return NewIPAddressClient(ia.config).QueryScan(ia)
+}
+
+// QueryDnsentry queries the "dnsentry" edge of the IPAddress entity.
+func (ia *IPAddress) QueryDnsentry() *ScanQuery {
+	return NewIPAddressClient(ia.config).QueryDnsentry(ia)
+}
+
+// QueryDomain queries the "domain" edge of the IPAddress entity.
+func (ia *IPAddress) QueryDomain() *DomainQuery {
+	return NewIPAddressClient(ia.config).QueryDomain(ia)
+}
+
+// QueryNameserver queries the "nameserver" edge of the IPAddress entity.
+func (ia *IPAddress) QueryNameserver() *NameserverQuery {
+	return NewIPAddressClient(ia.config).QueryNameserver(ia)
+}
+
+// QueryRegistrar queries the "registrar" edge of the IPAddress entity.
+func (ia *IPAddress) QueryRegistrar() *RegistrarQuery {
+	return NewIPAddressClient(ia.config).QueryRegistrar(ia)
+}
+
+// QueryWhois queries the "whois" edge of the IPAddress entity.
+func (ia *IPAddress) QueryWhois() *WhoisQuery {
+	return NewIPAddressClient(ia.config).QueryWhois(ia)
 }
 
 // Update returns a builder for updating this IPAddress.

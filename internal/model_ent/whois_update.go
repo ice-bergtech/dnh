@@ -17,6 +17,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -205,19 +206,34 @@ func (wu *WhoisUpdate) AddRegistrar(r ...*Registrar) *WhoisUpdate {
 	return wu.AddRegistrarIDs(ids...)
 }
 
-// AddNameserverIDs adds the "nameservers" edge to the Nameserver entity by IDs.
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
 func (wu *WhoisUpdate) AddNameserverIDs(ids ...int) *WhoisUpdate {
 	wu.mutation.AddNameserverIDs(ids...)
 	return wu
 }
 
-// AddNameservers adds the "nameservers" edges to the Nameserver entity.
-func (wu *WhoisUpdate) AddNameservers(n ...*Nameserver) *WhoisUpdate {
+// AddNameserver adds the "nameserver" edges to the Nameserver entity.
+func (wu *WhoisUpdate) AddNameserver(n ...*Nameserver) *WhoisUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
 	return wu.AddNameserverIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (wu *WhoisUpdate) AddScanIDs(ids ...int) *WhoisUpdate {
+	wu.mutation.AddScanIDs(ids...)
+	return wu
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (wu *WhoisUpdate) AddScan(s ...*Scan) *WhoisUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return wu.AddScanIDs(ids...)
 }
 
 // Mutation returns the WhoisMutation object of the builder.
@@ -309,25 +325,46 @@ func (wu *WhoisUpdate) RemoveRegistrar(r ...*Registrar) *WhoisUpdate {
 	return wu.RemoveRegistrarIDs(ids...)
 }
 
-// ClearNameservers clears all "nameservers" edges to the Nameserver entity.
-func (wu *WhoisUpdate) ClearNameservers() *WhoisUpdate {
-	wu.mutation.ClearNameservers()
+// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
+func (wu *WhoisUpdate) ClearNameserver() *WhoisUpdate {
+	wu.mutation.ClearNameserver()
 	return wu
 }
 
-// RemoveNameserverIDs removes the "nameservers" edge to Nameserver entities by IDs.
+// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
 func (wu *WhoisUpdate) RemoveNameserverIDs(ids ...int) *WhoisUpdate {
 	wu.mutation.RemoveNameserverIDs(ids...)
 	return wu
 }
 
-// RemoveNameservers removes "nameservers" edges to Nameserver entities.
-func (wu *WhoisUpdate) RemoveNameservers(n ...*Nameserver) *WhoisUpdate {
+// RemoveNameserver removes "nameserver" edges to Nameserver entities.
+func (wu *WhoisUpdate) RemoveNameserver(n ...*Nameserver) *WhoisUpdate {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
 	return wu.RemoveNameserverIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (wu *WhoisUpdate) ClearScan() *WhoisUpdate {
+	wu.mutation.ClearScan()
+	return wu
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (wu *WhoisUpdate) RemoveScanIDs(ids ...int) *WhoisUpdate {
+	wu.mutation.RemoveScanIDs(ids...)
+	return wu
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (wu *WhoisUpdate) RemoveScan(s ...*Scan) *WhoisUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return wu.RemoveScanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -392,10 +429,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if wu.mutation.IprangeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -405,10 +442,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.RemovedIprangeIDs(); len(nodes) > 0 && !wu.mutation.IprangeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -421,10 +458,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.IprangeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -437,10 +474,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if wu.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -450,10 +487,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.RemovedDomainIDs(); len(nodes) > 0 && !wu.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -466,10 +503,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -482,10 +519,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if wu.mutation.AsnCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -495,10 +532,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.RemovedAsnIDs(); len(nodes) > 0 && !wu.mutation.AsnCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -511,10 +548,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.AsnIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -527,10 +564,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if wu.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -540,10 +577,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !wu.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -556,10 +593,10 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := wu.mutation.RegistrarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -570,12 +607,12 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if wu.mutation.NameserversCleared() {
+	if wu.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -583,12 +620,12 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wu.mutation.RemovedNameserversIDs(); len(nodes) > 0 && !wu.mutation.NameserversCleared() {
+	if nodes := wu.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !wu.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -599,15 +636,60 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wu.mutation.NameserversIDs(); len(nodes) > 0 {
+	if nodes := wu.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if wu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.RemovedScanIDs(); len(nodes) > 0 && !wu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wu.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -807,19 +889,34 @@ func (wuo *WhoisUpdateOne) AddRegistrar(r ...*Registrar) *WhoisUpdateOne {
 	return wuo.AddRegistrarIDs(ids...)
 }
 
-// AddNameserverIDs adds the "nameservers" edge to the Nameserver entity by IDs.
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
 func (wuo *WhoisUpdateOne) AddNameserverIDs(ids ...int) *WhoisUpdateOne {
 	wuo.mutation.AddNameserverIDs(ids...)
 	return wuo
 }
 
-// AddNameservers adds the "nameservers" edges to the Nameserver entity.
-func (wuo *WhoisUpdateOne) AddNameservers(n ...*Nameserver) *WhoisUpdateOne {
+// AddNameserver adds the "nameserver" edges to the Nameserver entity.
+func (wuo *WhoisUpdateOne) AddNameserver(n ...*Nameserver) *WhoisUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
 	return wuo.AddNameserverIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (wuo *WhoisUpdateOne) AddScanIDs(ids ...int) *WhoisUpdateOne {
+	wuo.mutation.AddScanIDs(ids...)
+	return wuo
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (wuo *WhoisUpdateOne) AddScan(s ...*Scan) *WhoisUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return wuo.AddScanIDs(ids...)
 }
 
 // Mutation returns the WhoisMutation object of the builder.
@@ -911,25 +1008,46 @@ func (wuo *WhoisUpdateOne) RemoveRegistrar(r ...*Registrar) *WhoisUpdateOne {
 	return wuo.RemoveRegistrarIDs(ids...)
 }
 
-// ClearNameservers clears all "nameservers" edges to the Nameserver entity.
-func (wuo *WhoisUpdateOne) ClearNameservers() *WhoisUpdateOne {
-	wuo.mutation.ClearNameservers()
+// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
+func (wuo *WhoisUpdateOne) ClearNameserver() *WhoisUpdateOne {
+	wuo.mutation.ClearNameserver()
 	return wuo
 }
 
-// RemoveNameserverIDs removes the "nameservers" edge to Nameserver entities by IDs.
+// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
 func (wuo *WhoisUpdateOne) RemoveNameserverIDs(ids ...int) *WhoisUpdateOne {
 	wuo.mutation.RemoveNameserverIDs(ids...)
 	return wuo
 }
 
-// RemoveNameservers removes "nameservers" edges to Nameserver entities.
-func (wuo *WhoisUpdateOne) RemoveNameservers(n ...*Nameserver) *WhoisUpdateOne {
+// RemoveNameserver removes "nameserver" edges to Nameserver entities.
+func (wuo *WhoisUpdateOne) RemoveNameserver(n ...*Nameserver) *WhoisUpdateOne {
 	ids := make([]int, len(n))
 	for i := range n {
 		ids[i] = n[i].ID
 	}
 	return wuo.RemoveNameserverIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (wuo *WhoisUpdateOne) ClearScan() *WhoisUpdateOne {
+	wuo.mutation.ClearScan()
+	return wuo
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (wuo *WhoisUpdateOne) RemoveScanIDs(ids ...int) *WhoisUpdateOne {
+	wuo.mutation.RemoveScanIDs(ids...)
+	return wuo
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (wuo *WhoisUpdateOne) RemoveScan(s ...*Scan) *WhoisUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return wuo.RemoveScanIDs(ids...)
 }
 
 // Where appends a list predicates to the WhoisUpdate builder.
@@ -1024,10 +1142,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if wuo.mutation.IprangeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1037,10 +1155,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.RemovedIprangeIDs(); len(nodes) > 0 && !wuo.mutation.IprangeCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1053,10 +1171,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.IprangeIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.IprangeTable,
-			Columns: []string{whois.IprangeColumn},
+			Columns: whois.IprangePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1069,10 +1187,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if wuo.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1082,10 +1200,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !wuo.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1098,10 +1216,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.DomainTable,
-			Columns: []string{whois.DomainColumn},
+			Columns: whois.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1114,10 +1232,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if wuo.mutation.AsnCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1127,10 +1245,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.RemovedAsnIDs(); len(nodes) > 0 && !wuo.mutation.AsnCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1143,10 +1261,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.AsnIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.AsnTable,
-			Columns: []string{whois.AsnColumn},
+			Columns: whois.AsnPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1159,10 +1277,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if wuo.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1172,10 +1290,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !wuo.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1188,10 +1306,10 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 	}
 	if nodes := wuo.mutation.RegistrarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   whois.RegistrarTable,
-			Columns: []string{whois.RegistrarColumn},
+			Columns: whois.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1202,12 +1320,12 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if wuo.mutation.NameserversCleared() {
+	if wuo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -1215,12 +1333,12 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wuo.mutation.RemovedNameserversIDs(); len(nodes) > 0 && !wuo.mutation.NameserversCleared() {
+	if nodes := wuo.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !wuo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -1231,15 +1349,60 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := wuo.mutation.NameserversIDs(); len(nodes) > 0 {
+	if nodes := wuo.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   whois.NameserversTable,
-			Columns: []string{whois.NameserversColumn},
+			Table:   whois.NameserverTable,
+			Columns: whois.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if wuo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.RemovedScanIDs(); len(nodes) > 0 && !wuo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := wuo.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   whois.ScanTable,
+			Columns: whois.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -24,5 +25,11 @@ func (DNSEntry) Fields() []ent.Field {
 
 // Edges of the DNSEntry.
 func (DNSEntry) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("domain", Domain.Type),
+		edge.To("ipaddress", IPAddress.Type),
+		edge.To("nameserver", Nameserver.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("dnsentry"),
+	}
 }

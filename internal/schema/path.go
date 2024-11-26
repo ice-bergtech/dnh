@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -19,5 +20,9 @@ func (Path) Fields() []ent.Field {
 
 // Edges of the Path.
 func (Path) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		//
+		edge.From("domain", Domain.Type).Ref("path"),
+		edge.From("scan", Scan.Type).Ref("path"),
+	}
 }

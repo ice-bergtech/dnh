@@ -4,6 +4,7 @@ package path
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -13,8 +14,22 @@ const (
 	FieldID = "id"
 	// FieldPath holds the string denoting the path field in the database.
 	FieldPath = "path"
+	// EdgeDomain holds the string denoting the domain edge name in mutations.
+	EdgeDomain = "domain"
+	// EdgeScan holds the string denoting the scan edge name in mutations.
+	EdgeScan = "scan"
 	// Table holds the table name of the path in the database.
 	Table = "paths"
+	// DomainTable is the table that holds the domain relation/edge. The primary key declared below.
+	DomainTable = "domain_path"
+	// DomainInverseTable is the table name for the Domain entity.
+	// It exists in this package in order to avoid circular dependency with the "domain" package.
+	DomainInverseTable = "domains"
+	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
+	ScanTable = "scan_path"
+	// ScanInverseTable is the table name for the Scan entity.
+	// It exists in this package in order to avoid circular dependency with the "scan" package.
+	ScanInverseTable = "scans"
 )
 
 // Columns holds all SQL columns for path fields.
@@ -26,9 +41,17 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "paths"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"domain_path",
-	"scan_paths",
+	"example_paths",
 }
+
+var (
+	// DomainPrimaryKey and DomainColumn2 are the table columns denoting the
+	// primary key for the domain relation (M2M).
+	DomainPrimaryKey = []string{"domain_id", "path_id"}
+	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
+	// primary key for the scan relation (M2M).
+	ScanPrimaryKey = []string{"scan_id", "path_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -56,4 +79,46 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByPath orders the results by the path field.
 func ByPath(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPath, opts...).ToFunc()
+}
+
+// ByDomainCount orders the results by domain count.
+func ByDomainCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDomainStep(), opts...)
+	}
+}
+
+// ByDomain orders the results by domain terms.
+func ByDomain(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDomainStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByScanCount orders the results by scan count.
+func ByScanCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScanStep(), opts...)
+	}
+}
+
+// ByScan orders the results by scan terms.
+func ByScan(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScanStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newDomainStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DomainInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, DomainTable, DomainPrimaryKey...),
+	)
+}
+func newScanStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScanInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+	)
 }

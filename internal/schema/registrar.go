@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
 
@@ -19,6 +20,7 @@ func (Registrar) Fields() []ent.Field {
 		field.String("phone"),
 		field.String("fax"),
 		field.String("address"),
+		field.String("source"),
 		field.Time("time_first"),
 		field.Time("time_last"),
 	}
@@ -26,5 +28,12 @@ func (Registrar) Fields() []ent.Field {
 
 // Edges of the Registrar.
 func (Registrar) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("ipaddress", IPAddress.Type),
+		edge.To("domain", Domain.Type),
+		edge.To("asninfo", ASNInfo.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("registrar"),
+		edge.From("whois", Whois.Type).Ref("registrar"),
+	}
 }

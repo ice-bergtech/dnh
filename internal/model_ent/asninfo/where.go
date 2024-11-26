@@ -4,6 +4,7 @@ package asninfo
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 )
 
@@ -235,6 +236,98 @@ func RegistryEqualFold(v string) predicate.ASNInfo {
 // RegistryContainsFold applies the ContainsFold predicate on the "registry" field.
 func RegistryContainsFold(v string) predicate.ASNInfo {
 	return predicate.ASNInfo(sql.FieldContainsFold(FieldRegistry, v))
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIpaddress applies the HasEdge predicate on the "ipaddress" edge.
+func HasIpaddress() predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, IpaddressTable, IpaddressPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIpaddressWith applies the HasEdge predicate on the "ipaddress" edge with a given conditions (other predicates).
+func HasIpaddressWith(preds ...predicate.IPAddress) predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := newIpaddressStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRegistrar applies the HasEdge predicate on the "registrar" edge.
+func HasRegistrar() predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, RegistrarTable, RegistrarPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRegistrarWith applies the HasEdge predicate on the "registrar" edge with a given conditions (other predicates).
+func HasRegistrarWith(preds ...predicate.Registrar) predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := newRegistrarStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWhois applies the HasEdge predicate on the "whois" edge.
+func HasWhois() predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, WhoisTable, WhoisPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWhoisWith applies the HasEdge predicate on the "whois" edge with a given conditions (other predicates).
+func HasWhoisWith(preds ...predicate.Whois) predicate.ASNInfo {
+	return predicate.ASNInfo(func(s *sql.Selector) {
+		step := newWhoisStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

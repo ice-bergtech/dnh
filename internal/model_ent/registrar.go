@@ -29,13 +29,79 @@ type Registrar struct {
 	Fax string `json:"fax,omitempty"`
 	// Address holds the value of the "address" field.
 	Address string `json:"address,omitempty"`
+	// Source holds the value of the "source" field.
+	Source string `json:"source,omitempty"`
 	// TimeFirst holds the value of the "time_first" field.
 	TimeFirst time.Time `json:"time_first,omitempty"`
 	// TimeLast holds the value of the "time_last" field.
-	TimeLast        time.Time `json:"time_last,omitempty"`
-	scan_registrar  *int
-	whois_registrar *int
-	selectValues    sql.SelectValues
+	TimeLast time.Time `json:"time_last,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the RegistrarQuery when eager-loading is set.
+	Edges             RegistrarEdges `json:"edges"`
+	example_registrar *string
+	selectValues      sql.SelectValues
+}
+
+// RegistrarEdges holds the relations/edges for other nodes in the graph.
+type RegistrarEdges struct {
+	// Ipaddress holds the value of the ipaddress edge.
+	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
+	// Domain holds the value of the domain edge.
+	Domain []*Domain `json:"domain,omitempty"`
+	// Asninfo holds the value of the asninfo edge.
+	Asninfo []*ASNInfo `json:"asninfo,omitempty"`
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
+	// Whois holds the value of the whois edge.
+	Whois []*Whois `json:"whois,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [5]bool
+}
+
+// IpaddressOrErr returns the Ipaddress value or an error if the edge
+// was not loaded in eager-loading.
+func (e RegistrarEdges) IpaddressOrErr() ([]*IPAddress, error) {
+	if e.loadedTypes[0] {
+		return e.Ipaddress, nil
+	}
+	return nil, &NotLoadedError{edge: "ipaddress"}
+}
+
+// DomainOrErr returns the Domain value or an error if the edge
+// was not loaded in eager-loading.
+func (e RegistrarEdges) DomainOrErr() ([]*Domain, error) {
+	if e.loadedTypes[1] {
+		return e.Domain, nil
+	}
+	return nil, &NotLoadedError{edge: "domain"}
+}
+
+// AsninfoOrErr returns the Asninfo value or an error if the edge
+// was not loaded in eager-loading.
+func (e RegistrarEdges) AsninfoOrErr() ([]*ASNInfo, error) {
+	if e.loadedTypes[2] {
+		return e.Asninfo, nil
+	}
+	return nil, &NotLoadedError{edge: "asninfo"}
+}
+
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e RegistrarEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[3] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
+}
+
+// WhoisOrErr returns the Whois value or an error if the edge
+// was not loaded in eager-loading.
+func (e RegistrarEdges) WhoisOrErr() ([]*Whois, error) {
+	if e.loadedTypes[4] {
+		return e.Whois, nil
+	}
+	return nil, &NotLoadedError{edge: "whois"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,14 +111,12 @@ func (*Registrar) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case registrar.FieldID:
 			values[i] = new(sql.NullInt64)
-		case registrar.FieldName, registrar.FieldURL, registrar.FieldCountryCode, registrar.FieldPhone, registrar.FieldFax, registrar.FieldAddress:
+		case registrar.FieldName, registrar.FieldURL, registrar.FieldCountryCode, registrar.FieldPhone, registrar.FieldFax, registrar.FieldAddress, registrar.FieldSource:
 			values[i] = new(sql.NullString)
 		case registrar.FieldTimeFirst, registrar.FieldTimeLast:
 			values[i] = new(sql.NullTime)
-		case registrar.ForeignKeys[0]: // scan_registrar
-			values[i] = new(sql.NullInt64)
-		case registrar.ForeignKeys[1]: // whois_registrar
-			values[i] = new(sql.NullInt64)
+		case registrar.ForeignKeys[0]: // example_registrar
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -110,6 +174,12 @@ func (r *Registrar) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.Address = value.String
 			}
+		case registrar.FieldSource:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field source", values[i])
+			} else if value.Valid {
+				r.Source = value.String
+			}
 		case registrar.FieldTimeFirst:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field time_first", values[i])
@@ -123,18 +193,11 @@ func (r *Registrar) assignValues(columns []string, values []any) error {
 				r.TimeLast = value.Time
 			}
 		case registrar.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_registrar", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field example_registrar", values[i])
 			} else if value.Valid {
-				r.scan_registrar = new(int)
-				*r.scan_registrar = int(value.Int64)
-			}
-		case registrar.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field whois_registrar", value)
-			} else if value.Valid {
-				r.whois_registrar = new(int)
-				*r.whois_registrar = int(value.Int64)
+				r.example_registrar = new(string)
+				*r.example_registrar = value.String
 			}
 		default:
 			r.selectValues.Set(columns[i], values[i])
@@ -147,6 +210,31 @@ func (r *Registrar) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (r *Registrar) Value(name string) (ent.Value, error) {
 	return r.selectValues.Get(name)
+}
+
+// QueryIpaddress queries the "ipaddress" edge of the Registrar entity.
+func (r *Registrar) QueryIpaddress() *IPAddressQuery {
+	return NewRegistrarClient(r.config).QueryIpaddress(r)
+}
+
+// QueryDomain queries the "domain" edge of the Registrar entity.
+func (r *Registrar) QueryDomain() *DomainQuery {
+	return NewRegistrarClient(r.config).QueryDomain(r)
+}
+
+// QueryAsninfo queries the "asninfo" edge of the Registrar entity.
+func (r *Registrar) QueryAsninfo() *ASNInfoQuery {
+	return NewRegistrarClient(r.config).QueryAsninfo(r)
+}
+
+// QueryScan queries the "scan" edge of the Registrar entity.
+func (r *Registrar) QueryScan() *ScanQuery {
+	return NewRegistrarClient(r.config).QueryScan(r)
+}
+
+// QueryWhois queries the "whois" edge of the Registrar entity.
+func (r *Registrar) QueryWhois() *WhoisQuery {
+	return NewRegistrarClient(r.config).QueryWhois(r)
 }
 
 // Update returns a builder for updating this Registrar.
@@ -189,6 +277,9 @@ func (r *Registrar) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("address=")
 	builder.WriteString(r.Address)
+	builder.WriteString(", ")
+	builder.WriteString("source=")
+	builder.WriteString(r.Source)
 	builder.WriteString(", ")
 	builder.WriteString("time_first=")
 	builder.WriteString(r.TimeFirst.Format(time.ANSIC))

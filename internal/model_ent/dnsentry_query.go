@@ -4,6 +4,7 @@ package model_ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,17 +13,25 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
 )
 
 // DNSEntryQuery is the builder for querying DNSEntry entities.
 type DNSEntryQuery struct {
 	config
-	ctx        *QueryContext
-	order      []dnsentry.OrderOption
-	inters     []Interceptor
-	predicates []predicate.DNSEntry
-	withFKs    bool
+	ctx            *QueryContext
+	order          []dnsentry.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.DNSEntry
+	withDomain     *DomainQuery
+	withIpaddress  *IPAddressQuery
+	withNameserver *NameserverQuery
+	withScan       *ScanQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +66,94 @@ func (deq *DNSEntryQuery) Unique(unique bool) *DNSEntryQuery {
 func (deq *DNSEntryQuery) Order(o ...dnsentry.OrderOption) *DNSEntryQuery {
 	deq.order = append(deq.order, o...)
 	return deq
+}
+
+// QueryDomain chains the current query on the "domain" edge.
+func (deq *DNSEntryQuery) QueryDomain() *DomainQuery {
+	query := (&DomainClient{config: deq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := deq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := deq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.DomainTable, dnsentry.DomainColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIpaddress chains the current query on the "ipaddress" edge.
+func (deq *DNSEntryQuery) QueryIpaddress() *IPAddressQuery {
+	query := (&IPAddressClient{config: deq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := deq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := deq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.IpaddressTable, dnsentry.IpaddressColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryNameserver chains the current query on the "nameserver" edge.
+func (deq *DNSEntryQuery) QueryNameserver() *NameserverQuery {
+	query := (&NameserverClient{config: deq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := deq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := deq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
+			sqlgraph.To(nameserver.Table, nameserver.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.NameserverTable, dnsentry.NameserverColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryScan chains the current query on the "scan" edge.
+func (deq *DNSEntryQuery) QueryScan() *ScanQuery {
+	query := (&ScanClient{config: deq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := deq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := deq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dnsentry.ScanTable, dnsentry.ScanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first DNSEntry entity from the query.
@@ -246,15 +343,63 @@ func (deq *DNSEntryQuery) Clone() *DNSEntryQuery {
 		return nil
 	}
 	return &DNSEntryQuery{
-		config:     deq.config,
-		ctx:        deq.ctx.Clone(),
-		order:      append([]dnsentry.OrderOption{}, deq.order...),
-		inters:     append([]Interceptor{}, deq.inters...),
-		predicates: append([]predicate.DNSEntry{}, deq.predicates...),
+		config:         deq.config,
+		ctx:            deq.ctx.Clone(),
+		order:          append([]dnsentry.OrderOption{}, deq.order...),
+		inters:         append([]Interceptor{}, deq.inters...),
+		predicates:     append([]predicate.DNSEntry{}, deq.predicates...),
+		withDomain:     deq.withDomain.Clone(),
+		withIpaddress:  deq.withIpaddress.Clone(),
+		withNameserver: deq.withNameserver.Clone(),
+		withScan:       deq.withScan.Clone(),
 		// clone intermediate query.
 		sql:  deq.sql.Clone(),
 		path: deq.path,
 	}
+}
+
+// WithDomain tells the query-builder to eager-load the nodes that are connected to
+// the "domain" edge. The optional arguments are used to configure the query builder of the edge.
+func (deq *DNSEntryQuery) WithDomain(opts ...func(*DomainQuery)) *DNSEntryQuery {
+	query := (&DomainClient{config: deq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	deq.withDomain = query
+	return deq
+}
+
+// WithIpaddress tells the query-builder to eager-load the nodes that are connected to
+// the "ipaddress" edge. The optional arguments are used to configure the query builder of the edge.
+func (deq *DNSEntryQuery) WithIpaddress(opts ...func(*IPAddressQuery)) *DNSEntryQuery {
+	query := (&IPAddressClient{config: deq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	deq.withIpaddress = query
+	return deq
+}
+
+// WithNameserver tells the query-builder to eager-load the nodes that are connected to
+// the "nameserver" edge. The optional arguments are used to configure the query builder of the edge.
+func (deq *DNSEntryQuery) WithNameserver(opts ...func(*NameserverQuery)) *DNSEntryQuery {
+	query := (&NameserverClient{config: deq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	deq.withNameserver = query
+	return deq
+}
+
+// WithScan tells the query-builder to eager-load the nodes that are connected to
+// the "scan" edge. The optional arguments are used to configure the query builder of the edge.
+func (deq *DNSEntryQuery) WithScan(opts ...func(*ScanQuery)) *DNSEntryQuery {
+	query := (&ScanClient{config: deq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	deq.withScan = query
+	return deq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,9 +478,15 @@ func (deq *DNSEntryQuery) prepareQuery(ctx context.Context) error {
 
 func (deq *DNSEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DNSEntry, error) {
 	var (
-		nodes   = []*DNSEntry{}
-		withFKs = deq.withFKs
-		_spec   = deq.querySpec()
+		nodes       = []*DNSEntry{}
+		withFKs     = deq.withFKs
+		_spec       = deq.querySpec()
+		loadedTypes = [4]bool{
+			deq.withDomain != nil,
+			deq.withIpaddress != nil,
+			deq.withNameserver != nil,
+			deq.withScan != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, dnsentry.ForeignKeys...)
@@ -346,6 +497,7 @@ func (deq *DNSEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DN
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &DNSEntry{config: deq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -357,7 +509,190 @@ func (deq *DNSEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DN
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := deq.withDomain; query != nil {
+		if err := deq.loadDomain(ctx, query, nodes,
+			func(n *DNSEntry) { n.Edges.Domain = []*Domain{} },
+			func(n *DNSEntry, e *Domain) { n.Edges.Domain = append(n.Edges.Domain, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := deq.withIpaddress; query != nil {
+		if err := deq.loadIpaddress(ctx, query, nodes,
+			func(n *DNSEntry) { n.Edges.Ipaddress = []*IPAddress{} },
+			func(n *DNSEntry, e *IPAddress) { n.Edges.Ipaddress = append(n.Edges.Ipaddress, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := deq.withNameserver; query != nil {
+		if err := deq.loadNameserver(ctx, query, nodes,
+			func(n *DNSEntry) { n.Edges.Nameserver = []*Nameserver{} },
+			func(n *DNSEntry, e *Nameserver) { n.Edges.Nameserver = append(n.Edges.Nameserver, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := deq.withScan; query != nil {
+		if err := deq.loadScan(ctx, query, nodes,
+			func(n *DNSEntry) { n.Edges.Scan = []*Scan{} },
+			func(n *DNSEntry, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (deq *DNSEntryQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Domain)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*DNSEntry)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Domain(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dnsentry.DomainColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.dns_entry_domain
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "dns_entry_domain" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_domain" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (deq *DNSEntryQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *IPAddress)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*DNSEntry)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.IPAddress(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dnsentry.IpaddressColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.dns_entry_ipaddress
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "dns_entry_ipaddress" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_ipaddress" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (deq *DNSEntryQuery) loadNameserver(ctx context.Context, query *NameserverQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Nameserver)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*DNSEntry)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Nameserver(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(dnsentry.NameserverColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.dns_entry_nameserver
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "dns_entry_nameserver" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_nameserver" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (deq *DNSEntryQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Scan)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*DNSEntry)
+	nids := make(map[int]map[*DNSEntry]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dnsentry.ScanTable)
+		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(dnsentry.ScanPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(dnsentry.ScanPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dnsentry.ScanPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*DNSEntry]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "scan" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (deq *DNSEntryQuery) sqlCount(ctx context.Context) (int, error) {

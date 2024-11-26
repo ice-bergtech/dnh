@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 )
 
@@ -397,6 +398,98 @@ func TimeLastLT(v time.Time) predicate.DNSEntry {
 // TimeLastLTE applies the LTE predicate on the "time_last" field.
 func TimeLastLTE(v time.Time) predicate.DNSEntry {
 	return predicate.DNSEntry(sql.FieldLTE(FieldTimeLast, v))
+}
+
+// HasDomain applies the HasEdge predicate on the "domain" edge.
+func HasDomain() predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDomainWith applies the HasEdge predicate on the "domain" edge with a given conditions (other predicates).
+func HasDomainWith(preds ...predicate.Domain) predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := newDomainStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasIpaddress applies the HasEdge predicate on the "ipaddress" edge.
+func HasIpaddress() predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIpaddressWith applies the HasEdge predicate on the "ipaddress" edge with a given conditions (other predicates).
+func HasIpaddressWith(preds ...predicate.IPAddress) predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := newIpaddressStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNameserver applies the HasEdge predicate on the "nameserver" edge.
+func HasNameserver() predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNameserverWith applies the HasEdge predicate on the "nameserver" edge with a given conditions (other predicates).
+func HasNameserverWith(preds ...predicate.Nameserver) predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := newNameserverStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.DNSEntry {
+	return predicate.DNSEntry(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

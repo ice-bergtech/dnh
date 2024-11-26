@@ -19,6 +19,10 @@ type Scan struct {
 	ID int `json:"id,omitempty"`
 	// Scanid holds the value of the "scanid" field.
 	Scanid string `json:"scanid,omitempty"`
+	// Input holds the value of the "input" field.
+	Input string `json:"input,omitempty"`
+	// Type holds the value of the "type" field.
+	Type string `json:"type,omitempty"`
 	// Timestamp holds the value of the "timestamp" field.
 	Timestamp time.Time `json:"timestamp,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -37,8 +41,8 @@ type ScanEdges struct {
 	Dnsentry []*DNSEntry `json:"dnsentry,omitempty"`
 	// Domain holds the value of the domain edge.
 	Domain []*Domain `json:"domain,omitempty"`
-	// Paths holds the value of the paths edge.
-	Paths []*Path `json:"paths,omitempty"`
+	// Path holds the value of the path edge.
+	Path []*Path `json:"path,omitempty"`
 	// Nameserver holds the value of the nameserver edge.
 	Nameserver []*Nameserver `json:"nameserver,omitempty"`
 	// Registrar holds the value of the registrar edge.
@@ -86,13 +90,13 @@ func (e ScanEdges) DomainOrErr() ([]*Domain, error) {
 	return nil, &NotLoadedError{edge: "domain"}
 }
 
-// PathsOrErr returns the Paths value or an error if the edge
+// PathOrErr returns the Path value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScanEdges) PathsOrErr() ([]*Path, error) {
+func (e ScanEdges) PathOrErr() ([]*Path, error) {
 	if e.loadedTypes[4] {
-		return e.Paths, nil
+		return e.Path, nil
 	}
-	return nil, &NotLoadedError{edge: "paths"}
+	return nil, &NotLoadedError{edge: "path"}
 }
 
 // NameserverOrErr returns the Nameserver value or an error if the edge
@@ -129,7 +133,7 @@ func (*Scan) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case scan.FieldID:
 			values[i] = new(sql.NullInt64)
-		case scan.FieldScanid:
+		case scan.FieldScanid, scan.FieldInput, scan.FieldType:
 			values[i] = new(sql.NullString)
 		case scan.FieldTimestamp:
 			values[i] = new(sql.NullTime)
@@ -159,6 +163,18 @@ func (s *Scan) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field scanid", values[i])
 			} else if value.Valid {
 				s.Scanid = value.String
+			}
+		case scan.FieldInput:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field input", values[i])
+			} else if value.Valid {
+				s.Input = value.String
+			}
+		case scan.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				s.Type = value.String
 			}
 		case scan.FieldTimestamp:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -199,9 +215,9 @@ func (s *Scan) QueryDomain() *DomainQuery {
 	return NewScanClient(s.config).QueryDomain(s)
 }
 
-// QueryPaths queries the "paths" edge of the Scan entity.
-func (s *Scan) QueryPaths() *PathQuery {
-	return NewScanClient(s.config).QueryPaths(s)
+// QueryPath queries the "path" edge of the Scan entity.
+func (s *Scan) QueryPath() *PathQuery {
+	return NewScanClient(s.config).QueryPath(s)
 }
 
 // QueryNameserver queries the "nameserver" edge of the Scan entity.
@@ -244,6 +260,12 @@ func (s *Scan) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", s.ID))
 	builder.WriteString("scanid=")
 	builder.WriteString(s.Scanid)
+	builder.WriteString(", ")
+	builder.WriteString("input=")
+	builder.WriteString(s.Input)
+	builder.WriteString(", ")
+	builder.WriteString("type=")
+	builder.WriteString(s.Type)
 	builder.WriteString(", ")
 	builder.WriteString("timestamp=")
 	builder.WriteString(s.Timestamp.Format(time.ANSIC))

@@ -34,6 +34,18 @@ func (sc *ScanCreate) SetScanid(s string) *ScanCreate {
 	return sc
 }
 
+// SetInput sets the "input" field.
+func (sc *ScanCreate) SetInput(s string) *ScanCreate {
+	sc.mutation.SetInput(s)
+	return sc
+}
+
+// SetType sets the "type" field.
+func (sc *ScanCreate) SetType(s string) *ScanCreate {
+	sc.mutation.SetType(s)
+	return sc
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (sc *ScanCreate) SetTimestamp(t time.Time) *ScanCreate {
 	sc.mutation.SetTimestamp(t)
@@ -100,14 +112,14 @@ func (sc *ScanCreate) AddDomain(d ...*Domain) *ScanCreate {
 	return sc.AddDomainIDs(ids...)
 }
 
-// AddPathIDs adds the "paths" edge to the Path entity by IDs.
+// AddPathIDs adds the "path" edge to the Path entity by IDs.
 func (sc *ScanCreate) AddPathIDs(ids ...int) *ScanCreate {
 	sc.mutation.AddPathIDs(ids...)
 	return sc
 }
 
-// AddPaths adds the "paths" edges to the Path entity.
-func (sc *ScanCreate) AddPaths(p ...*Path) *ScanCreate {
+// AddPath adds the "path" edges to the Path entity.
+func (sc *ScanCreate) AddPath(p ...*Path) *ScanCreate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -197,6 +209,12 @@ func (sc *ScanCreate) check() error {
 	if _, ok := sc.mutation.Scanid(); !ok {
 		return &ValidationError{Name: "scanid", err: errors.New(`model_ent: missing required field "Scan.scanid"`)}
 	}
+	if _, ok := sc.mutation.Input(); !ok {
+		return &ValidationError{Name: "input", err: errors.New(`model_ent: missing required field "Scan.input"`)}
+	}
+	if _, ok := sc.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`model_ent: missing required field "Scan.type"`)}
+	}
 	if _, ok := sc.mutation.Timestamp(); !ok {
 		return &ValidationError{Name: "timestamp", err: errors.New(`model_ent: missing required field "Scan.timestamp"`)}
 	}
@@ -230,16 +248,24 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 		_spec.SetField(scan.FieldScanid, field.TypeString, value)
 		_node.Scanid = value
 	}
+	if value, ok := sc.mutation.Input(); ok {
+		_spec.SetField(scan.FieldInput, field.TypeString, value)
+		_node.Input = value
+	}
+	if value, ok := sc.mutation.GetType(); ok {
+		_spec.SetField(scan.FieldType, field.TypeString, value)
+		_node.Type = value
+	}
 	if value, ok := sc.mutation.Timestamp(); ok {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
 	}
 	if nodes := sc.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -252,10 +278,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.AsninfoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -268,10 +294,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.DnsentryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -284,10 +310,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -298,12 +324,12 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := sc.mutation.PathsIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -316,10 +342,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -332,10 +358,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.RegistrarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -348,10 +374,10 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 	}
 	if nodes := sc.mutation.WhoisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),

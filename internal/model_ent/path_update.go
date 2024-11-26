@@ -10,8 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
 )
 
 // PathUpdate is the builder for updating Path entities.
@@ -41,9 +43,81 @@ func (pu *PathUpdate) SetNillablePath(s *string) *PathUpdate {
 	return pu
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (pu *PathUpdate) AddDomainIDs(ids ...int) *PathUpdate {
+	pu.mutation.AddDomainIDs(ids...)
+	return pu
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (pu *PathUpdate) AddDomain(d ...*Domain) *PathUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.AddDomainIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (pu *PathUpdate) AddScanIDs(ids ...int) *PathUpdate {
+	pu.mutation.AddScanIDs(ids...)
+	return pu
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (pu *PathUpdate) AddScan(s ...*Scan) *PathUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.AddScanIDs(ids...)
+}
+
 // Mutation returns the PathMutation object of the builder.
 func (pu *PathUpdate) Mutation() *PathMutation {
 	return pu.mutation
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (pu *PathUpdate) ClearDomain() *PathUpdate {
+	pu.mutation.ClearDomain()
+	return pu
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (pu *PathUpdate) RemoveDomainIDs(ids ...int) *PathUpdate {
+	pu.mutation.RemoveDomainIDs(ids...)
+	return pu
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (pu *PathUpdate) RemoveDomain(d ...*Domain) *PathUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pu.RemoveDomainIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (pu *PathUpdate) ClearScan() *PathUpdate {
+	pu.mutation.ClearScan()
+	return pu
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (pu *PathUpdate) RemoveScanIDs(ids ...int) *PathUpdate {
+	pu.mutation.RemoveScanIDs(ids...)
+	return pu
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (pu *PathUpdate) RemoveScan(s ...*Scan) *PathUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pu.RemoveScanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -85,6 +159,96 @@ func (pu *PathUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Path(); ok {
 		_spec.SetField(path.FieldPath, field.TypeString, value)
 	}
+	if pu.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedDomainIDs(); len(nodes) > 0 && !pu.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if pu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.RemovedScanIDs(); len(nodes) > 0 && !pu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := pu.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, pu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{path.Label}
@@ -119,9 +283,81 @@ func (puo *PathUpdateOne) SetNillablePath(s *string) *PathUpdateOne {
 	return puo
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (puo *PathUpdateOne) AddDomainIDs(ids ...int) *PathUpdateOne {
+	puo.mutation.AddDomainIDs(ids...)
+	return puo
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (puo *PathUpdateOne) AddDomain(d ...*Domain) *PathUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.AddDomainIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (puo *PathUpdateOne) AddScanIDs(ids ...int) *PathUpdateOne {
+	puo.mutation.AddScanIDs(ids...)
+	return puo
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (puo *PathUpdateOne) AddScan(s ...*Scan) *PathUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.AddScanIDs(ids...)
+}
+
 // Mutation returns the PathMutation object of the builder.
 func (puo *PathUpdateOne) Mutation() *PathMutation {
 	return puo.mutation
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (puo *PathUpdateOne) ClearDomain() *PathUpdateOne {
+	puo.mutation.ClearDomain()
+	return puo
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (puo *PathUpdateOne) RemoveDomainIDs(ids ...int) *PathUpdateOne {
+	puo.mutation.RemoveDomainIDs(ids...)
+	return puo
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (puo *PathUpdateOne) RemoveDomain(d ...*Domain) *PathUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return puo.RemoveDomainIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (puo *PathUpdateOne) ClearScan() *PathUpdateOne {
+	puo.mutation.ClearScan()
+	return puo
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (puo *PathUpdateOne) RemoveScanIDs(ids ...int) *PathUpdateOne {
+	puo.mutation.RemoveScanIDs(ids...)
+	return puo
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (puo *PathUpdateOne) RemoveScan(s ...*Scan) *PathUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return puo.RemoveScanIDs(ids...)
 }
 
 // Where appends a list predicates to the PathUpdate builder.
@@ -192,6 +428,96 @@ func (puo *PathUpdateOne) sqlSave(ctx context.Context) (_node *Path, err error) 
 	}
 	if value, ok := puo.mutation.Path(); ok {
 		_spec.SetField(path.FieldPath, field.TypeString, value)
+	}
+	if puo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !puo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if puo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.RemovedScanIDs(); len(nodes) > 0 && !puo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := puo.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Path{config: puo.config}
 	_spec.Assign = _node.assignValues

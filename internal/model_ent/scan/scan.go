@@ -14,6 +14,10 @@ const (
 	FieldID = "id"
 	// FieldScanid holds the string denoting the scanid field in the database.
 	FieldScanid = "scanid"
+	// FieldInput holds the string denoting the input field in the database.
+	FieldInput = "input"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldTimestamp holds the string denoting the timestamp field in the database.
 	FieldTimestamp = "timestamp"
 	// EdgeIpaddress holds the string denoting the ipaddress edge name in mutations.
@@ -24,8 +28,8 @@ const (
 	EdgeDnsentry = "dnsentry"
 	// EdgeDomain holds the string denoting the domain edge name in mutations.
 	EdgeDomain = "domain"
-	// EdgePaths holds the string denoting the paths edge name in mutations.
-	EdgePaths = "paths"
+	// EdgePath holds the string denoting the path edge name in mutations.
+	EdgePath = "path"
 	// EdgeNameserver holds the string denoting the nameserver edge name in mutations.
 	EdgeNameserver = "nameserver"
 	// EdgeRegistrar holds the string denoting the registrar edge name in mutations.
@@ -34,70 +38,83 @@ const (
 	EdgeWhois = "whois"
 	// Table holds the table name of the scan in the database.
 	Table = "scans"
-	// IpaddressTable is the table that holds the ipaddress relation/edge.
-	IpaddressTable = "ip_addresses"
+	// IpaddressTable is the table that holds the ipaddress relation/edge. The primary key declared below.
+	IpaddressTable = "scan_ipaddress"
 	// IpaddressInverseTable is the table name for the IPAddress entity.
 	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
 	IpaddressInverseTable = "ip_addresses"
-	// IpaddressColumn is the table column denoting the ipaddress relation/edge.
-	IpaddressColumn = "scan_ipaddress"
-	// AsninfoTable is the table that holds the asninfo relation/edge.
-	AsninfoTable = "asn_infos"
+	// AsninfoTable is the table that holds the asninfo relation/edge. The primary key declared below.
+	AsninfoTable = "scan_asninfo"
 	// AsninfoInverseTable is the table name for the ASNInfo entity.
 	// It exists in this package in order to avoid circular dependency with the "asninfo" package.
 	AsninfoInverseTable = "asn_infos"
-	// AsninfoColumn is the table column denoting the asninfo relation/edge.
-	AsninfoColumn = "scan_asninfo"
-	// DnsentryTable is the table that holds the dnsentry relation/edge.
-	DnsentryTable = "dns_entries"
+	// DnsentryTable is the table that holds the dnsentry relation/edge. The primary key declared below.
+	DnsentryTable = "scan_dnsentry"
 	// DnsentryInverseTable is the table name for the DNSEntry entity.
 	// It exists in this package in order to avoid circular dependency with the "dnsentry" package.
 	DnsentryInverseTable = "dns_entries"
-	// DnsentryColumn is the table column denoting the dnsentry relation/edge.
-	DnsentryColumn = "scan_dnsentry"
-	// DomainTable is the table that holds the domain relation/edge.
-	DomainTable = "domains"
+	// DomainTable is the table that holds the domain relation/edge. The primary key declared below.
+	DomainTable = "scan_domain"
 	// DomainInverseTable is the table name for the Domain entity.
 	// It exists in this package in order to avoid circular dependency with the "domain" package.
 	DomainInverseTable = "domains"
-	// DomainColumn is the table column denoting the domain relation/edge.
-	DomainColumn = "scan_domain"
-	// PathsTable is the table that holds the paths relation/edge.
-	PathsTable = "paths"
-	// PathsInverseTable is the table name for the Path entity.
+	// PathTable is the table that holds the path relation/edge. The primary key declared below.
+	PathTable = "scan_path"
+	// PathInverseTable is the table name for the Path entity.
 	// It exists in this package in order to avoid circular dependency with the "path" package.
-	PathsInverseTable = "paths"
-	// PathsColumn is the table column denoting the paths relation/edge.
-	PathsColumn = "scan_paths"
-	// NameserverTable is the table that holds the nameserver relation/edge.
-	NameserverTable = "nameservers"
+	PathInverseTable = "paths"
+	// NameserverTable is the table that holds the nameserver relation/edge. The primary key declared below.
+	NameserverTable = "scan_nameserver"
 	// NameserverInverseTable is the table name for the Nameserver entity.
 	// It exists in this package in order to avoid circular dependency with the "nameserver" package.
 	NameserverInverseTable = "nameservers"
-	// NameserverColumn is the table column denoting the nameserver relation/edge.
-	NameserverColumn = "scan_nameserver"
-	// RegistrarTable is the table that holds the registrar relation/edge.
-	RegistrarTable = "registrars"
+	// RegistrarTable is the table that holds the registrar relation/edge. The primary key declared below.
+	RegistrarTable = "scan_registrar"
 	// RegistrarInverseTable is the table name for the Registrar entity.
 	// It exists in this package in order to avoid circular dependency with the "registrar" package.
 	RegistrarInverseTable = "registrars"
-	// RegistrarColumn is the table column denoting the registrar relation/edge.
-	RegistrarColumn = "scan_registrar"
-	// WhoisTable is the table that holds the whois relation/edge.
-	WhoisTable = "whois"
+	// WhoisTable is the table that holds the whois relation/edge. The primary key declared below.
+	WhoisTable = "scan_whois"
 	// WhoisInverseTable is the table name for the Whois entity.
 	// It exists in this package in order to avoid circular dependency with the "whois" package.
 	WhoisInverseTable = "whois"
-	// WhoisColumn is the table column denoting the whois relation/edge.
-	WhoisColumn = "scan_whois"
 )
 
 // Columns holds all SQL columns for scan fields.
 var Columns = []string{
 	FieldID,
 	FieldScanid,
+	FieldInput,
+	FieldType,
 	FieldTimestamp,
 }
+
+var (
+	// IpaddressPrimaryKey and IpaddressColumn2 are the table columns denoting the
+	// primary key for the ipaddress relation (M2M).
+	IpaddressPrimaryKey = []string{"scan_id", "ip_address_id"}
+	// AsninfoPrimaryKey and AsninfoColumn2 are the table columns denoting the
+	// primary key for the asninfo relation (M2M).
+	AsninfoPrimaryKey = []string{"scan_id", "asn_info_id"}
+	// DnsentryPrimaryKey and DnsentryColumn2 are the table columns denoting the
+	// primary key for the dnsentry relation (M2M).
+	DnsentryPrimaryKey = []string{"scan_id", "dns_entry_id"}
+	// DomainPrimaryKey and DomainColumn2 are the table columns denoting the
+	// primary key for the domain relation (M2M).
+	DomainPrimaryKey = []string{"scan_id", "domain_id"}
+	// PathPrimaryKey and PathColumn2 are the table columns denoting the
+	// primary key for the path relation (M2M).
+	PathPrimaryKey = []string{"scan_id", "path_id"}
+	// NameserverPrimaryKey and NameserverColumn2 are the table columns denoting the
+	// primary key for the nameserver relation (M2M).
+	NameserverPrimaryKey = []string{"scan_id", "nameserver_id"}
+	// RegistrarPrimaryKey and RegistrarColumn2 are the table columns denoting the
+	// primary key for the registrar relation (M2M).
+	RegistrarPrimaryKey = []string{"scan_id", "registrar_id"}
+	// WhoisPrimaryKey and WhoisColumn2 are the table columns denoting the
+	// primary key for the whois relation (M2M).
+	WhoisPrimaryKey = []string{"scan_id", "whois_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -120,6 +137,16 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByScanid orders the results by the scanid field.
 func ByScanid(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldScanid, opts...).ToFunc()
+}
+
+// ByInput orders the results by the input field.
+func ByInput(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldInput, opts...).ToFunc()
+}
+
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
 // ByTimestamp orders the results by the timestamp field.
@@ -183,17 +210,17 @@ func ByDomain(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByPathsCount orders the results by paths count.
-func ByPathsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByPathCount orders the results by path count.
+func ByPathCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPathsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newPathStep(), opts...)
 	}
 }
 
-// ByPaths orders the results by paths terms.
-func ByPaths(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByPath orders the results by path terms.
+func ByPath(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPathsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newPathStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -242,55 +269,55 @@ func newIpaddressStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IpaddressInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
 	)
 }
 func newAsninfoStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AsninfoInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AsninfoTable, AsninfoColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, AsninfoTable, AsninfoPrimaryKey...),
 	)
 }
 func newDnsentryStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DnsentryInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DnsentryTable, DnsentryColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, DnsentryTable, DnsentryPrimaryKey...),
 	)
 }
 func newDomainStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DomainInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
 	)
 }
-func newPathsStep() *sqlgraph.Step {
+func newPathStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PathsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, PathsTable, PathsColumn),
+		sqlgraph.To(PathInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, PathTable, PathPrimaryKey...),
 	)
 }
 func newNameserverStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NameserverInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
 	)
 }
 func newRegistrarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RegistrarInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, RegistrarTable, RegistrarColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, RegistrarTable, RegistrarPrimaryKey...),
 	)
 }
 func newWhoisStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(WhoisInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, WhoisTable, WhoisColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, WhoisTable, WhoisPrimaryKey...),
 	)
 }

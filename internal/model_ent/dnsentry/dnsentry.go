@@ -4,6 +4,7 @@ package dnsentry
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -23,8 +24,42 @@ const (
 	FieldTimeFirst = "time_first"
 	// FieldTimeLast holds the string denoting the time_last field in the database.
 	FieldTimeLast = "time_last"
+	// EdgeDomain holds the string denoting the domain edge name in mutations.
+	EdgeDomain = "domain"
+	// EdgeIpaddress holds the string denoting the ipaddress edge name in mutations.
+	EdgeIpaddress = "ipaddress"
+	// EdgeNameserver holds the string denoting the nameserver edge name in mutations.
+	EdgeNameserver = "nameserver"
+	// EdgeScan holds the string denoting the scan edge name in mutations.
+	EdgeScan = "scan"
 	// Table holds the table name of the dnsentry in the database.
 	Table = "dns_entries"
+	// DomainTable is the table that holds the domain relation/edge.
+	DomainTable = "domains"
+	// DomainInverseTable is the table name for the Domain entity.
+	// It exists in this package in order to avoid circular dependency with the "domain" package.
+	DomainInverseTable = "domains"
+	// DomainColumn is the table column denoting the domain relation/edge.
+	DomainColumn = "dns_entry_domain"
+	// IpaddressTable is the table that holds the ipaddress relation/edge.
+	IpaddressTable = "ip_addresses"
+	// IpaddressInverseTable is the table name for the IPAddress entity.
+	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
+	IpaddressInverseTable = "ip_addresses"
+	// IpaddressColumn is the table column denoting the ipaddress relation/edge.
+	IpaddressColumn = "dns_entry_ipaddress"
+	// NameserverTable is the table that holds the nameserver relation/edge.
+	NameserverTable = "nameservers"
+	// NameserverInverseTable is the table name for the Nameserver entity.
+	// It exists in this package in order to avoid circular dependency with the "nameserver" package.
+	NameserverInverseTable = "nameservers"
+	// NameserverColumn is the table column denoting the nameserver relation/edge.
+	NameserverColumn = "dns_entry_nameserver"
+	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
+	ScanTable = "scan_dnsentry"
+	// ScanInverseTable is the table name for the Scan entity.
+	// It exists in this package in order to avoid circular dependency with the "scan" package.
+	ScanInverseTable = "scans"
 )
 
 // Columns holds all SQL columns for dnsentry fields.
@@ -41,9 +76,14 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "dns_entries"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"domain_dnsentry",
-	"scan_dnsentry",
+	"example_dnsentry",
 }
+
+var (
+	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
+	// primary key for the scan relation (M2M).
+	ScanPrimaryKey = []string{"scan_id", "dns_entry_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -96,4 +136,88 @@ func ByTimeFirst(opts ...sql.OrderTermOption) OrderOption {
 // ByTimeLast orders the results by the time_last field.
 func ByTimeLast(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimeLast, opts...).ToFunc()
+}
+
+// ByDomainCount orders the results by domain count.
+func ByDomainCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDomainStep(), opts...)
+	}
+}
+
+// ByDomain orders the results by domain terms.
+func ByDomain(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDomainStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIpaddressCount orders the results by ipaddress count.
+func ByIpaddressCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIpaddressStep(), opts...)
+	}
+}
+
+// ByIpaddress orders the results by ipaddress terms.
+func ByIpaddress(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIpaddressStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByNameserverCount orders the results by nameserver count.
+func ByNameserverCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newNameserverStep(), opts...)
+	}
+}
+
+// ByNameserver orders the results by nameserver terms.
+func ByNameserver(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newNameserverStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByScanCount orders the results by scan count.
+func ByScanCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScanStep(), opts...)
+	}
+}
+
+// ByScan orders the results by scan terms.
+func ByScan(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScanStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newDomainStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DomainInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+	)
+}
+func newIpaddressStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IpaddressInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+	)
+}
+func newNameserverStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(NameserverInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+	)
+}
+func newScanStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScanInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+	)
 }

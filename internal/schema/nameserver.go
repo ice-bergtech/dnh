@@ -24,5 +24,10 @@ func (Nameserver) Fields() []ent.Field {
 func (Nameserver) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("ipaddress", IPAddress.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("nameserver"),
+		edge.From("dnsentry", Scan.Type).Ref("nameserver"),
+		edge.From("domain", Domain.Type).Ref("nameserver"),
+		edge.From("whois", Whois.Type).Ref("nameserver"),
 	}
 }

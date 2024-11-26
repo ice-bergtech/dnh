@@ -15,6 +15,7 @@ type Domain struct {
 func (Domain) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name"),
+		field.Ints("ports"),
 		field.Time("time_first"),
 		field.Time("time_last"),
 	}
@@ -24,9 +25,13 @@ func (Domain) Fields() []ent.Field {
 func (Domain) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("nameserver", Nameserver.Type),
-		edge.To("domain", Domain.Type),
-		edge.To("dnsentry", DNSEntry.Type),
+		edge.To("subdomain", Domain.Type),
 		edge.To("ipaddress", IPAddress.Type),
 		edge.To("path", Path.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("domain"),
+		edge.From("dnsentry", Scan.Type).Ref("domain"),
+		edge.From("registrar", Registrar.Type).Ref("domain"),
+		edge.From("whois", Whois.Type).Ref("domain"),
 	}
 }

@@ -4,6 +4,7 @@ package model_ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,18 +12,28 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // RegistrarQuery is the builder for querying Registrar entities.
 type RegistrarQuery struct {
 	config
-	ctx        *QueryContext
-	order      []registrar.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Registrar
-	withFKs    bool
+	ctx           *QueryContext
+	order         []registrar.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Registrar
+	withIpaddress *IPAddressQuery
+	withDomain    *DomainQuery
+	withAsninfo   *ASNInfoQuery
+	withScan      *ScanQuery
+	withWhois     *WhoisQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +68,116 @@ func (rq *RegistrarQuery) Unique(unique bool) *RegistrarQuery {
 func (rq *RegistrarQuery) Order(o ...registrar.OrderOption) *RegistrarQuery {
 	rq.order = append(rq.order, o...)
 	return rq
+}
+
+// QueryIpaddress chains the current query on the "ipaddress" edge.
+func (rq *RegistrarQuery) QueryIpaddress() *IPAddressQuery {
+	query := (&IPAddressClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.IpaddressTable, registrar.IpaddressPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDomain chains the current query on the "domain" edge.
+func (rq *RegistrarQuery) QueryDomain() *DomainQuery {
+	query := (&DomainClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.DomainTable, registrar.DomainPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryAsninfo chains the current query on the "asninfo" edge.
+func (rq *RegistrarQuery) QueryAsninfo() *ASNInfoQuery {
+	query := (&ASNInfoClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
+			sqlgraph.To(asninfo.Table, asninfo.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.AsninfoTable, registrar.AsninfoPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryScan chains the current query on the "scan" edge.
+func (rq *RegistrarQuery) QueryScan() *ScanQuery {
+	query := (&ScanClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, registrar.ScanTable, registrar.ScanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWhois chains the current query on the "whois" edge.
+func (rq *RegistrarQuery) QueryWhois() *WhoisQuery {
+	query := (&WhoisClient{config: rq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := rq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := rq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, registrar.WhoisTable, registrar.WhoisPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Registrar entity from the query.
@@ -246,15 +367,75 @@ func (rq *RegistrarQuery) Clone() *RegistrarQuery {
 		return nil
 	}
 	return &RegistrarQuery{
-		config:     rq.config,
-		ctx:        rq.ctx.Clone(),
-		order:      append([]registrar.OrderOption{}, rq.order...),
-		inters:     append([]Interceptor{}, rq.inters...),
-		predicates: append([]predicate.Registrar{}, rq.predicates...),
+		config:        rq.config,
+		ctx:           rq.ctx.Clone(),
+		order:         append([]registrar.OrderOption{}, rq.order...),
+		inters:        append([]Interceptor{}, rq.inters...),
+		predicates:    append([]predicate.Registrar{}, rq.predicates...),
+		withIpaddress: rq.withIpaddress.Clone(),
+		withDomain:    rq.withDomain.Clone(),
+		withAsninfo:   rq.withAsninfo.Clone(),
+		withScan:      rq.withScan.Clone(),
+		withWhois:     rq.withWhois.Clone(),
 		// clone intermediate query.
 		sql:  rq.sql.Clone(),
 		path: rq.path,
 	}
+}
+
+// WithIpaddress tells the query-builder to eager-load the nodes that are connected to
+// the "ipaddress" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RegistrarQuery) WithIpaddress(opts ...func(*IPAddressQuery)) *RegistrarQuery {
+	query := (&IPAddressClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withIpaddress = query
+	return rq
+}
+
+// WithDomain tells the query-builder to eager-load the nodes that are connected to
+// the "domain" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RegistrarQuery) WithDomain(opts ...func(*DomainQuery)) *RegistrarQuery {
+	query := (&DomainClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withDomain = query
+	return rq
+}
+
+// WithAsninfo tells the query-builder to eager-load the nodes that are connected to
+// the "asninfo" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RegistrarQuery) WithAsninfo(opts ...func(*ASNInfoQuery)) *RegistrarQuery {
+	query := (&ASNInfoClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withAsninfo = query
+	return rq
+}
+
+// WithScan tells the query-builder to eager-load the nodes that are connected to
+// the "scan" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RegistrarQuery) WithScan(opts ...func(*ScanQuery)) *RegistrarQuery {
+	query := (&ScanClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withScan = query
+	return rq
+}
+
+// WithWhois tells the query-builder to eager-load the nodes that are connected to
+// the "whois" edge. The optional arguments are used to configure the query builder of the edge.
+func (rq *RegistrarQuery) WithWhois(opts ...func(*WhoisQuery)) *RegistrarQuery {
+	query := (&WhoisClient{config: rq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	rq.withWhois = query
+	return rq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,9 +514,16 @@ func (rq *RegistrarQuery) prepareQuery(ctx context.Context) error {
 
 func (rq *RegistrarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Registrar, error) {
 	var (
-		nodes   = []*Registrar{}
-		withFKs = rq.withFKs
-		_spec   = rq.querySpec()
+		nodes       = []*Registrar{}
+		withFKs     = rq.withFKs
+		_spec       = rq.querySpec()
+		loadedTypes = [5]bool{
+			rq.withIpaddress != nil,
+			rq.withDomain != nil,
+			rq.withAsninfo != nil,
+			rq.withScan != nil,
+			rq.withWhois != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, registrar.ForeignKeys...)
@@ -346,6 +534,7 @@ func (rq *RegistrarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Re
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Registrar{config: rq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -357,7 +546,348 @@ func (rq *RegistrarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Re
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := rq.withIpaddress; query != nil {
+		if err := rq.loadIpaddress(ctx, query, nodes,
+			func(n *Registrar) { n.Edges.Ipaddress = []*IPAddress{} },
+			func(n *Registrar, e *IPAddress) { n.Edges.Ipaddress = append(n.Edges.Ipaddress, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withDomain; query != nil {
+		if err := rq.loadDomain(ctx, query, nodes,
+			func(n *Registrar) { n.Edges.Domain = []*Domain{} },
+			func(n *Registrar, e *Domain) { n.Edges.Domain = append(n.Edges.Domain, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withAsninfo; query != nil {
+		if err := rq.loadAsninfo(ctx, query, nodes,
+			func(n *Registrar) { n.Edges.Asninfo = []*ASNInfo{} },
+			func(n *Registrar, e *ASNInfo) { n.Edges.Asninfo = append(n.Edges.Asninfo, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withScan; query != nil {
+		if err := rq.loadScan(ctx, query, nodes,
+			func(n *Registrar) { n.Edges.Scan = []*Scan{} },
+			func(n *Registrar, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := rq.withWhois; query != nil {
+		if err := rq.loadWhois(ctx, query, nodes,
+			func(n *Registrar) { n.Edges.Whois = []*Whois{} },
+			func(n *Registrar, e *Whois) { n.Edges.Whois = append(n.Edges.Whois, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (rq *RegistrarQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *IPAddress)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Registrar)
+	nids := make(map[int]map[*Registrar]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(registrar.IpaddressTable)
+		s.Join(joinT).On(s.C(ipaddress.FieldID), joinT.C(registrar.IpaddressPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(registrar.IpaddressPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(registrar.IpaddressPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Registrar]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*IPAddress](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "ipaddress" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (rq *RegistrarQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *Domain)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Registrar)
+	nids := make(map[int]map[*Registrar]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(registrar.DomainTable)
+		s.Join(joinT).On(s.C(domain.FieldID), joinT.C(registrar.DomainPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(registrar.DomainPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(registrar.DomainPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Registrar]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Domain](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "domain" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (rq *RegistrarQuery) loadAsninfo(ctx context.Context, query *ASNInfoQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *ASNInfo)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Registrar)
+	nids := make(map[int]map[*Registrar]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(registrar.AsninfoTable)
+		s.Join(joinT).On(s.C(asninfo.FieldID), joinT.C(registrar.AsninfoPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(registrar.AsninfoPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(registrar.AsninfoPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Registrar]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*ASNInfo](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "asninfo" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (rq *RegistrarQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *Scan)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Registrar)
+	nids := make(map[int]map[*Registrar]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(registrar.ScanTable)
+		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(registrar.ScanPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(registrar.ScanPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(registrar.ScanPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Registrar]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "scan" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (rq *RegistrarQuery) loadWhois(ctx context.Context, query *WhoisQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *Whois)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Registrar)
+	nids := make(map[int]map[*Registrar]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(registrar.WhoisTable)
+		s.Join(joinT).On(s.C(whois.FieldID), joinT.C(registrar.WhoisPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(registrar.WhoisPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(registrar.WhoisPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Registrar]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Whois](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "whois" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (rq *RegistrarQuery) sqlCount(ctx context.Context) (int, error) {

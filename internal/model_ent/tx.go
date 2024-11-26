@@ -18,6 +18,8 @@ type Tx struct {
 	DNSEntry *DNSEntryClient
 	// Domain is the client for interacting with the Domain builders.
 	Domain *DomainClient
+	// Example is the client for interacting with the Example builders.
+	Example *ExampleClient
 	// IPAddress is the client for interacting with the IPAddress builders.
 	IPAddress *IPAddressClient
 	// Nameserver is the client for interacting with the Nameserver builders.
@@ -164,6 +166,7 @@ func (tx *Tx) init() {
 	tx.ASNInfo = NewASNInfoClient(tx.config)
 	tx.DNSEntry = NewDNSEntryClient(tx.config)
 	tx.Domain = NewDomainClient(tx.config)
+	tx.Example = NewExampleClient(tx.config)
 	tx.IPAddress = NewIPAddressClient(tx.config)
 	tx.Nameserver = NewNameserverClient(tx.config)
 	tx.Path = NewPathClient(tx.config)

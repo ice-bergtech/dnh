@@ -12,9 +12,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // NameserverQuery is the builder for querying Nameserver entities.
@@ -25,6 +28,10 @@ type NameserverQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.Nameserver
 	withIpaddress *IPAddressQuery
+	withScan      *ScanQuery
+	withDnsentry  *ScanQuery
+	withDomain    *DomainQuery
+	withWhois     *WhoisQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -76,7 +83,95 @@ func (nq *NameserverQuery) QueryIpaddress() *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(nameserver.Table, nameserver.FieldID, selector),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, nameserver.IpaddressTable, nameserver.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, nameserver.IpaddressTable, nameserver.IpaddressPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryScan chains the current query on the "scan" edge.
+func (nq *NameserverQuery) QueryScan() *ScanQuery {
+	query := (&ScanClient{config: nq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, selector),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.ScanTable, nameserver.ScanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDnsentry chains the current query on the "dnsentry" edge.
+func (nq *NameserverQuery) QueryDnsentry() *ScanQuery {
+	query := (&ScanClient{config: nq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, selector),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.DnsentryTable, nameserver.DnsentryPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryDomain chains the current query on the "domain" edge.
+func (nq *NameserverQuery) QueryDomain() *DomainQuery {
+	query := (&DomainClient{config: nq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, selector),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.DomainTable, nameserver.DomainPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWhois chains the current query on the "whois" edge.
+func (nq *NameserverQuery) QueryWhois() *WhoisQuery {
+	query := (&WhoisClient{config: nq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := nq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := nq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, selector),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.WhoisTable, nameserver.WhoisPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(nq.driver.Dialect(), step)
 		return fromU, nil
@@ -277,6 +372,10 @@ func (nq *NameserverQuery) Clone() *NameserverQuery {
 		inters:        append([]Interceptor{}, nq.inters...),
 		predicates:    append([]predicate.Nameserver{}, nq.predicates...),
 		withIpaddress: nq.withIpaddress.Clone(),
+		withScan:      nq.withScan.Clone(),
+		withDnsentry:  nq.withDnsentry.Clone(),
+		withDomain:    nq.withDomain.Clone(),
+		withWhois:     nq.withWhois.Clone(),
 		// clone intermediate query.
 		sql:  nq.sql.Clone(),
 		path: nq.path,
@@ -291,6 +390,50 @@ func (nq *NameserverQuery) WithIpaddress(opts ...func(*IPAddressQuery)) *Nameser
 		opt(query)
 	}
 	nq.withIpaddress = query
+	return nq
+}
+
+// WithScan tells the query-builder to eager-load the nodes that are connected to
+// the "scan" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NameserverQuery) WithScan(opts ...func(*ScanQuery)) *NameserverQuery {
+	query := (&ScanClient{config: nq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withScan = query
+	return nq
+}
+
+// WithDnsentry tells the query-builder to eager-load the nodes that are connected to
+// the "dnsentry" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NameserverQuery) WithDnsentry(opts ...func(*ScanQuery)) *NameserverQuery {
+	query := (&ScanClient{config: nq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withDnsentry = query
+	return nq
+}
+
+// WithDomain tells the query-builder to eager-load the nodes that are connected to
+// the "domain" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NameserverQuery) WithDomain(opts ...func(*DomainQuery)) *NameserverQuery {
+	query := (&DomainClient{config: nq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withDomain = query
+	return nq
+}
+
+// WithWhois tells the query-builder to eager-load the nodes that are connected to
+// the "whois" edge. The optional arguments are used to configure the query builder of the edge.
+func (nq *NameserverQuery) WithWhois(opts ...func(*WhoisQuery)) *NameserverQuery {
+	query := (&WhoisClient{config: nq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	nq.withWhois = query
 	return nq
 }
 
@@ -373,8 +516,12 @@ func (nq *NameserverQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*N
 		nodes       = []*Nameserver{}
 		withFKs     = nq.withFKs
 		_spec       = nq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [5]bool{
 			nq.withIpaddress != nil,
+			nq.withScan != nil,
+			nq.withDnsentry != nil,
+			nq.withDomain != nil,
+			nq.withWhois != nil,
 		}
 	)
 	if withFKs {
@@ -405,37 +552,339 @@ func (nq *NameserverQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*N
 			return nil, err
 		}
 	}
+	if query := nq.withScan; query != nil {
+		if err := nq.loadScan(ctx, query, nodes,
+			func(n *Nameserver) { n.Edges.Scan = []*Scan{} },
+			func(n *Nameserver, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := nq.withDnsentry; query != nil {
+		if err := nq.loadDnsentry(ctx, query, nodes,
+			func(n *Nameserver) { n.Edges.Dnsentry = []*Scan{} },
+			func(n *Nameserver, e *Scan) { n.Edges.Dnsentry = append(n.Edges.Dnsentry, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := nq.withDomain; query != nil {
+		if err := nq.loadDomain(ctx, query, nodes,
+			func(n *Nameserver) { n.Edges.Domain = []*Domain{} },
+			func(n *Nameserver, e *Domain) { n.Edges.Domain = append(n.Edges.Domain, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := nq.withWhois; query != nil {
+		if err := nq.loadWhois(ctx, query, nodes,
+			func(n *Nameserver) { n.Edges.Whois = []*Whois{} },
+			func(n *Nameserver, e *Whois) { n.Edges.Whois = append(n.Edges.Whois, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
 func (nq *NameserverQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*Nameserver, init func(*Nameserver), assign func(*Nameserver, *IPAddress)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Nameserver)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Nameserver)
+	nids := make(map[int]map[*Nameserver]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.IPAddress(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(nameserver.IpaddressColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(nameserver.IpaddressTable)
+		s.Join(joinT).On(s.C(ipaddress.FieldID), joinT.C(nameserver.IpaddressPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(nameserver.IpaddressPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(nameserver.IpaddressPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Nameserver]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*IPAddress](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.nameserver_ipaddress
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "nameserver_ipaddress" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "nameserver_ipaddress" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "ipaddress" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (nq *NameserverQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Nameserver, init func(*Nameserver), assign func(*Nameserver, *Scan)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Nameserver)
+	nids := make(map[int]map[*Nameserver]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(nameserver.ScanTable)
+		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(nameserver.ScanPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(nameserver.ScanPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(nameserver.ScanPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Nameserver]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "scan" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (nq *NameserverQuery) loadDnsentry(ctx context.Context, query *ScanQuery, nodes []*Nameserver, init func(*Nameserver), assign func(*Nameserver, *Scan)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Nameserver)
+	nids := make(map[int]map[*Nameserver]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(nameserver.DnsentryTable)
+		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(nameserver.DnsentryPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(nameserver.DnsentryPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(nameserver.DnsentryPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Nameserver]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "dnsentry" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (nq *NameserverQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes []*Nameserver, init func(*Nameserver), assign func(*Nameserver, *Domain)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Nameserver)
+	nids := make(map[int]map[*Nameserver]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(nameserver.DomainTable)
+		s.Join(joinT).On(s.C(domain.FieldID), joinT.C(nameserver.DomainPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(nameserver.DomainPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(nameserver.DomainPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Nameserver]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Domain](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "domain" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (nq *NameserverQuery) loadWhois(ctx context.Context, query *WhoisQuery, nodes []*Nameserver, init func(*Nameserver), assign func(*Nameserver, *Whois)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Nameserver)
+	nids := make(map[int]map[*Nameserver]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(nameserver.WhoisTable)
+		s.Join(joinT).On(s.C(whois.FieldID), joinT.C(nameserver.WhoisPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(nameserver.WhoisPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(nameserver.WhoisPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Nameserver]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Whois](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "whois" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

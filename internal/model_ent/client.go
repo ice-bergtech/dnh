@@ -18,6 +18,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/example"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
@@ -37,6 +38,8 @@ type Client struct {
 	DNSEntry *DNSEntryClient
 	// Domain is the client for interacting with the Domain builders.
 	Domain *DomainClient
+	// Example is the client for interacting with the Example builders.
+	Example *ExampleClient
 	// IPAddress is the client for interacting with the IPAddress builders.
 	IPAddress *IPAddressClient
 	// Nameserver is the client for interacting with the Nameserver builders.
@@ -63,6 +66,7 @@ func (c *Client) init() {
 	c.ASNInfo = NewASNInfoClient(c.config)
 	c.DNSEntry = NewDNSEntryClient(c.config)
 	c.Domain = NewDomainClient(c.config)
+	c.Example = NewExampleClient(c.config)
 	c.IPAddress = NewIPAddressClient(c.config)
 	c.Nameserver = NewNameserverClient(c.config)
 	c.Path = NewPathClient(c.config)
@@ -164,6 +168,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		ASNInfo:    NewASNInfoClient(cfg),
 		DNSEntry:   NewDNSEntryClient(cfg),
 		Domain:     NewDomainClient(cfg),
+		Example:    NewExampleClient(cfg),
 		IPAddress:  NewIPAddressClient(cfg),
 		Nameserver: NewNameserverClient(cfg),
 		Path:       NewPathClient(cfg),
@@ -192,6 +197,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		ASNInfo:    NewASNInfoClient(cfg),
 		DNSEntry:   NewDNSEntryClient(cfg),
 		Domain:     NewDomainClient(cfg),
+		Example:    NewExampleClient(cfg),
 		IPAddress:  NewIPAddressClient(cfg),
 		Nameserver: NewNameserverClient(cfg),
 		Path:       NewPathClient(cfg),
@@ -227,8 +233,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.ASNInfo, c.DNSEntry, c.Domain, c.IPAddress, c.Nameserver, c.Path, c.Registrar,
-		c.Scan, c.Whois,
+		c.ASNInfo, c.DNSEntry, c.Domain, c.Example, c.IPAddress, c.Nameserver, c.Path,
+		c.Registrar, c.Scan, c.Whois,
 	} {
 		n.Use(hooks...)
 	}
@@ -238,8 +244,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.ASNInfo, c.DNSEntry, c.Domain, c.IPAddress, c.Nameserver, c.Path, c.Registrar,
-		c.Scan, c.Whois,
+		c.ASNInfo, c.DNSEntry, c.Domain, c.Example, c.IPAddress, c.Nameserver, c.Path,
+		c.Registrar, c.Scan, c.Whois,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -254,6 +260,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.DNSEntry.mutate(ctx, m)
 	case *DomainMutation:
 		return c.Domain.mutate(ctx, m)
+	case *ExampleMutation:
+		return c.Example.mutate(ctx, m)
 	case *IPAddressMutation:
 		return c.IPAddress.mutate(ctx, m)
 	case *NameserverMutation:
@@ -377,6 +385,70 @@ func (c *ASNInfoClient) GetX(ctx context.Context, id int) *ASNInfo {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryScan queries the scan edge of a ASNInfo.
+func (c *ASNInfoClient) QueryScan(ai *ASNInfo) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.ScanTable, asninfo.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIpaddress queries the ipaddress edge of a ASNInfo.
+func (c *ASNInfoClient) QueryIpaddress(ai *ASNInfo) *IPAddressQuery {
+	query := (&IPAddressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, id),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.IpaddressTable, asninfo.IpaddressPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRegistrar queries the registrar edge of a ASNInfo.
+func (c *ASNInfoClient) QueryRegistrar(ai *ASNInfo) *RegistrarQuery {
+	query := (&RegistrarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, id),
+			sqlgraph.To(registrar.Table, registrar.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.RegistrarTable, asninfo.RegistrarPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a ASNInfo.
+func (c *ASNInfoClient) QueryWhois(ai *ASNInfo) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ai.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.WhoisTable, asninfo.WhoisPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ai.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -510,6 +582,70 @@ func (c *DNSEntryClient) GetX(ctx context.Context, id int) *DNSEntry {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryDomain queries the domain edge of a DNSEntry.
+func (c *DNSEntryClient) QueryDomain(de *DNSEntry) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := de.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.DomainTable, dnsentry.DomainColumn),
+		)
+		fromV = sqlgraph.Neighbors(de.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIpaddress queries the ipaddress edge of a DNSEntry.
+func (c *DNSEntryClient) QueryIpaddress(de *DNSEntry) *IPAddressQuery {
+	query := (&IPAddressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := de.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, id),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.IpaddressTable, dnsentry.IpaddressColumn),
+		)
+		fromV = sqlgraph.Neighbors(de.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNameserver queries the nameserver edge of a DNSEntry.
+func (c *DNSEntryClient) QueryNameserver(de *DNSEntry) *NameserverQuery {
+	query := (&NameserverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := de.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, id),
+			sqlgraph.To(nameserver.Table, nameserver.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.NameserverTable, dnsentry.NameserverColumn),
+		)
+		fromV = sqlgraph.Neighbors(de.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a DNSEntry.
+func (c *DNSEntryClient) QueryScan(de *DNSEntry) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := de.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dnsentry.ScanTable, dnsentry.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(de.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -653,7 +789,7 @@ func (c *DomainClient) QueryNameserver(d *Domain) *NameserverQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, id),
 			sqlgraph.To(nameserver.Table, nameserver.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, domain.NameserverTable, domain.NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, domain.NameserverTable, domain.NameserverPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -661,31 +797,15 @@ func (c *DomainClient) QueryNameserver(d *Domain) *NameserverQuery {
 	return query
 }
 
-// QueryDomain queries the domain edge of a Domain.
-func (c *DomainClient) QueryDomain(d *Domain) *DomainQuery {
+// QuerySubdomain queries the subdomain edge of a Domain.
+func (c *DomainClient) QuerySubdomain(d *Domain) *DomainQuery {
 	query := (&DomainClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, id),
 			sqlgraph.To(domain.Table, domain.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, domain.DomainTable, domain.DomainPrimaryKey...),
-		)
-		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryDnsentry queries the dnsentry edge of a Domain.
-func (c *DomainClient) QueryDnsentry(d *Domain) *DNSEntryQuery {
-	query := (&DNSEntryClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := d.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(domain.Table, domain.FieldID, id),
-			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, domain.DnsentryTable, domain.DnsentryColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, domain.SubdomainTable, domain.SubdomainPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -701,7 +821,7 @@ func (c *DomainClient) QueryIpaddress(d *Domain) *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, id),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, domain.IpaddressTable, domain.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, domain.IpaddressTable, domain.IpaddressPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -717,7 +837,71 @@ func (c *DomainClient) QueryPath(d *Domain) *PathQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, id),
 			sqlgraph.To(path.Table, path.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, domain.PathTable, domain.PathColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, domain.PathTable, domain.PathPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a Domain.
+func (c *DomainClient) QueryScan(d *Domain) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(domain.Table, domain.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, domain.ScanTable, domain.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDnsentry queries the dnsentry edge of a Domain.
+func (c *DomainClient) QueryDnsentry(d *Domain) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(domain.Table, domain.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, domain.DnsentryTable, domain.DnsentryPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRegistrar queries the registrar edge of a Domain.
+func (c *DomainClient) QueryRegistrar(d *Domain) *RegistrarQuery {
+	query := (&RegistrarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(domain.Table, domain.FieldID, id),
+			sqlgraph.To(registrar.Table, registrar.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, domain.RegistrarTable, domain.RegistrarPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a Domain.
+func (c *DomainClient) QueryWhois(d *Domain) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(domain.Table, domain.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, domain.WhoisTable, domain.WhoisPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -747,6 +931,267 @@ func (c *DomainClient) mutate(ctx context.Context, m *DomainMutation) (Value, er
 		return (&DomainDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("model_ent: unknown Domain mutation op: %q", m.Op())
+	}
+}
+
+// ExampleClient is a client for the Example schema.
+type ExampleClient struct {
+	config
+}
+
+// NewExampleClient returns a client for the Example from the given config.
+func NewExampleClient(c config) *ExampleClient {
+	return &ExampleClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `example.Hooks(f(g(h())))`.
+func (c *ExampleClient) Use(hooks ...Hook) {
+	c.hooks.Example = append(c.hooks.Example, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `example.Intercept(f(g(h())))`.
+func (c *ExampleClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Example = append(c.inters.Example, interceptors...)
+}
+
+// Create returns a builder for creating a Example entity.
+func (c *ExampleClient) Create() *ExampleCreate {
+	mutation := newExampleMutation(c.config, OpCreate)
+	return &ExampleCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Example entities.
+func (c *ExampleClient) CreateBulk(builders ...*ExampleCreate) *ExampleCreateBulk {
+	return &ExampleCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ExampleClient) MapCreateBulk(slice any, setFunc func(*ExampleCreate, int)) *ExampleCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ExampleCreateBulk{err: fmt.Errorf("calling to ExampleClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ExampleCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ExampleCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Example.
+func (c *ExampleClient) Update() *ExampleUpdate {
+	mutation := newExampleMutation(c.config, OpUpdate)
+	return &ExampleUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ExampleClient) UpdateOne(e *Example) *ExampleUpdateOne {
+	mutation := newExampleMutation(c.config, OpUpdateOne, withExample(e))
+	return &ExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ExampleClient) UpdateOneID(id string) *ExampleUpdateOne {
+	mutation := newExampleMutation(c.config, OpUpdateOne, withExampleID(id))
+	return &ExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Example.
+func (c *ExampleClient) Delete() *ExampleDelete {
+	mutation := newExampleMutation(c.config, OpDelete)
+	return &ExampleDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ExampleClient) DeleteOne(e *Example) *ExampleDeleteOne {
+	return c.DeleteOneID(e.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ExampleClient) DeleteOneID(id string) *ExampleDeleteOne {
+	builder := c.Delete().Where(example.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ExampleDeleteOne{builder}
+}
+
+// Query returns a query builder for Example.
+func (c *ExampleClient) Query() *ExampleQuery {
+	return &ExampleQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeExample},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Example entity by its id.
+func (c *ExampleClient) Get(ctx context.Context, id string) (*Example, error) {
+	return c.Query().Where(example.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ExampleClient) GetX(ctx context.Context, id string) *Example {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryIpaddress queries the ipaddress edge of a Example.
+func (c *ExampleClient) QueryIpaddress(e *Example) *IPAddressQuery {
+	query := (&IPAddressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, example.IpaddressTable, example.IpaddressColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNext queries the next edge of a Example.
+func (c *ExampleClient) QueryNext(e *Example) *ASNInfoQuery {
+	query := (&ASNInfoClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(asninfo.Table, asninfo.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.NextTable, example.NextColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDnsentry queries the dnsentry edge of a Example.
+func (c *ExampleClient) QueryDnsentry(e *Example) *DNSEntryQuery {
+	query := (&DNSEntryClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.DnsentryTable, example.DnsentryColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDomain queries the domain edge of a Example.
+func (c *ExampleClient) QueryDomain(e *Example) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.DomainTable, example.DomainColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryPaths queries the paths edge of a Example.
+func (c *ExampleClient) QueryPaths(e *Example) *PathQuery {
+	query := (&PathClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(path.Table, path.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.PathsTable, example.PathsColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNameserver queries the nameserver edge of a Example.
+func (c *ExampleClient) QueryNameserver(e *Example) *NameserverQuery {
+	query := (&NameserverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(nameserver.Table, nameserver.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.NameserverTable, example.NameserverColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRegistrar queries the registrar edge of a Example.
+func (c *ExampleClient) QueryRegistrar(e *Example) *RegistrarQuery {
+	query := (&RegistrarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(registrar.Table, registrar.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.RegistrarTable, example.RegistrarColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a Example.
+func (c *ExampleClient) QueryWhois(e *Example) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := e.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(example.Table, example.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, example.WhoisTable, example.WhoisColumn),
+		)
+		fromV = sqlgraph.Neighbors(e.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ExampleClient) Hooks() []Hook {
+	return c.hooks.Example
+}
+
+// Interceptors returns the client interceptors.
+func (c *ExampleClient) Interceptors() []Interceptor {
+	return c.inters.Example
+}
+
+func (c *ExampleClient) mutate(ctx context.Context, m *ExampleMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ExampleCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ExampleUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ExampleUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ExampleDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("model_ent: unknown Example mutation op: %q", m.Op())
 	}
 }
 
@@ -866,7 +1311,103 @@ func (c *IPAddressClient) QueryAsninfo(ia *IPAddress) *ASNInfoQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
 			sqlgraph.To(asninfo.Table, asninfo.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, ipaddress.AsninfoTable, ipaddress.AsninfoColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, ipaddress.AsninfoTable, ipaddress.AsninfoPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a IPAddress.
+func (c *IPAddressClient) QueryScan(ia *IPAddress) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.ScanTable, ipaddress.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDnsentry queries the dnsentry edge of a IPAddress.
+func (c *IPAddressClient) QueryDnsentry(ia *IPAddress) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.DnsentryTable, ipaddress.DnsentryPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDomain queries the domain edge of a IPAddress.
+func (c *IPAddressClient) QueryDomain(ia *IPAddress) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.DomainTable, ipaddress.DomainPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNameserver queries the nameserver edge of a IPAddress.
+func (c *IPAddressClient) QueryNameserver(ia *IPAddress) *NameserverQuery {
+	query := (&NameserverClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(nameserver.Table, nameserver.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.NameserverTable, ipaddress.NameserverPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRegistrar queries the registrar edge of a IPAddress.
+func (c *IPAddressClient) QueryRegistrar(ia *IPAddress) *RegistrarQuery {
+	query := (&RegistrarClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(registrar.Table, registrar.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.RegistrarTable, ipaddress.RegistrarPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a IPAddress.
+func (c *IPAddressClient) QueryWhois(ia *IPAddress) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := ia.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.WhoisTable, ipaddress.WhoisPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(ia.driver.Dialect(), step)
 		return fromV, nil
@@ -1015,7 +1556,71 @@ func (c *NameserverClient) QueryIpaddress(n *Nameserver) *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(nameserver.Table, nameserver.FieldID, id),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, nameserver.IpaddressTable, nameserver.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, nameserver.IpaddressTable, nameserver.IpaddressPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a Nameserver.
+func (c *NameserverClient) QueryScan(n *Nameserver) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.ScanTable, nameserver.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDnsentry queries the dnsentry edge of a Nameserver.
+func (c *NameserverClient) QueryDnsentry(n *Nameserver) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.DnsentryTable, nameserver.DnsentryPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDomain queries the domain edge of a Nameserver.
+func (c *NameserverClient) QueryDomain(n *Nameserver) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.DomainTable, nameserver.DomainPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a Nameserver.
+func (c *NameserverClient) QueryWhois(n *Nameserver) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := n.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(nameserver.Table, nameserver.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, nameserver.WhoisTable, nameserver.WhoisPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(n.driver.Dialect(), step)
 		return fromV, nil
@@ -1156,6 +1761,38 @@ func (c *PathClient) GetX(ctx context.Context, id int) *Path {
 	return obj
 }
 
+// QueryDomain queries the domain edge of a Path.
+func (c *PathClient) QueryDomain(pa *Path) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(path.Table, path.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, path.DomainTable, path.DomainPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a Path.
+func (c *PathClient) QueryScan(pa *Path) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := pa.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(path.Table, path.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, path.ScanTable, path.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(pa.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PathClient) Hooks() []Hook {
 	return c.hooks.Path
@@ -1287,6 +1924,86 @@ func (c *RegistrarClient) GetX(ctx context.Context, id int) *Registrar {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryIpaddress queries the ipaddress edge of a Registrar.
+func (c *RegistrarClient) QueryIpaddress(r *Registrar) *IPAddressQuery {
+	query := (&IPAddressClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, id),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.IpaddressTable, registrar.IpaddressPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryDomain queries the domain edge of a Registrar.
+func (c *RegistrarClient) QueryDomain(r *Registrar) *DomainQuery {
+	query := (&DomainClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, id),
+			sqlgraph.To(domain.Table, domain.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.DomainTable, registrar.DomainPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAsninfo queries the asninfo edge of a Registrar.
+func (c *RegistrarClient) QueryAsninfo(r *Registrar) *ASNInfoQuery {
+	query := (&ASNInfoClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, id),
+			sqlgraph.To(asninfo.Table, asninfo.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, registrar.AsninfoTable, registrar.AsninfoPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a Registrar.
+func (c *RegistrarClient) QueryScan(r *Registrar) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, registrar.ScanTable, registrar.ScanPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryWhois queries the whois edge of a Registrar.
+func (c *RegistrarClient) QueryWhois(r *Registrar) *WhoisQuery {
+	query := (&WhoisClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := r.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(registrar.Table, registrar.FieldID, id),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, registrar.WhoisTable, registrar.WhoisPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(r.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -1430,7 +2147,7 @@ func (c *ScanClient) QueryIpaddress(s *Scan) *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.IpaddressTable, scan.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.IpaddressTable, scan.IpaddressPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1446,7 +2163,7 @@ func (c *ScanClient) QueryAsninfo(s *Scan) *ASNInfoQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(asninfo.Table, asninfo.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.AsninfoTable, scan.AsninfoColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.AsninfoTable, scan.AsninfoPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1462,7 +2179,7 @@ func (c *ScanClient) QueryDnsentry(s *Scan) *DNSEntryQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.DnsentryTable, scan.DnsentryColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.DnsentryTable, scan.DnsentryPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1478,7 +2195,7 @@ func (c *ScanClient) QueryDomain(s *Scan) *DomainQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(domain.Table, domain.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.DomainTable, scan.DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.DomainTable, scan.DomainPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1486,15 +2203,15 @@ func (c *ScanClient) QueryDomain(s *Scan) *DomainQuery {
 	return query
 }
 
-// QueryPaths queries the paths edge of a Scan.
-func (c *ScanClient) QueryPaths(s *Scan) *PathQuery {
+// QueryPath queries the path edge of a Scan.
+func (c *ScanClient) QueryPath(s *Scan) *PathQuery {
 	query := (&PathClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := s.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(path.Table, path.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.PathsTable, scan.PathsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.PathTable, scan.PathPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1510,7 +2227,7 @@ func (c *ScanClient) QueryNameserver(s *Scan) *NameserverQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(nameserver.Table, nameserver.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.NameserverTable, scan.NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.NameserverTable, scan.NameserverPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1526,7 +2243,7 @@ func (c *ScanClient) QueryRegistrar(s *Scan) *RegistrarQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(registrar.Table, registrar.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.RegistrarTable, scan.RegistrarColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.RegistrarTable, scan.RegistrarPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1542,7 +2259,7 @@ func (c *ScanClient) QueryWhois(s *Scan) *WhoisQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, id),
 			sqlgraph.To(whois.Table, whois.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.WhoisTable, scan.WhoisColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.WhoisTable, scan.WhoisPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(s.driver.Dialect(), step)
 		return fromV, nil
@@ -1691,7 +2408,7 @@ func (c *WhoisClient) QueryIprange(w *Whois) *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, id),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, whois.IprangeTable, whois.IprangeColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, whois.IprangeTable, whois.IprangePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -1707,7 +2424,7 @@ func (c *WhoisClient) QueryDomain(w *Whois) *DomainQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, id),
 			sqlgraph.To(domain.Table, domain.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, whois.DomainTable, whois.DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, whois.DomainTable, whois.DomainPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -1723,7 +2440,7 @@ func (c *WhoisClient) QueryAsn(w *Whois) *ASNInfoQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, id),
 			sqlgraph.To(asninfo.Table, asninfo.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, whois.AsnTable, whois.AsnColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, whois.AsnTable, whois.AsnPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -1739,7 +2456,7 @@ func (c *WhoisClient) QueryRegistrar(w *Whois) *RegistrarQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, id),
 			sqlgraph.To(registrar.Table, registrar.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, whois.RegistrarTable, whois.RegistrarColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, whois.RegistrarTable, whois.RegistrarPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -1747,15 +2464,31 @@ func (c *WhoisClient) QueryRegistrar(w *Whois) *RegistrarQuery {
 	return query
 }
 
-// QueryNameservers queries the nameservers edge of a Whois.
-func (c *WhoisClient) QueryNameservers(w *Whois) *NameserverQuery {
+// QueryNameserver queries the nameserver edge of a Whois.
+func (c *WhoisClient) QueryNameserver(w *Whois) *NameserverQuery {
 	query := (&NameserverClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := w.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, id),
 			sqlgraph.To(nameserver.Table, nameserver.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, whois.NameserversTable, whois.NameserversColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, whois.NameserverTable, whois.NameserverPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryScan queries the scan edge of a Whois.
+func (c *WhoisClient) QueryScan(w *Whois) *ScanQuery {
+	query := (&ScanClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := w.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(whois.Table, whois.FieldID, id),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, whois.ScanTable, whois.ScanPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(w.driver.Dialect(), step)
 		return fromV, nil
@@ -1791,11 +2524,11 @@ func (c *WhoisClient) mutate(ctx context.Context, m *WhoisMutation) (Value, erro
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		ASNInfo, DNSEntry, Domain, IPAddress, Nameserver, Path, Registrar, Scan,
-		Whois []ent.Hook
+		ASNInfo, DNSEntry, Domain, Example, IPAddress, Nameserver, Path, Registrar,
+		Scan, Whois []ent.Hook
 	}
 	inters struct {
-		ASNInfo, DNSEntry, Domain, IPAddress, Nameserver, Path, Registrar, Scan,
-		Whois []ent.Interceptor
+		ASNInfo, DNSEntry, Domain, Example, IPAddress, Nameserver, Path, Registrar,
+		Scan, Whois []ent.Interceptor
 	}
 )

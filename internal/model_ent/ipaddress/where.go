@@ -198,7 +198,7 @@ func HasAsninfo() predicate.IPAddress {
 	return predicate.IPAddress(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AsninfoTable, AsninfoColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, AsninfoTable, AsninfoPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -208,6 +208,144 @@ func HasAsninfo() predicate.IPAddress {
 func HasAsninfoWith(preds ...predicate.ASNInfo) predicate.IPAddress {
 	return predicate.IPAddress(func(s *sql.Selector) {
 		step := newAsninfoStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDnsentry applies the HasEdge predicate on the "dnsentry" edge.
+func HasDnsentry() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DnsentryTable, DnsentryPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDnsentryWith applies the HasEdge predicate on the "dnsentry" edge with a given conditions (other predicates).
+func HasDnsentryWith(preds ...predicate.Scan) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newDnsentryStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDomain applies the HasEdge predicate on the "domain" edge.
+func HasDomain() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DomainTable, DomainPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDomainWith applies the HasEdge predicate on the "domain" edge with a given conditions (other predicates).
+func HasDomainWith(preds ...predicate.Domain) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newDomainStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasNameserver applies the HasEdge predicate on the "nameserver" edge.
+func HasNameserver() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, NameserverTable, NameserverPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasNameserverWith applies the HasEdge predicate on the "nameserver" edge with a given conditions (other predicates).
+func HasNameserverWith(preds ...predicate.Nameserver) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newNameserverStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRegistrar applies the HasEdge predicate on the "registrar" edge.
+func HasRegistrar() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, RegistrarTable, RegistrarPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRegistrarWith applies the HasEdge predicate on the "registrar" edge with a given conditions (other predicates).
+func HasRegistrarWith(preds ...predicate.Registrar) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newRegistrarStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWhois applies the HasEdge predicate on the "whois" edge.
+func HasWhois() predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, WhoisTable, WhoisPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWhoisWith applies the HasEdge predicate on the "whois" edge with a given conditions (other predicates).
+func HasWhoisWith(preds ...predicate.Whois) predicate.IPAddress {
+	return predicate.IPAddress(func(s *sql.Selector) {
+		step := newWhoisStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

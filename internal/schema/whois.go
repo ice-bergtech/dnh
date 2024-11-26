@@ -32,6 +32,8 @@ func (Whois) Edges() []ent.Edge {
 		edge.To("domain", Domain.Type),
 		edge.To("asn", ASNInfo.Type),
 		edge.To("registrar", Registrar.Type),
-		edge.To("nameservers", Nameserver.Type),
+		edge.To("nameserver", Nameserver.Type),
+		//
+		edge.From("scan", Scan.Type).Ref("whois"),
 	}
 }

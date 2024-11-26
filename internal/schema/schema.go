@@ -1,5 +1,8 @@
 package schema
 
+// This package defines the core schema of graph objects available to dnh.
+//
+
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
@@ -7,29 +10,29 @@ import (
 )
 
 // Scan holds the schema definition for the Scan entity.
-type Scan struct {
+type Example struct {
 	ent.Schema
 }
 
 // Fields of the Scan.
-func (Scan) Fields() []ent.Field {
+func (Example) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("scanid").Unique(),
-		field.String("input"),
-		field.String("type"),
+		field.String("id").Unique(),
 		field.Time("timestamp"),
 	}
 }
 
 // Edges of the Scan.
-func (Scan) Edges() []ent.Edge {
+func (Example) Edges() []ent.Edge {
 	return []ent.Edge{
-		//M-2-O edge.From("scan", Scan.Type).Ref("<edge.To(name)>").Unique()
-		edge.To("ipaddress", IPAddress.Type),
-		edge.To("asninfo", ASNInfo.Type),
+		//edge.To("<identifier>", <struct>.Type).extra(),
+		// One 2 One
+		edge.To("ipaddress", IPAddress.Type).Unique(),
+		// One 2 One Self
+		edge.To("next", ASNInfo.Type),
 		edge.To("dnsentry", DNSEntry.Type),
 		edge.To("domain", Domain.Type),
-		edge.To("path", Path.Type),
+		edge.To("paths", Path.Type),
 		edge.To("nameserver", Nameserver.Type),
 		edge.To("registrar", Registrar.Type),
 		edge.To("whois", Whois.Type),

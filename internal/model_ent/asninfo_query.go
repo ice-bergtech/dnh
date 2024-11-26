@@ -4,6 +4,7 @@ package model_ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,17 +13,25 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // ASNInfoQuery is the builder for querying ASNInfo entities.
 type ASNInfoQuery struct {
 	config
-	ctx        *QueryContext
-	order      []asninfo.OrderOption
-	inters     []Interceptor
-	predicates []predicate.ASNInfo
-	withFKs    bool
+	ctx           *QueryContext
+	order         []asninfo.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.ASNInfo
+	withScan      *ScanQuery
+	withIpaddress *IPAddressQuery
+	withRegistrar *RegistrarQuery
+	withWhois     *WhoisQuery
+	withFKs       bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +66,94 @@ func (aiq *ASNInfoQuery) Unique(unique bool) *ASNInfoQuery {
 func (aiq *ASNInfoQuery) Order(o ...asninfo.OrderOption) *ASNInfoQuery {
 	aiq.order = append(aiq.order, o...)
 	return aiq
+}
+
+// QueryScan chains the current query on the "scan" edge.
+func (aiq *ASNInfoQuery) QueryScan() *ScanQuery {
+	query := (&ScanClient{config: aiq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, selector),
+			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.ScanTable, asninfo.ScanPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryIpaddress chains the current query on the "ipaddress" edge.
+func (aiq *ASNInfoQuery) QueryIpaddress() *IPAddressQuery {
+	query := (&IPAddressClient{config: aiq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, selector),
+			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.IpaddressTable, asninfo.IpaddressPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRegistrar chains the current query on the "registrar" edge.
+func (aiq *ASNInfoQuery) QueryRegistrar() *RegistrarQuery {
+	query := (&RegistrarClient{config: aiq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, selector),
+			sqlgraph.To(registrar.Table, registrar.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.RegistrarTable, asninfo.RegistrarPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryWhois chains the current query on the "whois" edge.
+func (aiq *ASNInfoQuery) QueryWhois() *WhoisQuery {
+	query := (&WhoisClient{config: aiq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aiq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aiq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(asninfo.Table, asninfo.FieldID, selector),
+			sqlgraph.To(whois.Table, whois.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.WhoisTable, asninfo.WhoisPrimaryKey...),
+		)
+		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first ASNInfo entity from the query.
@@ -246,15 +343,63 @@ func (aiq *ASNInfoQuery) Clone() *ASNInfoQuery {
 		return nil
 	}
 	return &ASNInfoQuery{
-		config:     aiq.config,
-		ctx:        aiq.ctx.Clone(),
-		order:      append([]asninfo.OrderOption{}, aiq.order...),
-		inters:     append([]Interceptor{}, aiq.inters...),
-		predicates: append([]predicate.ASNInfo{}, aiq.predicates...),
+		config:        aiq.config,
+		ctx:           aiq.ctx.Clone(),
+		order:         append([]asninfo.OrderOption{}, aiq.order...),
+		inters:        append([]Interceptor{}, aiq.inters...),
+		predicates:    append([]predicate.ASNInfo{}, aiq.predicates...),
+		withScan:      aiq.withScan.Clone(),
+		withIpaddress: aiq.withIpaddress.Clone(),
+		withRegistrar: aiq.withRegistrar.Clone(),
+		withWhois:     aiq.withWhois.Clone(),
 		// clone intermediate query.
 		sql:  aiq.sql.Clone(),
 		path: aiq.path,
 	}
+}
+
+// WithScan tells the query-builder to eager-load the nodes that are connected to
+// the "scan" edge. The optional arguments are used to configure the query builder of the edge.
+func (aiq *ASNInfoQuery) WithScan(opts ...func(*ScanQuery)) *ASNInfoQuery {
+	query := (&ScanClient{config: aiq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aiq.withScan = query
+	return aiq
+}
+
+// WithIpaddress tells the query-builder to eager-load the nodes that are connected to
+// the "ipaddress" edge. The optional arguments are used to configure the query builder of the edge.
+func (aiq *ASNInfoQuery) WithIpaddress(opts ...func(*IPAddressQuery)) *ASNInfoQuery {
+	query := (&IPAddressClient{config: aiq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aiq.withIpaddress = query
+	return aiq
+}
+
+// WithRegistrar tells the query-builder to eager-load the nodes that are connected to
+// the "registrar" edge. The optional arguments are used to configure the query builder of the edge.
+func (aiq *ASNInfoQuery) WithRegistrar(opts ...func(*RegistrarQuery)) *ASNInfoQuery {
+	query := (&RegistrarClient{config: aiq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aiq.withRegistrar = query
+	return aiq
+}
+
+// WithWhois tells the query-builder to eager-load the nodes that are connected to
+// the "whois" edge. The optional arguments are used to configure the query builder of the edge.
+func (aiq *ASNInfoQuery) WithWhois(opts ...func(*WhoisQuery)) *ASNInfoQuery {
+	query := (&WhoisClient{config: aiq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aiq.withWhois = query
+	return aiq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,9 +478,15 @@ func (aiq *ASNInfoQuery) prepareQuery(ctx context.Context) error {
 
 func (aiq *ASNInfoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ASNInfo, error) {
 	var (
-		nodes   = []*ASNInfo{}
-		withFKs = aiq.withFKs
-		_spec   = aiq.querySpec()
+		nodes       = []*ASNInfo{}
+		withFKs     = aiq.withFKs
+		_spec       = aiq.querySpec()
+		loadedTypes = [4]bool{
+			aiq.withScan != nil,
+			aiq.withIpaddress != nil,
+			aiq.withRegistrar != nil,
+			aiq.withWhois != nil,
+		}
 	)
 	if withFKs {
 		_spec.Node.Columns = append(_spec.Node.Columns, asninfo.ForeignKeys...)
@@ -346,6 +497,7 @@ func (aiq *ASNInfoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ASN
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ASNInfo{config: aiq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -357,7 +509,280 @@ func (aiq *ASNInfoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ASN
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := aiq.withScan; query != nil {
+		if err := aiq.loadScan(ctx, query, nodes,
+			func(n *ASNInfo) { n.Edges.Scan = []*Scan{} },
+			func(n *ASNInfo, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aiq.withIpaddress; query != nil {
+		if err := aiq.loadIpaddress(ctx, query, nodes,
+			func(n *ASNInfo) { n.Edges.Ipaddress = []*IPAddress{} },
+			func(n *ASNInfo, e *IPAddress) { n.Edges.Ipaddress = append(n.Edges.Ipaddress, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aiq.withRegistrar; query != nil {
+		if err := aiq.loadRegistrar(ctx, query, nodes,
+			func(n *ASNInfo) { n.Edges.Registrar = []*Registrar{} },
+			func(n *ASNInfo, e *Registrar) { n.Edges.Registrar = append(n.Edges.Registrar, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := aiq.withWhois; query != nil {
+		if err := aiq.loadWhois(ctx, query, nodes,
+			func(n *ASNInfo) { n.Edges.Whois = []*Whois{} },
+			func(n *ASNInfo, e *Whois) { n.Edges.Whois = append(n.Edges.Whois, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (aiq *ASNInfoQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *Scan)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*ASNInfo)
+	nids := make(map[int]map[*ASNInfo]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(asninfo.ScanTable)
+		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(asninfo.ScanPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(asninfo.ScanPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(asninfo.ScanPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*ASNInfo]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "scan" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aiq *ASNInfoQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *IPAddress)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*ASNInfo)
+	nids := make(map[int]map[*ASNInfo]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(asninfo.IpaddressTable)
+		s.Join(joinT).On(s.C(ipaddress.FieldID), joinT.C(asninfo.IpaddressPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(asninfo.IpaddressPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(asninfo.IpaddressPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*ASNInfo]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*IPAddress](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "ipaddress" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aiq *ASNInfoQuery) loadRegistrar(ctx context.Context, query *RegistrarQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *Registrar)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*ASNInfo)
+	nids := make(map[int]map[*ASNInfo]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(asninfo.RegistrarTable)
+		s.Join(joinT).On(s.C(registrar.FieldID), joinT.C(asninfo.RegistrarPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(asninfo.RegistrarPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(asninfo.RegistrarPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*ASNInfo]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Registrar](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "registrar" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
+func (aiq *ASNInfoQuery) loadWhois(ctx context.Context, query *WhoisQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *Whois)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*ASNInfo)
+	nids := make(map[int]map[*ASNInfo]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(asninfo.WhoisTable)
+		s.Join(joinT).On(s.C(whois.FieldID), joinT.C(asninfo.WhoisPrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(asninfo.WhoisPrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(asninfo.WhoisPrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*ASNInfo]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Whois](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "whois" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
 }
 
 func (aiq *ASNInfoQuery) sqlCount(ctx context.Context) (int, error) {

@@ -10,7 +10,12 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // RegistrarCreate is the builder for creating a Registrar entity.
@@ -56,6 +61,12 @@ func (rc *RegistrarCreate) SetAddress(s string) *RegistrarCreate {
 	return rc
 }
 
+// SetSource sets the "source" field.
+func (rc *RegistrarCreate) SetSource(s string) *RegistrarCreate {
+	rc.mutation.SetSource(s)
+	return rc
+}
+
 // SetTimeFirst sets the "time_first" field.
 func (rc *RegistrarCreate) SetTimeFirst(t time.Time) *RegistrarCreate {
 	rc.mutation.SetTimeFirst(t)
@@ -66,6 +77,81 @@ func (rc *RegistrarCreate) SetTimeFirst(t time.Time) *RegistrarCreate {
 func (rc *RegistrarCreate) SetTimeLast(t time.Time) *RegistrarCreate {
 	rc.mutation.SetTimeLast(t)
 	return rc
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (rc *RegistrarCreate) AddIpaddresIDs(ids ...int) *RegistrarCreate {
+	rc.mutation.AddIpaddresIDs(ids...)
+	return rc
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (rc *RegistrarCreate) AddIpaddress(i ...*IPAddress) *RegistrarCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return rc.AddIpaddresIDs(ids...)
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (rc *RegistrarCreate) AddDomainIDs(ids ...int) *RegistrarCreate {
+	rc.mutation.AddDomainIDs(ids...)
+	return rc
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (rc *RegistrarCreate) AddDomain(d ...*Domain) *RegistrarCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return rc.AddDomainIDs(ids...)
+}
+
+// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
+func (rc *RegistrarCreate) AddAsninfoIDs(ids ...int) *RegistrarCreate {
+	rc.mutation.AddAsninfoIDs(ids...)
+	return rc
+}
+
+// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
+func (rc *RegistrarCreate) AddAsninfo(a ...*ASNInfo) *RegistrarCreate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return rc.AddAsninfoIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (rc *RegistrarCreate) AddScanIDs(ids ...int) *RegistrarCreate {
+	rc.mutation.AddScanIDs(ids...)
+	return rc
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (rc *RegistrarCreate) AddScan(s ...*Scan) *RegistrarCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return rc.AddScanIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (rc *RegistrarCreate) AddWhoiIDs(ids ...int) *RegistrarCreate {
+	rc.mutation.AddWhoiIDs(ids...)
+	return rc
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (rc *RegistrarCreate) AddWhois(w ...*Whois) *RegistrarCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return rc.AddWhoiIDs(ids...)
 }
 
 // Mutation returns the RegistrarMutation object of the builder.
@@ -119,6 +205,9 @@ func (rc *RegistrarCreate) check() error {
 	}
 	if _, ok := rc.mutation.Address(); !ok {
 		return &ValidationError{Name: "address", err: errors.New(`model_ent: missing required field "Registrar.address"`)}
+	}
+	if _, ok := rc.mutation.Source(); !ok {
+		return &ValidationError{Name: "source", err: errors.New(`model_ent: missing required field "Registrar.source"`)}
 	}
 	if _, ok := rc.mutation.TimeFirst(); !ok {
 		return &ValidationError{Name: "time_first", err: errors.New(`model_ent: missing required field "Registrar.time_first"`)}
@@ -176,6 +265,10 @@ func (rc *RegistrarCreate) createSpec() (*Registrar, *sqlgraph.CreateSpec) {
 		_spec.SetField(registrar.FieldAddress, field.TypeString, value)
 		_node.Address = value
 	}
+	if value, ok := rc.mutation.Source(); ok {
+		_spec.SetField(registrar.FieldSource, field.TypeString, value)
+		_node.Source = value
+	}
 	if value, ok := rc.mutation.TimeFirst(); ok {
 		_spec.SetField(registrar.FieldTimeFirst, field.TypeTime, value)
 		_node.TimeFirst = value
@@ -183,6 +276,86 @@ func (rc *RegistrarCreate) createSpec() (*Registrar, *sqlgraph.CreateSpec) {
 	if value, ok := rc.mutation.TimeLast(); ok {
 		_spec.SetField(registrar.FieldTimeLast, field.TypeTime, value)
 		_node.TimeLast = value
+	}
+	if nodes := rc.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.AsninfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := rc.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

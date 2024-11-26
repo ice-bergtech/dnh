@@ -15,6 +15,9 @@ type DNSEntry func(*sql.Selector)
 // Domain is the predicate function for domain builders.
 type Domain func(*sql.Selector)
 
+// Example is the predicate function for example builders.
+type Example func(*sql.Selector)
+
 // IPAddress is the predicate function for ipaddress builders.
 type IPAddress func(*sql.Selector)
 

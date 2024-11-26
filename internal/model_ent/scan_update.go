@@ -50,6 +50,34 @@ func (su *ScanUpdate) SetNillableScanid(s *string) *ScanUpdate {
 	return su
 }
 
+// SetInput sets the "input" field.
+func (su *ScanUpdate) SetInput(s string) *ScanUpdate {
+	su.mutation.SetInput(s)
+	return su
+}
+
+// SetNillableInput sets the "input" field if the given value is not nil.
+func (su *ScanUpdate) SetNillableInput(s *string) *ScanUpdate {
+	if s != nil {
+		su.SetInput(*s)
+	}
+	return su
+}
+
+// SetType sets the "type" field.
+func (su *ScanUpdate) SetType(s string) *ScanUpdate {
+	su.mutation.SetType(s)
+	return su
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (su *ScanUpdate) SetNillableType(s *string) *ScanUpdate {
+	if s != nil {
+		su.SetType(*s)
+	}
+	return su
+}
+
 // SetTimestamp sets the "timestamp" field.
 func (su *ScanUpdate) SetTimestamp(t time.Time) *ScanUpdate {
 	su.mutation.SetTimestamp(t)
@@ -124,14 +152,14 @@ func (su *ScanUpdate) AddDomain(d ...*Domain) *ScanUpdate {
 	return su.AddDomainIDs(ids...)
 }
 
-// AddPathIDs adds the "paths" edge to the Path entity by IDs.
+// AddPathIDs adds the "path" edge to the Path entity by IDs.
 func (su *ScanUpdate) AddPathIDs(ids ...int) *ScanUpdate {
 	su.mutation.AddPathIDs(ids...)
 	return su
 }
 
-// AddPaths adds the "paths" edges to the Path entity.
-func (su *ScanUpdate) AddPaths(p ...*Path) *ScanUpdate {
+// AddPath adds the "path" edges to the Path entity.
+func (su *ScanUpdate) AddPath(p ...*Path) *ScanUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -273,20 +301,20 @@ func (su *ScanUpdate) RemoveDomain(d ...*Domain) *ScanUpdate {
 	return su.RemoveDomainIDs(ids...)
 }
 
-// ClearPaths clears all "paths" edges to the Path entity.
-func (su *ScanUpdate) ClearPaths() *ScanUpdate {
-	su.mutation.ClearPaths()
+// ClearPath clears all "path" edges to the Path entity.
+func (su *ScanUpdate) ClearPath() *ScanUpdate {
+	su.mutation.ClearPath()
 	return su
 }
 
-// RemovePathIDs removes the "paths" edge to Path entities by IDs.
+// RemovePathIDs removes the "path" edge to Path entities by IDs.
 func (su *ScanUpdate) RemovePathIDs(ids ...int) *ScanUpdate {
 	su.mutation.RemovePathIDs(ids...)
 	return su
 }
 
-// RemovePaths removes "paths" edges to Path entities.
-func (su *ScanUpdate) RemovePaths(p ...*Path) *ScanUpdate {
+// RemovePath removes "path" edges to Path entities.
+func (su *ScanUpdate) RemovePath(p ...*Path) *ScanUpdate {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -396,15 +424,21 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Scanid(); ok {
 		_spec.SetField(scan.FieldScanid, field.TypeString, value)
 	}
+	if value, ok := su.mutation.Input(); ok {
+		_spec.SetField(scan.FieldInput, field.TypeString, value)
+	}
+	if value, ok := su.mutation.GetType(); ok {
+		_spec.SetField(scan.FieldType, field.TypeString, value)
+	}
 	if value, ok := su.mutation.Timestamp(); ok {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 	}
 	if su.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -414,10 +448,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !su.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -430,10 +464,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -446,10 +480,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.AsninfoCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -459,10 +493,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !su.mutation.AsninfoCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -475,10 +509,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.AsninfoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -491,10 +525,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.DnsentryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -504,10 +538,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !su.mutation.DnsentryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -520,10 +554,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.DnsentryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -536,10 +570,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -549,10 +583,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedDomainIDs(); len(nodes) > 0 && !su.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -565,10 +599,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -579,12 +613,12 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if su.mutation.PathsCleared() {
+	if su.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -592,12 +626,12 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedPathsIDs(); len(nodes) > 0 && !su.mutation.PathsCleared() {
+	if nodes := su.mutation.RemovedPathIDs(); len(nodes) > 0 && !su.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -608,12 +642,12 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.PathsIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -626,10 +660,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -639,10 +673,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !su.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -655,10 +689,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -671,10 +705,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -684,10 +718,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !su.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -700,10 +734,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RegistrarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -716,10 +750,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if su.mutation.WhoisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
@@ -729,10 +763,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !su.mutation.WhoisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
@@ -745,10 +779,10 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := su.mutation.WhoisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
@@ -789,6 +823,34 @@ func (suo *ScanUpdateOne) SetScanid(s string) *ScanUpdateOne {
 func (suo *ScanUpdateOne) SetNillableScanid(s *string) *ScanUpdateOne {
 	if s != nil {
 		suo.SetScanid(*s)
+	}
+	return suo
+}
+
+// SetInput sets the "input" field.
+func (suo *ScanUpdateOne) SetInput(s string) *ScanUpdateOne {
+	suo.mutation.SetInput(s)
+	return suo
+}
+
+// SetNillableInput sets the "input" field if the given value is not nil.
+func (suo *ScanUpdateOne) SetNillableInput(s *string) *ScanUpdateOne {
+	if s != nil {
+		suo.SetInput(*s)
+	}
+	return suo
+}
+
+// SetType sets the "type" field.
+func (suo *ScanUpdateOne) SetType(s string) *ScanUpdateOne {
+	suo.mutation.SetType(s)
+	return suo
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (suo *ScanUpdateOne) SetNillableType(s *string) *ScanUpdateOne {
+	if s != nil {
+		suo.SetType(*s)
 	}
 	return suo
 }
@@ -867,14 +929,14 @@ func (suo *ScanUpdateOne) AddDomain(d ...*Domain) *ScanUpdateOne {
 	return suo.AddDomainIDs(ids...)
 }
 
-// AddPathIDs adds the "paths" edge to the Path entity by IDs.
+// AddPathIDs adds the "path" edge to the Path entity by IDs.
 func (suo *ScanUpdateOne) AddPathIDs(ids ...int) *ScanUpdateOne {
 	suo.mutation.AddPathIDs(ids...)
 	return suo
 }
 
-// AddPaths adds the "paths" edges to the Path entity.
-func (suo *ScanUpdateOne) AddPaths(p ...*Path) *ScanUpdateOne {
+// AddPath adds the "path" edges to the Path entity.
+func (suo *ScanUpdateOne) AddPath(p ...*Path) *ScanUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -1016,20 +1078,20 @@ func (suo *ScanUpdateOne) RemoveDomain(d ...*Domain) *ScanUpdateOne {
 	return suo.RemoveDomainIDs(ids...)
 }
 
-// ClearPaths clears all "paths" edges to the Path entity.
-func (suo *ScanUpdateOne) ClearPaths() *ScanUpdateOne {
-	suo.mutation.ClearPaths()
+// ClearPath clears all "path" edges to the Path entity.
+func (suo *ScanUpdateOne) ClearPath() *ScanUpdateOne {
+	suo.mutation.ClearPath()
 	return suo
 }
 
-// RemovePathIDs removes the "paths" edge to Path entities by IDs.
+// RemovePathIDs removes the "path" edge to Path entities by IDs.
 func (suo *ScanUpdateOne) RemovePathIDs(ids ...int) *ScanUpdateOne {
 	suo.mutation.RemovePathIDs(ids...)
 	return suo
 }
 
-// RemovePaths removes "paths" edges to Path entities.
-func (suo *ScanUpdateOne) RemovePaths(p ...*Path) *ScanUpdateOne {
+// RemovePath removes "path" edges to Path entities.
+func (suo *ScanUpdateOne) RemovePath(p ...*Path) *ScanUpdateOne {
 	ids := make([]int, len(p))
 	for i := range p {
 		ids[i] = p[i].ID
@@ -1169,15 +1231,21 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	if value, ok := suo.mutation.Scanid(); ok {
 		_spec.SetField(scan.FieldScanid, field.TypeString, value)
 	}
+	if value, ok := suo.mutation.Input(); ok {
+		_spec.SetField(scan.FieldInput, field.TypeString, value)
+	}
+	if value, ok := suo.mutation.GetType(); ok {
+		_spec.SetField(scan.FieldType, field.TypeString, value)
+	}
 	if value, ok := suo.mutation.Timestamp(); ok {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 	}
 	if suo.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1187,10 +1255,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !suo.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1203,10 +1271,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.IpaddressTable,
-			Columns: []string{scan.IpaddressColumn},
+			Columns: scan.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1219,10 +1287,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.AsninfoCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1232,10 +1300,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !suo.mutation.AsninfoCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1248,10 +1316,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.AsninfoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.AsninfoTable,
-			Columns: []string{scan.AsninfoColumn},
+			Columns: scan.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
@@ -1264,10 +1332,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.DnsentryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -1277,10 +1345,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !suo.mutation.DnsentryCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -1293,10 +1361,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.DnsentryIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DnsentryTable,
-			Columns: []string{scan.DnsentryColumn},
+			Columns: scan.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
@@ -1309,10 +1377,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1322,10 +1390,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !suo.mutation.DomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1338,10 +1406,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.DomainTable,
-			Columns: []string{scan.DomainColumn},
+			Columns: scan.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -1352,12 +1420,12 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if suo.mutation.PathsCleared() {
+	if suo.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -1365,12 +1433,12 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedPathsIDs(); len(nodes) > 0 && !suo.mutation.PathsCleared() {
+	if nodes := suo.mutation.RemovedPathIDs(); len(nodes) > 0 && !suo.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -1381,12 +1449,12 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.PathsIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.PathsTable,
-			Columns: []string{scan.PathsColumn},
+			Table:   scan.PathTable,
+			Columns: scan.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -1399,10 +1467,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -1412,10 +1480,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !suo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -1428,10 +1496,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.NameserverTable,
-			Columns: []string{scan.NameserverColumn},
+			Columns: scan.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -1444,10 +1512,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1457,10 +1525,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !suo.mutation.RegistrarCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1473,10 +1541,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RegistrarIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.RegistrarTable,
-			Columns: []string{scan.RegistrarColumn},
+			Columns: scan.RegistrarPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
@@ -1489,10 +1557,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if suo.mutation.WhoisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
@@ -1502,10 +1570,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !suo.mutation.WhoisCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
@@ -1518,10 +1586,10 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	}
 	if nodes := suo.mutation.WhoisIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   scan.WhoisTable,
-			Columns: []string{scan.WhoisColumn},
+			Columns: scan.WhoisPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),

@@ -12,7 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
 )
 
 // DNSEntryUpdate is the builder for updating DNSEntry entities.
@@ -119,9 +123,153 @@ func (deu *DNSEntryUpdate) SetNillableTimeLast(t *time.Time) *DNSEntryUpdate {
 	return deu
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (deu *DNSEntryUpdate) AddDomainIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.AddDomainIDs(ids...)
+	return deu
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (deu *DNSEntryUpdate) AddDomain(d ...*Domain) *DNSEntryUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return deu.AddDomainIDs(ids...)
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (deu *DNSEntryUpdate) AddIpaddresIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.AddIpaddresIDs(ids...)
+	return deu
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (deu *DNSEntryUpdate) AddIpaddress(i ...*IPAddress) *DNSEntryUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return deu.AddIpaddresIDs(ids...)
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
+func (deu *DNSEntryUpdate) AddNameserverIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.AddNameserverIDs(ids...)
+	return deu
+}
+
+// AddNameserver adds the "nameserver" edges to the Nameserver entity.
+func (deu *DNSEntryUpdate) AddNameserver(n ...*Nameserver) *DNSEntryUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return deu.AddNameserverIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (deu *DNSEntryUpdate) AddScanIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.AddScanIDs(ids...)
+	return deu
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (deu *DNSEntryUpdate) AddScan(s ...*Scan) *DNSEntryUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return deu.AddScanIDs(ids...)
+}
+
 // Mutation returns the DNSEntryMutation object of the builder.
 func (deu *DNSEntryUpdate) Mutation() *DNSEntryMutation {
 	return deu.mutation
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (deu *DNSEntryUpdate) ClearDomain() *DNSEntryUpdate {
+	deu.mutation.ClearDomain()
+	return deu
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (deu *DNSEntryUpdate) RemoveDomainIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.RemoveDomainIDs(ids...)
+	return deu
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (deu *DNSEntryUpdate) RemoveDomain(d ...*Domain) *DNSEntryUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return deu.RemoveDomainIDs(ids...)
+}
+
+// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
+func (deu *DNSEntryUpdate) ClearIpaddress() *DNSEntryUpdate {
+	deu.mutation.ClearIpaddress()
+	return deu
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
+func (deu *DNSEntryUpdate) RemoveIpaddresIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.RemoveIpaddresIDs(ids...)
+	return deu
+}
+
+// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
+func (deu *DNSEntryUpdate) RemoveIpaddress(i ...*IPAddress) *DNSEntryUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return deu.RemoveIpaddresIDs(ids...)
+}
+
+// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
+func (deu *DNSEntryUpdate) ClearNameserver() *DNSEntryUpdate {
+	deu.mutation.ClearNameserver()
+	return deu
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
+func (deu *DNSEntryUpdate) RemoveNameserverIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.RemoveNameserverIDs(ids...)
+	return deu
+}
+
+// RemoveNameserver removes "nameserver" edges to Nameserver entities.
+func (deu *DNSEntryUpdate) RemoveNameserver(n ...*Nameserver) *DNSEntryUpdate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return deu.RemoveNameserverIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (deu *DNSEntryUpdate) ClearScan() *DNSEntryUpdate {
+	deu.mutation.ClearScan()
+	return deu
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (deu *DNSEntryUpdate) RemoveScanIDs(ids ...int) *DNSEntryUpdate {
+	deu.mutation.RemoveScanIDs(ids...)
+	return deu
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (deu *DNSEntryUpdate) RemoveScan(s ...*Scan) *DNSEntryUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return deu.RemoveScanIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -180,6 +328,186 @@ func (deu *DNSEntryUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := deu.mutation.TimeLast(); ok {
 		_spec.SetField(dnsentry.FieldTimeLast, field.TypeTime, value)
+	}
+	if deu.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.RemovedDomainIDs(); len(nodes) > 0 && !deu.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deu.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !deu.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deu.mutation.NameserverCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !deu.mutation.NameserverCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.NameserverIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.RemovedScanIDs(); len(nodes) > 0 && !deu.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deu.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, deu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -292,9 +620,153 @@ func (deuo *DNSEntryUpdateOne) SetNillableTimeLast(t *time.Time) *DNSEntryUpdate
 	return deuo
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (deuo *DNSEntryUpdateOne) AddDomainIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.AddDomainIDs(ids...)
+	return deuo
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (deuo *DNSEntryUpdateOne) AddDomain(d ...*Domain) *DNSEntryUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return deuo.AddDomainIDs(ids...)
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (deuo *DNSEntryUpdateOne) AddIpaddresIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.AddIpaddresIDs(ids...)
+	return deuo
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (deuo *DNSEntryUpdateOne) AddIpaddress(i ...*IPAddress) *DNSEntryUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return deuo.AddIpaddresIDs(ids...)
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
+func (deuo *DNSEntryUpdateOne) AddNameserverIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.AddNameserverIDs(ids...)
+	return deuo
+}
+
+// AddNameserver adds the "nameserver" edges to the Nameserver entity.
+func (deuo *DNSEntryUpdateOne) AddNameserver(n ...*Nameserver) *DNSEntryUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return deuo.AddNameserverIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (deuo *DNSEntryUpdateOne) AddScanIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.AddScanIDs(ids...)
+	return deuo
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (deuo *DNSEntryUpdateOne) AddScan(s ...*Scan) *DNSEntryUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return deuo.AddScanIDs(ids...)
+}
+
 // Mutation returns the DNSEntryMutation object of the builder.
 func (deuo *DNSEntryUpdateOne) Mutation() *DNSEntryMutation {
 	return deuo.mutation
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (deuo *DNSEntryUpdateOne) ClearDomain() *DNSEntryUpdateOne {
+	deuo.mutation.ClearDomain()
+	return deuo
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (deuo *DNSEntryUpdateOne) RemoveDomainIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.RemoveDomainIDs(ids...)
+	return deuo
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (deuo *DNSEntryUpdateOne) RemoveDomain(d ...*Domain) *DNSEntryUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return deuo.RemoveDomainIDs(ids...)
+}
+
+// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
+func (deuo *DNSEntryUpdateOne) ClearIpaddress() *DNSEntryUpdateOne {
+	deuo.mutation.ClearIpaddress()
+	return deuo
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
+func (deuo *DNSEntryUpdateOne) RemoveIpaddresIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.RemoveIpaddresIDs(ids...)
+	return deuo
+}
+
+// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
+func (deuo *DNSEntryUpdateOne) RemoveIpaddress(i ...*IPAddress) *DNSEntryUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return deuo.RemoveIpaddresIDs(ids...)
+}
+
+// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
+func (deuo *DNSEntryUpdateOne) ClearNameserver() *DNSEntryUpdateOne {
+	deuo.mutation.ClearNameserver()
+	return deuo
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
+func (deuo *DNSEntryUpdateOne) RemoveNameserverIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.RemoveNameserverIDs(ids...)
+	return deuo
+}
+
+// RemoveNameserver removes "nameserver" edges to Nameserver entities.
+func (deuo *DNSEntryUpdateOne) RemoveNameserver(n ...*Nameserver) *DNSEntryUpdateOne {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return deuo.RemoveNameserverIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (deuo *DNSEntryUpdateOne) ClearScan() *DNSEntryUpdateOne {
+	deuo.mutation.ClearScan()
+	return deuo
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (deuo *DNSEntryUpdateOne) RemoveScanIDs(ids ...int) *DNSEntryUpdateOne {
+	deuo.mutation.RemoveScanIDs(ids...)
+	return deuo
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (deuo *DNSEntryUpdateOne) RemoveScan(s ...*Scan) *DNSEntryUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return deuo.RemoveScanIDs(ids...)
 }
 
 // Where appends a list predicates to the DNSEntryUpdate builder.
@@ -383,6 +855,186 @@ func (deuo *DNSEntryUpdateOne) sqlSave(ctx context.Context) (_node *DNSEntry, er
 	}
 	if value, ok := deuo.mutation.TimeLast(); ok {
 		_spec.SetField(dnsentry.FieldTimeLast, field.TypeTime, value)
+	}
+	if deuo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !deuo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.DomainTable,
+			Columns: []string{dnsentry.DomainColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deuo.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !deuo.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.IpaddressTable,
+			Columns: []string{dnsentry.IpaddressColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deuo.mutation.NameserverCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !deuo.mutation.NameserverCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.NameserverIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   dnsentry.NameserverTable,
+			Columns: []string{dnsentry.NameserverColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if deuo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.RemovedScanIDs(); len(nodes) > 0 && !deuo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := deuo.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dnsentry.ScanTable,
+			Columns: dnsentry.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &DNSEntry{config: deuo.config}
 	_spec.Assign = _node.assignValues

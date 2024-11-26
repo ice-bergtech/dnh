@@ -21,11 +21,63 @@ type ASNInfo struct {
 	// Country holds the value of the "country" field.
 	Country string `json:"country,omitempty"`
 	// Registry holds the value of the "registry" field.
-	Registry           string `json:"registry,omitempty"`
-	ip_address_asninfo *int
-	scan_asninfo       *int
-	whois_asn          *int
-	selectValues       sql.SelectValues
+	Registry string `json:"registry,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ASNInfoQuery when eager-loading is set.
+	Edges        ASNInfoEdges `json:"edges"`
+	example_next *string
+	selectValues sql.SelectValues
+}
+
+// ASNInfoEdges holds the relations/edges for other nodes in the graph.
+type ASNInfoEdges struct {
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
+	// Ipaddress holds the value of the ipaddress edge.
+	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
+	// Registrar holds the value of the registrar edge.
+	Registrar []*Registrar `json:"registrar,omitempty"`
+	// Whois holds the value of the whois edge.
+	Whois []*Whois `json:"whois,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [4]bool
+}
+
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e ASNInfoEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[0] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
+}
+
+// IpaddressOrErr returns the Ipaddress value or an error if the edge
+// was not loaded in eager-loading.
+func (e ASNInfoEdges) IpaddressOrErr() ([]*IPAddress, error) {
+	if e.loadedTypes[1] {
+		return e.Ipaddress, nil
+	}
+	return nil, &NotLoadedError{edge: "ipaddress"}
+}
+
+// RegistrarOrErr returns the Registrar value or an error if the edge
+// was not loaded in eager-loading.
+func (e ASNInfoEdges) RegistrarOrErr() ([]*Registrar, error) {
+	if e.loadedTypes[2] {
+		return e.Registrar, nil
+	}
+	return nil, &NotLoadedError{edge: "registrar"}
+}
+
+// WhoisOrErr returns the Whois value or an error if the edge
+// was not loaded in eager-loading.
+func (e ASNInfoEdges) WhoisOrErr() ([]*Whois, error) {
+	if e.loadedTypes[3] {
+		return e.Whois, nil
+	}
+	return nil, &NotLoadedError{edge: "whois"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -37,12 +89,8 @@ func (*ASNInfo) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case asninfo.FieldCountry, asninfo.FieldRegistry:
 			values[i] = new(sql.NullString)
-		case asninfo.ForeignKeys[0]: // ip_address_asninfo
-			values[i] = new(sql.NullInt64)
-		case asninfo.ForeignKeys[1]: // scan_asninfo
-			values[i] = new(sql.NullInt64)
-		case asninfo.ForeignKeys[2]: // whois_asn
-			values[i] = new(sql.NullInt64)
+		case asninfo.ForeignKeys[0]: // example_next
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -83,25 +131,11 @@ func (ai *ASNInfo) assignValues(columns []string, values []any) error {
 				ai.Registry = value.String
 			}
 		case asninfo.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field ip_address_asninfo", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field example_next", values[i])
 			} else if value.Valid {
-				ai.ip_address_asninfo = new(int)
-				*ai.ip_address_asninfo = int(value.Int64)
-			}
-		case asninfo.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_asninfo", value)
-			} else if value.Valid {
-				ai.scan_asninfo = new(int)
-				*ai.scan_asninfo = int(value.Int64)
-			}
-		case asninfo.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field whois_asn", value)
-			} else if value.Valid {
-				ai.whois_asn = new(int)
-				*ai.whois_asn = int(value.Int64)
+				ai.example_next = new(string)
+				*ai.example_next = value.String
 			}
 		default:
 			ai.selectValues.Set(columns[i], values[i])
@@ -114,6 +148,26 @@ func (ai *ASNInfo) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (ai *ASNInfo) Value(name string) (ent.Value, error) {
 	return ai.selectValues.Get(name)
+}
+
+// QueryScan queries the "scan" edge of the ASNInfo entity.
+func (ai *ASNInfo) QueryScan() *ScanQuery {
+	return NewASNInfoClient(ai.config).QueryScan(ai)
+}
+
+// QueryIpaddress queries the "ipaddress" edge of the ASNInfo entity.
+func (ai *ASNInfo) QueryIpaddress() *IPAddressQuery {
+	return NewASNInfoClient(ai.config).QueryIpaddress(ai)
+}
+
+// QueryRegistrar queries the "registrar" edge of the ASNInfo entity.
+func (ai *ASNInfo) QueryRegistrar() *RegistrarQuery {
+	return NewASNInfoClient(ai.config).QueryRegistrar(ai)
+}
+
+// QueryWhois queries the "whois" edge of the ASNInfo entity.
+func (ai *ASNInfo) QueryWhois() *WhoisQuery {
+	return NewASNInfoClient(ai.config).QueryWhois(ai)
 }
 
 // Update returns a builder for updating this ASNInfo.

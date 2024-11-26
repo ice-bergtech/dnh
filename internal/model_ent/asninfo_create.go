@@ -10,6 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // ASNInfoCreate is the builder for creating a ASNInfo entity.
@@ -35,6 +39,66 @@ func (aic *ASNInfoCreate) SetCountry(s string) *ASNInfoCreate {
 func (aic *ASNInfoCreate) SetRegistry(s string) *ASNInfoCreate {
 	aic.mutation.SetRegistry(s)
 	return aic
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (aic *ASNInfoCreate) AddScanIDs(ids ...int) *ASNInfoCreate {
+	aic.mutation.AddScanIDs(ids...)
+	return aic
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (aic *ASNInfoCreate) AddScan(s ...*Scan) *ASNInfoCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return aic.AddScanIDs(ids...)
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (aic *ASNInfoCreate) AddIpaddresIDs(ids ...int) *ASNInfoCreate {
+	aic.mutation.AddIpaddresIDs(ids...)
+	return aic
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (aic *ASNInfoCreate) AddIpaddress(i ...*IPAddress) *ASNInfoCreate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return aic.AddIpaddresIDs(ids...)
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
+func (aic *ASNInfoCreate) AddRegistrarIDs(ids ...int) *ASNInfoCreate {
+	aic.mutation.AddRegistrarIDs(ids...)
+	return aic
+}
+
+// AddRegistrar adds the "registrar" edges to the Registrar entity.
+func (aic *ASNInfoCreate) AddRegistrar(r ...*Registrar) *ASNInfoCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return aic.AddRegistrarIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (aic *ASNInfoCreate) AddWhoiIDs(ids ...int) *ASNInfoCreate {
+	aic.mutation.AddWhoiIDs(ids...)
+	return aic
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (aic *ASNInfoCreate) AddWhois(w ...*Whois) *ASNInfoCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return aic.AddWhoiIDs(ids...)
 }
 
 // Mutation returns the ASNInfoMutation object of the builder.
@@ -117,6 +181,70 @@ func (aic *ASNInfoCreate) createSpec() (*ASNInfo, *sqlgraph.CreateSpec) {
 	if value, ok := aic.mutation.Registry(); ok {
 		_spec.SetField(asninfo.FieldRegistry, field.TypeString, value)
 		_node.Registry = value
+	}
+	if nodes := aic.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   asninfo.ScanTable,
+			Columns: asninfo.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := aic.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   asninfo.IpaddressTable,
+			Columns: asninfo.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := aic.mutation.RegistrarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   asninfo.RegistrarTable,
+			Columns: asninfo.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := aic.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   asninfo.WhoisTable,
+			Columns: asninfo.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

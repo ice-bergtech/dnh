@@ -4,6 +4,7 @@ package path
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 )
 
@@ -120,6 +121,52 @@ func PathEqualFold(v string) predicate.Path {
 // PathContainsFold applies the ContainsFold predicate on the "path" field.
 func PathContainsFold(v string) predicate.Path {
 	return predicate.Path(sql.FieldContainsFold(FieldPath, v))
+}
+
+// HasDomain applies the HasEdge predicate on the "domain" edge.
+func HasDomain() predicate.Path {
+	return predicate.Path(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DomainTable, DomainPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDomainWith applies the HasEdge predicate on the "domain" edge with a given conditions (other predicates).
+func HasDomainWith(preds ...predicate.Domain) predicate.Path {
+	return predicate.Path(func(s *sql.Selector) {
+		step := newDomainStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.Path {
+	return predicate.Path(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.Path {
+	return predicate.Path(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

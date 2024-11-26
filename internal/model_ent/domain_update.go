@@ -10,13 +10,16 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // DomainUpdate is the builder for updating Domain entities.
@@ -43,6 +46,18 @@ func (du *DomainUpdate) SetNillableName(s *string) *DomainUpdate {
 	if s != nil {
 		du.SetName(*s)
 	}
+	return du
+}
+
+// SetPorts sets the "ports" field.
+func (du *DomainUpdate) SetPorts(i []int) *DomainUpdate {
+	du.mutation.SetPorts(i)
+	return du
+}
+
+// AppendPorts appends i to the "ports" field.
+func (du *DomainUpdate) AppendPorts(i []int) *DomainUpdate {
+	du.mutation.AppendPorts(i)
 	return du
 }
 
@@ -89,34 +104,19 @@ func (du *DomainUpdate) AddNameserver(n ...*Nameserver) *DomainUpdate {
 	return du.AddNameserverIDs(ids...)
 }
 
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (du *DomainUpdate) AddDomainIDs(ids ...int) *DomainUpdate {
-	du.mutation.AddDomainIDs(ids...)
+// AddSubdomainIDs adds the "subdomain" edge to the Domain entity by IDs.
+func (du *DomainUpdate) AddSubdomainIDs(ids ...int) *DomainUpdate {
+	du.mutation.AddSubdomainIDs(ids...)
 	return du
 }
 
-// AddDomain adds the "domain" edges to the Domain entity.
-func (du *DomainUpdate) AddDomain(d ...*Domain) *DomainUpdate {
+// AddSubdomain adds the "subdomain" edges to the Domain entity.
+func (du *DomainUpdate) AddSubdomain(d ...*Domain) *DomainUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return du.AddDomainIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (du *DomainUpdate) AddDnsentryIDs(ids ...int) *DomainUpdate {
-	du.mutation.AddDnsentryIDs(ids...)
-	return du
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (du *DomainUpdate) AddDnsentry(d ...*DNSEntry) *DomainUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return du.AddDnsentryIDs(ids...)
+	return du.AddSubdomainIDs(ids...)
 }
 
 // AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
@@ -149,6 +149,66 @@ func (du *DomainUpdate) AddPath(p ...*Path) *DomainUpdate {
 	return du.AddPathIDs(ids...)
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (du *DomainUpdate) AddScanIDs(ids ...int) *DomainUpdate {
+	du.mutation.AddScanIDs(ids...)
+	return du
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (du *DomainUpdate) AddScan(s ...*Scan) *DomainUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return du.AddScanIDs(ids...)
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+func (du *DomainUpdate) AddDnsentryIDs(ids ...int) *DomainUpdate {
+	du.mutation.AddDnsentryIDs(ids...)
+	return du
+}
+
+// AddDnsentry adds the "dnsentry" edges to the Scan entity.
+func (du *DomainUpdate) AddDnsentry(s ...*Scan) *DomainUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return du.AddDnsentryIDs(ids...)
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
+func (du *DomainUpdate) AddRegistrarIDs(ids ...int) *DomainUpdate {
+	du.mutation.AddRegistrarIDs(ids...)
+	return du
+}
+
+// AddRegistrar adds the "registrar" edges to the Registrar entity.
+func (du *DomainUpdate) AddRegistrar(r ...*Registrar) *DomainUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return du.AddRegistrarIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (du *DomainUpdate) AddWhoiIDs(ids ...int) *DomainUpdate {
+	du.mutation.AddWhoiIDs(ids...)
+	return du
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (du *DomainUpdate) AddWhois(w ...*Whois) *DomainUpdate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return du.AddWhoiIDs(ids...)
+}
+
 // Mutation returns the DomainMutation object of the builder.
 func (du *DomainUpdate) Mutation() *DomainMutation {
 	return du.mutation
@@ -175,46 +235,25 @@ func (du *DomainUpdate) RemoveNameserver(n ...*Nameserver) *DomainUpdate {
 	return du.RemoveNameserverIDs(ids...)
 }
 
-// ClearDomain clears all "domain" edges to the Domain entity.
-func (du *DomainUpdate) ClearDomain() *DomainUpdate {
-	du.mutation.ClearDomain()
+// ClearSubdomain clears all "subdomain" edges to the Domain entity.
+func (du *DomainUpdate) ClearSubdomain() *DomainUpdate {
+	du.mutation.ClearSubdomain()
 	return du
 }
 
-// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
-func (du *DomainUpdate) RemoveDomainIDs(ids ...int) *DomainUpdate {
-	du.mutation.RemoveDomainIDs(ids...)
+// RemoveSubdomainIDs removes the "subdomain" edge to Domain entities by IDs.
+func (du *DomainUpdate) RemoveSubdomainIDs(ids ...int) *DomainUpdate {
+	du.mutation.RemoveSubdomainIDs(ids...)
 	return du
 }
 
-// RemoveDomain removes "domain" edges to Domain entities.
-func (du *DomainUpdate) RemoveDomain(d ...*Domain) *DomainUpdate {
+// RemoveSubdomain removes "subdomain" edges to Domain entities.
+func (du *DomainUpdate) RemoveSubdomain(d ...*Domain) *DomainUpdate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return du.RemoveDomainIDs(ids...)
-}
-
-// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
-func (du *DomainUpdate) ClearDnsentry() *DomainUpdate {
-	du.mutation.ClearDnsentry()
-	return du
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
-func (du *DomainUpdate) RemoveDnsentryIDs(ids ...int) *DomainUpdate {
-	du.mutation.RemoveDnsentryIDs(ids...)
-	return du
-}
-
-// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
-func (du *DomainUpdate) RemoveDnsentry(d ...*DNSEntry) *DomainUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return du.RemoveDnsentryIDs(ids...)
+	return du.RemoveSubdomainIDs(ids...)
 }
 
 // ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
@@ -259,6 +298,90 @@ func (du *DomainUpdate) RemovePath(p ...*Path) *DomainUpdate {
 	return du.RemovePathIDs(ids...)
 }
 
+// ClearScan clears all "scan" edges to the Scan entity.
+func (du *DomainUpdate) ClearScan() *DomainUpdate {
+	du.mutation.ClearScan()
+	return du
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (du *DomainUpdate) RemoveScanIDs(ids ...int) *DomainUpdate {
+	du.mutation.RemoveScanIDs(ids...)
+	return du
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (du *DomainUpdate) RemoveScan(s ...*Scan) *DomainUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return du.RemoveScanIDs(ids...)
+}
+
+// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+func (du *DomainUpdate) ClearDnsentry() *DomainUpdate {
+	du.mutation.ClearDnsentry()
+	return du
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+func (du *DomainUpdate) RemoveDnsentryIDs(ids ...int) *DomainUpdate {
+	du.mutation.RemoveDnsentryIDs(ids...)
+	return du
+}
+
+// RemoveDnsentry removes "dnsentry" edges to Scan entities.
+func (du *DomainUpdate) RemoveDnsentry(s ...*Scan) *DomainUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return du.RemoveDnsentryIDs(ids...)
+}
+
+// ClearRegistrar clears all "registrar" edges to the Registrar entity.
+func (du *DomainUpdate) ClearRegistrar() *DomainUpdate {
+	du.mutation.ClearRegistrar()
+	return du
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to Registrar entities by IDs.
+func (du *DomainUpdate) RemoveRegistrarIDs(ids ...int) *DomainUpdate {
+	du.mutation.RemoveRegistrarIDs(ids...)
+	return du
+}
+
+// RemoveRegistrar removes "registrar" edges to Registrar entities.
+func (du *DomainUpdate) RemoveRegistrar(r ...*Registrar) *DomainUpdate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return du.RemoveRegistrarIDs(ids...)
+}
+
+// ClearWhois clears all "whois" edges to the Whois entity.
+func (du *DomainUpdate) ClearWhois() *DomainUpdate {
+	du.mutation.ClearWhois()
+	return du
+}
+
+// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
+func (du *DomainUpdate) RemoveWhoiIDs(ids ...int) *DomainUpdate {
+	du.mutation.RemoveWhoiIDs(ids...)
+	return du
+}
+
+// RemoveWhois removes "whois" edges to Whois entities.
+func (du *DomainUpdate) RemoveWhois(w ...*Whois) *DomainUpdate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return du.RemoveWhoiIDs(ids...)
+}
+
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (du *DomainUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, du.sqlSave, du.mutation, du.hooks)
@@ -298,6 +421,14 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := du.mutation.Name(); ok {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 	}
+	if value, ok := du.mutation.Ports(); ok {
+		_spec.SetField(domain.FieldPorts, field.TypeJSON, value)
+	}
+	if value, ok := du.mutation.AppendedPorts(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, domain.FieldPorts, value)
+		})
+	}
 	if value, ok := du.mutation.TimeFirst(); ok {
 		_spec.SetField(domain.FieldTimeFirst, field.TypeTime, value)
 	}
@@ -306,10 +437,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -319,10 +450,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !du.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -335,10 +466,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -349,12 +480,12 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if du.mutation.DomainCleared() {
+	if du.mutation.SubdomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -362,28 +493,12 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RemovedDomainIDs(); len(nodes) > 0 && !du.mutation.DomainCleared() {
+	if nodes := du.mutation.RemovedSubdomainIDs(); len(nodes) > 0 && !du.mutation.SubdomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.DomainIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -392,46 +507,17 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if du.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !du.mutation.DnsentryCleared() {
+	if nodes := du.mutation.SubdomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := du.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -441,10 +527,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -454,10 +540,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !du.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -470,10 +556,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -486,10 +572,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if du.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -499,10 +585,10 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.RemovedPathIDs(); len(nodes) > 0 && !du.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -515,13 +601,193 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := du.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedScanIDs(); len(nodes) > 0 && !du.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.DnsentryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !du.mutation.DnsentryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.DnsentryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.RegistrarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !du.mutation.RegistrarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RegistrarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if du.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !du.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -560,6 +826,18 @@ func (duo *DomainUpdateOne) SetNillableName(s *string) *DomainUpdateOne {
 	if s != nil {
 		duo.SetName(*s)
 	}
+	return duo
+}
+
+// SetPorts sets the "ports" field.
+func (duo *DomainUpdateOne) SetPorts(i []int) *DomainUpdateOne {
+	duo.mutation.SetPorts(i)
+	return duo
+}
+
+// AppendPorts appends i to the "ports" field.
+func (duo *DomainUpdateOne) AppendPorts(i []int) *DomainUpdateOne {
+	duo.mutation.AppendPorts(i)
 	return duo
 }
 
@@ -606,34 +884,19 @@ func (duo *DomainUpdateOne) AddNameserver(n ...*Nameserver) *DomainUpdateOne {
 	return duo.AddNameserverIDs(ids...)
 }
 
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (duo *DomainUpdateOne) AddDomainIDs(ids ...int) *DomainUpdateOne {
-	duo.mutation.AddDomainIDs(ids...)
+// AddSubdomainIDs adds the "subdomain" edge to the Domain entity by IDs.
+func (duo *DomainUpdateOne) AddSubdomainIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.AddSubdomainIDs(ids...)
 	return duo
 }
 
-// AddDomain adds the "domain" edges to the Domain entity.
-func (duo *DomainUpdateOne) AddDomain(d ...*Domain) *DomainUpdateOne {
+// AddSubdomain adds the "subdomain" edges to the Domain entity.
+func (duo *DomainUpdateOne) AddSubdomain(d ...*Domain) *DomainUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return duo.AddDomainIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (duo *DomainUpdateOne) AddDnsentryIDs(ids ...int) *DomainUpdateOne {
-	duo.mutation.AddDnsentryIDs(ids...)
-	return duo
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (duo *DomainUpdateOne) AddDnsentry(d ...*DNSEntry) *DomainUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return duo.AddDnsentryIDs(ids...)
+	return duo.AddSubdomainIDs(ids...)
 }
 
 // AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
@@ -666,6 +929,66 @@ func (duo *DomainUpdateOne) AddPath(p ...*Path) *DomainUpdateOne {
 	return duo.AddPathIDs(ids...)
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (duo *DomainUpdateOne) AddScanIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.AddScanIDs(ids...)
+	return duo
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (duo *DomainUpdateOne) AddScan(s ...*Scan) *DomainUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return duo.AddScanIDs(ids...)
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+func (duo *DomainUpdateOne) AddDnsentryIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.AddDnsentryIDs(ids...)
+	return duo
+}
+
+// AddDnsentry adds the "dnsentry" edges to the Scan entity.
+func (duo *DomainUpdateOne) AddDnsentry(s ...*Scan) *DomainUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return duo.AddDnsentryIDs(ids...)
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
+func (duo *DomainUpdateOne) AddRegistrarIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.AddRegistrarIDs(ids...)
+	return duo
+}
+
+// AddRegistrar adds the "registrar" edges to the Registrar entity.
+func (duo *DomainUpdateOne) AddRegistrar(r ...*Registrar) *DomainUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return duo.AddRegistrarIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (duo *DomainUpdateOne) AddWhoiIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.AddWhoiIDs(ids...)
+	return duo
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (duo *DomainUpdateOne) AddWhois(w ...*Whois) *DomainUpdateOne {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return duo.AddWhoiIDs(ids...)
+}
+
 // Mutation returns the DomainMutation object of the builder.
 func (duo *DomainUpdateOne) Mutation() *DomainMutation {
 	return duo.mutation
@@ -692,46 +1015,25 @@ func (duo *DomainUpdateOne) RemoveNameserver(n ...*Nameserver) *DomainUpdateOne 
 	return duo.RemoveNameserverIDs(ids...)
 }
 
-// ClearDomain clears all "domain" edges to the Domain entity.
-func (duo *DomainUpdateOne) ClearDomain() *DomainUpdateOne {
-	duo.mutation.ClearDomain()
+// ClearSubdomain clears all "subdomain" edges to the Domain entity.
+func (duo *DomainUpdateOne) ClearSubdomain() *DomainUpdateOne {
+	duo.mutation.ClearSubdomain()
 	return duo
 }
 
-// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
-func (duo *DomainUpdateOne) RemoveDomainIDs(ids ...int) *DomainUpdateOne {
-	duo.mutation.RemoveDomainIDs(ids...)
+// RemoveSubdomainIDs removes the "subdomain" edge to Domain entities by IDs.
+func (duo *DomainUpdateOne) RemoveSubdomainIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.RemoveSubdomainIDs(ids...)
 	return duo
 }
 
-// RemoveDomain removes "domain" edges to Domain entities.
-func (duo *DomainUpdateOne) RemoveDomain(d ...*Domain) *DomainUpdateOne {
+// RemoveSubdomain removes "subdomain" edges to Domain entities.
+func (duo *DomainUpdateOne) RemoveSubdomain(d ...*Domain) *DomainUpdateOne {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return duo.RemoveDomainIDs(ids...)
-}
-
-// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
-func (duo *DomainUpdateOne) ClearDnsentry() *DomainUpdateOne {
-	duo.mutation.ClearDnsentry()
-	return duo
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
-func (duo *DomainUpdateOne) RemoveDnsentryIDs(ids ...int) *DomainUpdateOne {
-	duo.mutation.RemoveDnsentryIDs(ids...)
-	return duo
-}
-
-// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
-func (duo *DomainUpdateOne) RemoveDnsentry(d ...*DNSEntry) *DomainUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return duo.RemoveDnsentryIDs(ids...)
+	return duo.RemoveSubdomainIDs(ids...)
 }
 
 // ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
@@ -774,6 +1076,90 @@ func (duo *DomainUpdateOne) RemovePath(p ...*Path) *DomainUpdateOne {
 		ids[i] = p[i].ID
 	}
 	return duo.RemovePathIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (duo *DomainUpdateOne) ClearScan() *DomainUpdateOne {
+	duo.mutation.ClearScan()
+	return duo
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (duo *DomainUpdateOne) RemoveScanIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.RemoveScanIDs(ids...)
+	return duo
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (duo *DomainUpdateOne) RemoveScan(s ...*Scan) *DomainUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return duo.RemoveScanIDs(ids...)
+}
+
+// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+func (duo *DomainUpdateOne) ClearDnsentry() *DomainUpdateOne {
+	duo.mutation.ClearDnsentry()
+	return duo
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+func (duo *DomainUpdateOne) RemoveDnsentryIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.RemoveDnsentryIDs(ids...)
+	return duo
+}
+
+// RemoveDnsentry removes "dnsentry" edges to Scan entities.
+func (duo *DomainUpdateOne) RemoveDnsentry(s ...*Scan) *DomainUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return duo.RemoveDnsentryIDs(ids...)
+}
+
+// ClearRegistrar clears all "registrar" edges to the Registrar entity.
+func (duo *DomainUpdateOne) ClearRegistrar() *DomainUpdateOne {
+	duo.mutation.ClearRegistrar()
+	return duo
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to Registrar entities by IDs.
+func (duo *DomainUpdateOne) RemoveRegistrarIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.RemoveRegistrarIDs(ids...)
+	return duo
+}
+
+// RemoveRegistrar removes "registrar" edges to Registrar entities.
+func (duo *DomainUpdateOne) RemoveRegistrar(r ...*Registrar) *DomainUpdateOne {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return duo.RemoveRegistrarIDs(ids...)
+}
+
+// ClearWhois clears all "whois" edges to the Whois entity.
+func (duo *DomainUpdateOne) ClearWhois() *DomainUpdateOne {
+	duo.mutation.ClearWhois()
+	return duo
+}
+
+// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
+func (duo *DomainUpdateOne) RemoveWhoiIDs(ids ...int) *DomainUpdateOne {
+	duo.mutation.RemoveWhoiIDs(ids...)
+	return duo
+}
+
+// RemoveWhois removes "whois" edges to Whois entities.
+func (duo *DomainUpdateOne) RemoveWhois(w ...*Whois) *DomainUpdateOne {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return duo.RemoveWhoiIDs(ids...)
 }
 
 // Where appends a list predicates to the DomainUpdate builder.
@@ -845,6 +1231,14 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	if value, ok := duo.mutation.Name(); ok {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 	}
+	if value, ok := duo.mutation.Ports(); ok {
+		_spec.SetField(domain.FieldPorts, field.TypeJSON, value)
+	}
+	if value, ok := duo.mutation.AppendedPorts(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, domain.FieldPorts, value)
+		})
+	}
 	if value, ok := duo.mutation.TimeFirst(); ok {
 		_spec.SetField(domain.FieldTimeFirst, field.TypeTime, value)
 	}
@@ -853,10 +1247,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if duo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -866,10 +1260,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !duo.mutation.NameserverCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -882,10 +1276,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -896,12 +1290,12 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if duo.mutation.DomainCleared() {
+	if duo.mutation.SubdomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -909,28 +1303,12 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !duo.mutation.DomainCleared() {
+	if nodes := duo.mutation.RemovedSubdomainIDs(); len(nodes) > 0 && !duo.mutation.SubdomainCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
-			Bidi:    true,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.DomainIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -939,46 +1317,17 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if duo.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !duo.mutation.DnsentryCleared() {
+	if nodes := duo.mutation.SubdomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
+			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := duo.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -988,10 +1337,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if duo.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1001,10 +1350,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !duo.mutation.IpaddressCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1017,10 +1366,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -1033,10 +1382,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if duo.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -1046,10 +1395,10 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.RemovedPathIDs(); len(nodes) > 0 && !duo.mutation.PathCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
@@ -1062,13 +1411,193 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 	}
 	if nodes := duo.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedScanIDs(); len(nodes) > 0 && !duo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.DnsentryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !duo.mutation.DnsentryCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.DnsentryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.RegistrarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !duo.mutation.RegistrarCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RegistrarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !duo.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

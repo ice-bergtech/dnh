@@ -11,8 +11,13 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // RegistrarUpdate is the builder for updating Registrar entities.
@@ -112,6 +117,20 @@ func (ru *RegistrarUpdate) SetNillableAddress(s *string) *RegistrarUpdate {
 	return ru
 }
 
+// SetSource sets the "source" field.
+func (ru *RegistrarUpdate) SetSource(s string) *RegistrarUpdate {
+	ru.mutation.SetSource(s)
+	return ru
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (ru *RegistrarUpdate) SetNillableSource(s *string) *RegistrarUpdate {
+	if s != nil {
+		ru.SetSource(*s)
+	}
+	return ru
+}
+
 // SetTimeFirst sets the "time_first" field.
 func (ru *RegistrarUpdate) SetTimeFirst(t time.Time) *RegistrarUpdate {
 	ru.mutation.SetTimeFirst(t)
@@ -140,9 +159,189 @@ func (ru *RegistrarUpdate) SetNillableTimeLast(t *time.Time) *RegistrarUpdate {
 	return ru
 }
 
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (ru *RegistrarUpdate) AddIpaddresIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.AddIpaddresIDs(ids...)
+	return ru
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (ru *RegistrarUpdate) AddIpaddress(i ...*IPAddress) *RegistrarUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ru.AddIpaddresIDs(ids...)
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (ru *RegistrarUpdate) AddDomainIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.AddDomainIDs(ids...)
+	return ru
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (ru *RegistrarUpdate) AddDomain(d ...*Domain) *RegistrarUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ru.AddDomainIDs(ids...)
+}
+
+// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
+func (ru *RegistrarUpdate) AddAsninfoIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.AddAsninfoIDs(ids...)
+	return ru
+}
+
+// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
+func (ru *RegistrarUpdate) AddAsninfo(a ...*ASNInfo) *RegistrarUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ru.AddAsninfoIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (ru *RegistrarUpdate) AddScanIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.AddScanIDs(ids...)
+	return ru
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (ru *RegistrarUpdate) AddScan(s ...*Scan) *RegistrarUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.AddScanIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (ru *RegistrarUpdate) AddWhoiIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.AddWhoiIDs(ids...)
+	return ru
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (ru *RegistrarUpdate) AddWhois(w ...*Whois) *RegistrarUpdate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return ru.AddWhoiIDs(ids...)
+}
+
 // Mutation returns the RegistrarMutation object of the builder.
 func (ru *RegistrarUpdate) Mutation() *RegistrarMutation {
 	return ru.mutation
+}
+
+// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
+func (ru *RegistrarUpdate) ClearIpaddress() *RegistrarUpdate {
+	ru.mutation.ClearIpaddress()
+	return ru
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
+func (ru *RegistrarUpdate) RemoveIpaddresIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.RemoveIpaddresIDs(ids...)
+	return ru
+}
+
+// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
+func (ru *RegistrarUpdate) RemoveIpaddress(i ...*IPAddress) *RegistrarUpdate {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ru.RemoveIpaddresIDs(ids...)
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (ru *RegistrarUpdate) ClearDomain() *RegistrarUpdate {
+	ru.mutation.ClearDomain()
+	return ru
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (ru *RegistrarUpdate) RemoveDomainIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.RemoveDomainIDs(ids...)
+	return ru
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (ru *RegistrarUpdate) RemoveDomain(d ...*Domain) *RegistrarUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ru.RemoveDomainIDs(ids...)
+}
+
+// ClearAsninfo clears all "asninfo" edges to the ASNInfo entity.
+func (ru *RegistrarUpdate) ClearAsninfo() *RegistrarUpdate {
+	ru.mutation.ClearAsninfo()
+	return ru
+}
+
+// RemoveAsninfoIDs removes the "asninfo" edge to ASNInfo entities by IDs.
+func (ru *RegistrarUpdate) RemoveAsninfoIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.RemoveAsninfoIDs(ids...)
+	return ru
+}
+
+// RemoveAsninfo removes "asninfo" edges to ASNInfo entities.
+func (ru *RegistrarUpdate) RemoveAsninfo(a ...*ASNInfo) *RegistrarUpdate {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ru.RemoveAsninfoIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (ru *RegistrarUpdate) ClearScan() *RegistrarUpdate {
+	ru.mutation.ClearScan()
+	return ru
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (ru *RegistrarUpdate) RemoveScanIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.RemoveScanIDs(ids...)
+	return ru
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (ru *RegistrarUpdate) RemoveScan(s ...*Scan) *RegistrarUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ru.RemoveScanIDs(ids...)
+}
+
+// ClearWhois clears all "whois" edges to the Whois entity.
+func (ru *RegistrarUpdate) ClearWhois() *RegistrarUpdate {
+	ru.mutation.ClearWhois()
+	return ru
+}
+
+// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
+func (ru *RegistrarUpdate) RemoveWhoiIDs(ids ...int) *RegistrarUpdate {
+	ru.mutation.RemoveWhoiIDs(ids...)
+	return ru
+}
+
+// RemoveWhois removes "whois" edges to Whois entities.
+func (ru *RegistrarUpdate) RemoveWhois(w ...*Whois) *RegistrarUpdate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return ru.RemoveWhoiIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -199,11 +398,239 @@ func (ru *RegistrarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ru.mutation.Address(); ok {
 		_spec.SetField(registrar.FieldAddress, field.TypeString, value)
 	}
+	if value, ok := ru.mutation.Source(); ok {
+		_spec.SetField(registrar.FieldSource, field.TypeString, value)
+	}
 	if value, ok := ru.mutation.TimeFirst(); ok {
 		_spec.SetField(registrar.FieldTimeFirst, field.TypeTime, value)
 	}
 	if value, ok := ru.mutation.TimeLast(); ok {
 		_spec.SetField(registrar.FieldTimeLast, field.TypeTime, value)
+	}
+	if ru.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !ru.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedDomainIDs(); len(nodes) > 0 && !ru.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.AsninfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !ru.mutation.AsninfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.AsninfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedScanIDs(); len(nodes) > 0 && !ru.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ru.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !ru.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ru.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, ru.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -309,6 +736,20 @@ func (ruo *RegistrarUpdateOne) SetNillableAddress(s *string) *RegistrarUpdateOne
 	return ruo
 }
 
+// SetSource sets the "source" field.
+func (ruo *RegistrarUpdateOne) SetSource(s string) *RegistrarUpdateOne {
+	ruo.mutation.SetSource(s)
+	return ruo
+}
+
+// SetNillableSource sets the "source" field if the given value is not nil.
+func (ruo *RegistrarUpdateOne) SetNillableSource(s *string) *RegistrarUpdateOne {
+	if s != nil {
+		ruo.SetSource(*s)
+	}
+	return ruo
+}
+
 // SetTimeFirst sets the "time_first" field.
 func (ruo *RegistrarUpdateOne) SetTimeFirst(t time.Time) *RegistrarUpdateOne {
 	ruo.mutation.SetTimeFirst(t)
@@ -337,9 +778,189 @@ func (ruo *RegistrarUpdateOne) SetNillableTimeLast(t *time.Time) *RegistrarUpdat
 	return ruo
 }
 
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
+func (ruo *RegistrarUpdateOne) AddIpaddresIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.AddIpaddresIDs(ids...)
+	return ruo
+}
+
+// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
+func (ruo *RegistrarUpdateOne) AddIpaddress(i ...*IPAddress) *RegistrarUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ruo.AddIpaddresIDs(ids...)
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (ruo *RegistrarUpdateOne) AddDomainIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.AddDomainIDs(ids...)
+	return ruo
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (ruo *RegistrarUpdateOne) AddDomain(d ...*Domain) *RegistrarUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ruo.AddDomainIDs(ids...)
+}
+
+// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
+func (ruo *RegistrarUpdateOne) AddAsninfoIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.AddAsninfoIDs(ids...)
+	return ruo
+}
+
+// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
+func (ruo *RegistrarUpdateOne) AddAsninfo(a ...*ASNInfo) *RegistrarUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ruo.AddAsninfoIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (ruo *RegistrarUpdateOne) AddScanIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.AddScanIDs(ids...)
+	return ruo
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (ruo *RegistrarUpdateOne) AddScan(s ...*Scan) *RegistrarUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.AddScanIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (ruo *RegistrarUpdateOne) AddWhoiIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.AddWhoiIDs(ids...)
+	return ruo
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (ruo *RegistrarUpdateOne) AddWhois(w ...*Whois) *RegistrarUpdateOne {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return ruo.AddWhoiIDs(ids...)
+}
+
 // Mutation returns the RegistrarMutation object of the builder.
 func (ruo *RegistrarUpdateOne) Mutation() *RegistrarMutation {
 	return ruo.mutation
+}
+
+// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
+func (ruo *RegistrarUpdateOne) ClearIpaddress() *RegistrarUpdateOne {
+	ruo.mutation.ClearIpaddress()
+	return ruo
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
+func (ruo *RegistrarUpdateOne) RemoveIpaddresIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.RemoveIpaddresIDs(ids...)
+	return ruo
+}
+
+// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
+func (ruo *RegistrarUpdateOne) RemoveIpaddress(i ...*IPAddress) *RegistrarUpdateOne {
+	ids := make([]int, len(i))
+	for j := range i {
+		ids[j] = i[j].ID
+	}
+	return ruo.RemoveIpaddresIDs(ids...)
+}
+
+// ClearDomain clears all "domain" edges to the Domain entity.
+func (ruo *RegistrarUpdateOne) ClearDomain() *RegistrarUpdateOne {
+	ruo.mutation.ClearDomain()
+	return ruo
+}
+
+// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
+func (ruo *RegistrarUpdateOne) RemoveDomainIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.RemoveDomainIDs(ids...)
+	return ruo
+}
+
+// RemoveDomain removes "domain" edges to Domain entities.
+func (ruo *RegistrarUpdateOne) RemoveDomain(d ...*Domain) *RegistrarUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return ruo.RemoveDomainIDs(ids...)
+}
+
+// ClearAsninfo clears all "asninfo" edges to the ASNInfo entity.
+func (ruo *RegistrarUpdateOne) ClearAsninfo() *RegistrarUpdateOne {
+	ruo.mutation.ClearAsninfo()
+	return ruo
+}
+
+// RemoveAsninfoIDs removes the "asninfo" edge to ASNInfo entities by IDs.
+func (ruo *RegistrarUpdateOne) RemoveAsninfoIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.RemoveAsninfoIDs(ids...)
+	return ruo
+}
+
+// RemoveAsninfo removes "asninfo" edges to ASNInfo entities.
+func (ruo *RegistrarUpdateOne) RemoveAsninfo(a ...*ASNInfo) *RegistrarUpdateOne {
+	ids := make([]int, len(a))
+	for i := range a {
+		ids[i] = a[i].ID
+	}
+	return ruo.RemoveAsninfoIDs(ids...)
+}
+
+// ClearScan clears all "scan" edges to the Scan entity.
+func (ruo *RegistrarUpdateOne) ClearScan() *RegistrarUpdateOne {
+	ruo.mutation.ClearScan()
+	return ruo
+}
+
+// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+func (ruo *RegistrarUpdateOne) RemoveScanIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.RemoveScanIDs(ids...)
+	return ruo
+}
+
+// RemoveScan removes "scan" edges to Scan entities.
+func (ruo *RegistrarUpdateOne) RemoveScan(s ...*Scan) *RegistrarUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return ruo.RemoveScanIDs(ids...)
+}
+
+// ClearWhois clears all "whois" edges to the Whois entity.
+func (ruo *RegistrarUpdateOne) ClearWhois() *RegistrarUpdateOne {
+	ruo.mutation.ClearWhois()
+	return ruo
+}
+
+// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
+func (ruo *RegistrarUpdateOne) RemoveWhoiIDs(ids ...int) *RegistrarUpdateOne {
+	ruo.mutation.RemoveWhoiIDs(ids...)
+	return ruo
+}
+
+// RemoveWhois removes "whois" edges to Whois entities.
+func (ruo *RegistrarUpdateOne) RemoveWhois(w ...*Whois) *RegistrarUpdateOne {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return ruo.RemoveWhoiIDs(ids...)
 }
 
 // Where appends a list predicates to the RegistrarUpdate builder.
@@ -426,11 +1047,239 @@ func (ruo *RegistrarUpdateOne) sqlSave(ctx context.Context) (_node *Registrar, e
 	if value, ok := ruo.mutation.Address(); ok {
 		_spec.SetField(registrar.FieldAddress, field.TypeString, value)
 	}
+	if value, ok := ruo.mutation.Source(); ok {
+		_spec.SetField(registrar.FieldSource, field.TypeString, value)
+	}
 	if value, ok := ruo.mutation.TimeFirst(); ok {
 		_spec.SetField(registrar.FieldTimeFirst, field.TypeTime, value)
 	}
 	if value, ok := ruo.mutation.TimeLast(); ok {
 		_spec.SetField(registrar.FieldTimeLast, field.TypeTime, value)
+	}
+	if ruo.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !ruo.mutation.IpaddressCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.IpaddressIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.IpaddressTable,
+			Columns: registrar.IpaddressPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !ruo.mutation.DomainCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.DomainTable,
+			Columns: registrar.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.AsninfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !ruo.mutation.AsninfoCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.AsninfoIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   registrar.AsninfoTable,
+			Columns: registrar.AsninfoPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedScanIDs(); len(nodes) > 0 && !ruo.mutation.ScanCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.ScanTable,
+			Columns: registrar.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ruo.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !ruo.mutation.WhoisCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ruo.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   registrar.WhoisTable,
+			Columns: registrar.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Registrar{config: ruo.config}
 	_spec.Assign = _node.assignValues

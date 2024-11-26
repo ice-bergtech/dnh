@@ -220,7 +220,7 @@ func HasNameserver() predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -238,44 +238,21 @@ func HasNameserverWith(preds ...predicate.Nameserver) predicate.Domain {
 	})
 }
 
-// HasDomain applies the HasEdge predicate on the "domain" edge.
-func HasDomain() predicate.Domain {
+// HasSubdomain applies the HasEdge predicate on the "subdomain" edge.
+func HasSubdomain() predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, SubdomainTable, SubdomainPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasDomainWith applies the HasEdge predicate on the "domain" edge with a given conditions (other predicates).
-func HasDomainWith(preds ...predicate.Domain) predicate.Domain {
+// HasSubdomainWith applies the HasEdge predicate on the "subdomain" edge with a given conditions (other predicates).
+func HasSubdomainWith(preds ...predicate.Domain) predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
-		step := newDomainStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasDnsentry applies the HasEdge predicate on the "dnsentry" edge.
-func HasDnsentry() predicate.Domain {
-	return predicate.Domain(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DnsentryTable, DnsentryColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasDnsentryWith applies the HasEdge predicate on the "dnsentry" edge with a given conditions (other predicates).
-func HasDnsentryWith(preds ...predicate.DNSEntry) predicate.Domain {
-	return predicate.Domain(func(s *sql.Selector) {
-		step := newDnsentryStep()
+		step := newSubdomainStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -289,7 +266,7 @@ func HasIpaddress() predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -312,7 +289,7 @@ func HasPath() predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, PathTable, PathColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, PathTable, PathPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -322,6 +299,98 @@ func HasPath() predicate.Domain {
 func HasPathWith(preds ...predicate.Path) predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := newPathStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDnsentry applies the HasEdge predicate on the "dnsentry" edge.
+func HasDnsentry() predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, DnsentryTable, DnsentryPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDnsentryWith applies the HasEdge predicate on the "dnsentry" edge with a given conditions (other predicates).
+func HasDnsentryWith(preds ...predicate.Scan) predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := newDnsentryStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRegistrar applies the HasEdge predicate on the "registrar" edge.
+func HasRegistrar() predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, RegistrarTable, RegistrarPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRegistrarWith applies the HasEdge predicate on the "registrar" edge with a given conditions (other predicates).
+func HasRegistrarWith(preds ...predicate.Registrar) predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := newRegistrarStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWhois applies the HasEdge predicate on the "whois" edge.
+func HasWhois() predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, WhoisTable, WhoisPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWhoisWith applies the HasEdge predicate on the "whois" edge with a given conditions (other predicates).
+func HasWhoisWith(preds ...predicate.Whois) predicate.Domain {
+	return predicate.Domain(func(s *sql.Selector) {
+		step := newWhoisStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

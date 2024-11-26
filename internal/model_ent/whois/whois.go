@@ -36,45 +36,42 @@ const (
 	EdgeAsn = "asn"
 	// EdgeRegistrar holds the string denoting the registrar edge name in mutations.
 	EdgeRegistrar = "registrar"
-	// EdgeNameservers holds the string denoting the nameservers edge name in mutations.
-	EdgeNameservers = "nameservers"
+	// EdgeNameserver holds the string denoting the nameserver edge name in mutations.
+	EdgeNameserver = "nameserver"
+	// EdgeScan holds the string denoting the scan edge name in mutations.
+	EdgeScan = "scan"
 	// Table holds the table name of the whois in the database.
 	Table = "whois"
-	// IprangeTable is the table that holds the iprange relation/edge.
-	IprangeTable = "ip_addresses"
+	// IprangeTable is the table that holds the iprange relation/edge. The primary key declared below.
+	IprangeTable = "whois_iprange"
 	// IprangeInverseTable is the table name for the IPAddress entity.
 	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
 	IprangeInverseTable = "ip_addresses"
-	// IprangeColumn is the table column denoting the iprange relation/edge.
-	IprangeColumn = "whois_iprange"
-	// DomainTable is the table that holds the domain relation/edge.
-	DomainTable = "domains"
+	// DomainTable is the table that holds the domain relation/edge. The primary key declared below.
+	DomainTable = "whois_domain"
 	// DomainInverseTable is the table name for the Domain entity.
 	// It exists in this package in order to avoid circular dependency with the "domain" package.
 	DomainInverseTable = "domains"
-	// DomainColumn is the table column denoting the domain relation/edge.
-	DomainColumn = "whois_domain"
-	// AsnTable is the table that holds the asn relation/edge.
-	AsnTable = "asn_infos"
+	// AsnTable is the table that holds the asn relation/edge. The primary key declared below.
+	AsnTable = "whois_asn"
 	// AsnInverseTable is the table name for the ASNInfo entity.
 	// It exists in this package in order to avoid circular dependency with the "asninfo" package.
 	AsnInverseTable = "asn_infos"
-	// AsnColumn is the table column denoting the asn relation/edge.
-	AsnColumn = "whois_asn"
-	// RegistrarTable is the table that holds the registrar relation/edge.
-	RegistrarTable = "registrars"
+	// RegistrarTable is the table that holds the registrar relation/edge. The primary key declared below.
+	RegistrarTable = "whois_registrar"
 	// RegistrarInverseTable is the table name for the Registrar entity.
 	// It exists in this package in order to avoid circular dependency with the "registrar" package.
 	RegistrarInverseTable = "registrars"
-	// RegistrarColumn is the table column denoting the registrar relation/edge.
-	RegistrarColumn = "whois_registrar"
-	// NameserversTable is the table that holds the nameservers relation/edge.
-	NameserversTable = "nameservers"
-	// NameserversInverseTable is the table name for the Nameserver entity.
+	// NameserverTable is the table that holds the nameserver relation/edge. The primary key declared below.
+	NameserverTable = "whois_nameserver"
+	// NameserverInverseTable is the table name for the Nameserver entity.
 	// It exists in this package in order to avoid circular dependency with the "nameserver" package.
-	NameserversInverseTable = "nameservers"
-	// NameserversColumn is the table column denoting the nameservers relation/edge.
-	NameserversColumn = "whois_nameservers"
+	NameserverInverseTable = "nameservers"
+	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
+	ScanTable = "scan_whois"
+	// ScanInverseTable is the table name for the Scan entity.
+	// It exists in this package in order to avoid circular dependency with the "scan" package.
+	ScanInverseTable = "scans"
 )
 
 // Columns holds all SQL columns for whois fields.
@@ -93,8 +90,29 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "whois"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"scan_whois",
+	"example_whois",
 }
+
+var (
+	// IprangePrimaryKey and IprangeColumn2 are the table columns denoting the
+	// primary key for the iprange relation (M2M).
+	IprangePrimaryKey = []string{"whois_id", "ip_address_id"}
+	// DomainPrimaryKey and DomainColumn2 are the table columns denoting the
+	// primary key for the domain relation (M2M).
+	DomainPrimaryKey = []string{"whois_id", "domain_id"}
+	// AsnPrimaryKey and AsnColumn2 are the table columns denoting the
+	// primary key for the asn relation (M2M).
+	AsnPrimaryKey = []string{"whois_id", "asn_info_id"}
+	// RegistrarPrimaryKey and RegistrarColumn2 are the table columns denoting the
+	// primary key for the registrar relation (M2M).
+	RegistrarPrimaryKey = []string{"whois_id", "registrar_id"}
+	// NameserverPrimaryKey and NameserverColumn2 are the table columns denoting the
+	// primary key for the nameserver relation (M2M).
+	NameserverPrimaryKey = []string{"whois_id", "nameserver_id"}
+	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
+	// primary key for the scan relation (M2M).
+	ScanPrimaryKey = []string{"scan_id", "whois_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -215,51 +233,72 @@ func ByRegistrar(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByNameserversCount orders the results by nameservers count.
-func ByNameserversCount(opts ...sql.OrderTermOption) OrderOption {
+// ByNameserverCount orders the results by nameserver count.
+func ByNameserverCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newNameserversStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newNameserverStep(), opts...)
 	}
 }
 
-// ByNameservers orders the results by nameservers terms.
-func ByNameservers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByNameserver orders the results by nameserver terms.
+func ByNameserver(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newNameserversStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newNameserverStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByScanCount orders the results by scan count.
+func ByScanCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScanStep(), opts...)
+	}
+}
+
+// ByScan orders the results by scan terms.
+func ByScan(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScanStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newIprangeStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IprangeInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, IprangeTable, IprangeColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, IprangeTable, IprangePrimaryKey...),
 	)
 }
 func newDomainStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DomainInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
 	)
 }
 func newAsnStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AsnInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AsnTable, AsnColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, AsnTable, AsnPrimaryKey...),
 	)
 }
 func newRegistrarStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RegistrarInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, RegistrarTable, RegistrarColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, RegistrarTable, RegistrarPrimaryKey...),
 	)
 }
-func newNameserversStep() *sqlgraph.Step {
+func newNameserverStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(NameserversInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, NameserversTable, NameserversColumn),
+		sqlgraph.To(NameserverInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
+	)
+}
+func newScanStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScanInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
 	)
 }

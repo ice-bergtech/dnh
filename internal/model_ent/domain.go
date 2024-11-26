@@ -3,6 +3,7 @@
 package model_ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -19,33 +20,41 @@ type Domain struct {
 	ID int `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Ports holds the value of the "ports" field.
+	Ports []int `json:"ports,omitempty"`
 	// TimeFirst holds the value of the "time_first" field.
 	TimeFirst time.Time `json:"time_first,omitempty"`
 	// TimeLast holds the value of the "time_last" field.
 	TimeLast time.Time `json:"time_last,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DomainQuery when eager-loading is set.
-	Edges        DomainEdges `json:"edges"`
-	scan_domain  *int
-	whois_domain *int
-	selectValues sql.SelectValues
+	Edges            DomainEdges `json:"edges"`
+	dns_entry_domain *int
+	example_domain   *string
+	selectValues     sql.SelectValues
 }
 
 // DomainEdges holds the relations/edges for other nodes in the graph.
 type DomainEdges struct {
 	// Nameserver holds the value of the nameserver edge.
 	Nameserver []*Nameserver `json:"nameserver,omitempty"`
-	// Domain holds the value of the domain edge.
-	Domain []*Domain `json:"domain,omitempty"`
-	// Dnsentry holds the value of the dnsentry edge.
-	Dnsentry []*DNSEntry `json:"dnsentry,omitempty"`
+	// Subdomain holds the value of the subdomain edge.
+	Subdomain []*Domain `json:"subdomain,omitempty"`
 	// Ipaddress holds the value of the ipaddress edge.
 	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
 	// Path holds the value of the path edge.
 	Path []*Path `json:"path,omitempty"`
+	// Scan holds the value of the scan edge.
+	Scan []*Scan `json:"scan,omitempty"`
+	// Dnsentry holds the value of the dnsentry edge.
+	Dnsentry []*Scan `json:"dnsentry,omitempty"`
+	// Registrar holds the value of the registrar edge.
+	Registrar []*Registrar `json:"registrar,omitempty"`
+	// Whois holds the value of the whois edge.
+	Whois []*Whois `json:"whois,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [8]bool
 }
 
 // NameserverOrErr returns the Nameserver value or an error if the edge
@@ -57,28 +66,19 @@ func (e DomainEdges) NameserverOrErr() ([]*Nameserver, error) {
 	return nil, &NotLoadedError{edge: "nameserver"}
 }
 
-// DomainOrErr returns the Domain value or an error if the edge
+// SubdomainOrErr returns the Subdomain value or an error if the edge
 // was not loaded in eager-loading.
-func (e DomainEdges) DomainOrErr() ([]*Domain, error) {
+func (e DomainEdges) SubdomainOrErr() ([]*Domain, error) {
 	if e.loadedTypes[1] {
-		return e.Domain, nil
+		return e.Subdomain, nil
 	}
-	return nil, &NotLoadedError{edge: "domain"}
-}
-
-// DnsentryOrErr returns the Dnsentry value or an error if the edge
-// was not loaded in eager-loading.
-func (e DomainEdges) DnsentryOrErr() ([]*DNSEntry, error) {
-	if e.loadedTypes[2] {
-		return e.Dnsentry, nil
-	}
-	return nil, &NotLoadedError{edge: "dnsentry"}
+	return nil, &NotLoadedError{edge: "subdomain"}
 }
 
 // IpaddressOrErr returns the Ipaddress value or an error if the edge
 // was not loaded in eager-loading.
 func (e DomainEdges) IpaddressOrErr() ([]*IPAddress, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Ipaddress, nil
 	}
 	return nil, &NotLoadedError{edge: "ipaddress"}
@@ -87,10 +87,46 @@ func (e DomainEdges) IpaddressOrErr() ([]*IPAddress, error) {
 // PathOrErr returns the Path value or an error if the edge
 // was not loaded in eager-loading.
 func (e DomainEdges) PathOrErr() ([]*Path, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[3] {
 		return e.Path, nil
 	}
 	return nil, &NotLoadedError{edge: "path"}
+}
+
+// ScanOrErr returns the Scan value or an error if the edge
+// was not loaded in eager-loading.
+func (e DomainEdges) ScanOrErr() ([]*Scan, error) {
+	if e.loadedTypes[4] {
+		return e.Scan, nil
+	}
+	return nil, &NotLoadedError{edge: "scan"}
+}
+
+// DnsentryOrErr returns the Dnsentry value or an error if the edge
+// was not loaded in eager-loading.
+func (e DomainEdges) DnsentryOrErr() ([]*Scan, error) {
+	if e.loadedTypes[5] {
+		return e.Dnsentry, nil
+	}
+	return nil, &NotLoadedError{edge: "dnsentry"}
+}
+
+// RegistrarOrErr returns the Registrar value or an error if the edge
+// was not loaded in eager-loading.
+func (e DomainEdges) RegistrarOrErr() ([]*Registrar, error) {
+	if e.loadedTypes[6] {
+		return e.Registrar, nil
+	}
+	return nil, &NotLoadedError{edge: "registrar"}
+}
+
+// WhoisOrErr returns the Whois value or an error if the edge
+// was not loaded in eager-loading.
+func (e DomainEdges) WhoisOrErr() ([]*Whois, error) {
+	if e.loadedTypes[7] {
+		return e.Whois, nil
+	}
+	return nil, &NotLoadedError{edge: "whois"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -98,16 +134,18 @@ func (*Domain) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case domain.FieldPorts:
+			values[i] = new([]byte)
 		case domain.FieldID:
 			values[i] = new(sql.NullInt64)
 		case domain.FieldName:
 			values[i] = new(sql.NullString)
 		case domain.FieldTimeFirst, domain.FieldTimeLast:
 			values[i] = new(sql.NullTime)
-		case domain.ForeignKeys[0]: // scan_domain
+		case domain.ForeignKeys[0]: // dns_entry_domain
 			values[i] = new(sql.NullInt64)
-		case domain.ForeignKeys[1]: // whois_domain
-			values[i] = new(sql.NullInt64)
+		case domain.ForeignKeys[1]: // example_domain
+			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -135,6 +173,14 @@ func (d *Domain) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				d.Name = value.String
 			}
+		case domain.FieldPorts:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field ports", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &d.Ports); err != nil {
+					return fmt.Errorf("unmarshal field ports: %w", err)
+				}
+			}
 		case domain.FieldTimeFirst:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field time_first", values[i])
@@ -149,17 +195,17 @@ func (d *Domain) assignValues(columns []string, values []any) error {
 			}
 		case domain.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field scan_domain", value)
+				return fmt.Errorf("unexpected type %T for edge-field dns_entry_domain", value)
 			} else if value.Valid {
-				d.scan_domain = new(int)
-				*d.scan_domain = int(value.Int64)
+				d.dns_entry_domain = new(int)
+				*d.dns_entry_domain = int(value.Int64)
 			}
 		case domain.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field whois_domain", value)
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field example_domain", values[i])
 			} else if value.Valid {
-				d.whois_domain = new(int)
-				*d.whois_domain = int(value.Int64)
+				d.example_domain = new(string)
+				*d.example_domain = value.String
 			}
 		default:
 			d.selectValues.Set(columns[i], values[i])
@@ -179,14 +225,9 @@ func (d *Domain) QueryNameserver() *NameserverQuery {
 	return NewDomainClient(d.config).QueryNameserver(d)
 }
 
-// QueryDomain queries the "domain" edge of the Domain entity.
-func (d *Domain) QueryDomain() *DomainQuery {
-	return NewDomainClient(d.config).QueryDomain(d)
-}
-
-// QueryDnsentry queries the "dnsentry" edge of the Domain entity.
-func (d *Domain) QueryDnsentry() *DNSEntryQuery {
-	return NewDomainClient(d.config).QueryDnsentry(d)
+// QuerySubdomain queries the "subdomain" edge of the Domain entity.
+func (d *Domain) QuerySubdomain() *DomainQuery {
+	return NewDomainClient(d.config).QuerySubdomain(d)
 }
 
 // QueryIpaddress queries the "ipaddress" edge of the Domain entity.
@@ -197,6 +238,26 @@ func (d *Domain) QueryIpaddress() *IPAddressQuery {
 // QueryPath queries the "path" edge of the Domain entity.
 func (d *Domain) QueryPath() *PathQuery {
 	return NewDomainClient(d.config).QueryPath(d)
+}
+
+// QueryScan queries the "scan" edge of the Domain entity.
+func (d *Domain) QueryScan() *ScanQuery {
+	return NewDomainClient(d.config).QueryScan(d)
+}
+
+// QueryDnsentry queries the "dnsentry" edge of the Domain entity.
+func (d *Domain) QueryDnsentry() *ScanQuery {
+	return NewDomainClient(d.config).QueryDnsentry(d)
+}
+
+// QueryRegistrar queries the "registrar" edge of the Domain entity.
+func (d *Domain) QueryRegistrar() *RegistrarQuery {
+	return NewDomainClient(d.config).QueryRegistrar(d)
+}
+
+// QueryWhois queries the "whois" edge of the Domain entity.
+func (d *Domain) QueryWhois() *WhoisQuery {
+	return NewDomainClient(d.config).QueryWhois(d)
 }
 
 // Update returns a builder for updating this Domain.
@@ -224,6 +285,9 @@ func (d *Domain) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", d.ID))
 	builder.WriteString("name=")
 	builder.WriteString(d.Name)
+	builder.WriteString(", ")
+	builder.WriteString("ports=")
+	builder.WriteString(fmt.Sprintf("%v", d.Ports))
 	builder.WriteString(", ")
 	builder.WriteString("time_first=")
 	builder.WriteString(d.TimeFirst.Format(time.ANSIC))

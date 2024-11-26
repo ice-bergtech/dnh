@@ -10,7 +10,12 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // IPAddressCreate is the builder for creating a IPAddress entity.
@@ -45,6 +50,96 @@ func (iac *IPAddressCreate) AddAsninfo(a ...*ASNInfo) *IPAddressCreate {
 		ids[i] = a[i].ID
 	}
 	return iac.AddAsninfoIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (iac *IPAddressCreate) AddScanIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddScanIDs(ids...)
+	return iac
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (iac *IPAddressCreate) AddScan(s ...*Scan) *IPAddressCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iac.AddScanIDs(ids...)
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+func (iac *IPAddressCreate) AddDnsentryIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddDnsentryIDs(ids...)
+	return iac
+}
+
+// AddDnsentry adds the "dnsentry" edges to the Scan entity.
+func (iac *IPAddressCreate) AddDnsentry(s ...*Scan) *IPAddressCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return iac.AddDnsentryIDs(ids...)
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (iac *IPAddressCreate) AddDomainIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddDomainIDs(ids...)
+	return iac
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (iac *IPAddressCreate) AddDomain(d ...*Domain) *IPAddressCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return iac.AddDomainIDs(ids...)
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
+func (iac *IPAddressCreate) AddNameserverIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddNameserverIDs(ids...)
+	return iac
+}
+
+// AddNameserver adds the "nameserver" edges to the Nameserver entity.
+func (iac *IPAddressCreate) AddNameserver(n ...*Nameserver) *IPAddressCreate {
+	ids := make([]int, len(n))
+	for i := range n {
+		ids[i] = n[i].ID
+	}
+	return iac.AddNameserverIDs(ids...)
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
+func (iac *IPAddressCreate) AddRegistrarIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddRegistrarIDs(ids...)
+	return iac
+}
+
+// AddRegistrar adds the "registrar" edges to the Registrar entity.
+func (iac *IPAddressCreate) AddRegistrar(r ...*Registrar) *IPAddressCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return iac.AddRegistrarIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (iac *IPAddressCreate) AddWhoiIDs(ids ...int) *IPAddressCreate {
+	iac.mutation.AddWhoiIDs(ids...)
+	return iac
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (iac *IPAddressCreate) AddWhois(w ...*Whois) *IPAddressCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return iac.AddWhoiIDs(ids...)
 }
 
 // Mutation returns the IPAddressMutation object of the builder.
@@ -123,13 +218,109 @@ func (iac *IPAddressCreate) createSpec() (*IPAddress, *sqlgraph.CreateSpec) {
 	}
 	if nodes := iac.mutation.AsninfoIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   ipaddress.AsninfoTable,
-			Columns: []string{ipaddress.AsninfoColumn},
+			Columns: ipaddress.AsninfoPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.ScanTable,
+			Columns: ipaddress.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.DnsentryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.DnsentryTable,
+			Columns: ipaddress.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.DomainTable,
+			Columns: ipaddress.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.NameserverIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.NameserverTable,
+			Columns: ipaddress.NameserverPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.RegistrarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.RegistrarTable,
+			Columns: ipaddress.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := iac.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   ipaddress.WhoisTable,
+			Columns: ipaddress.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

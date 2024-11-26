@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 )
 
@@ -82,6 +83,11 @@ func Fax(v string) predicate.Registrar {
 // Address applies equality check predicate on the "address" field. It's identical to AddressEQ.
 func Address(v string) predicate.Registrar {
 	return predicate.Registrar(sql.FieldEQ(FieldAddress, v))
+}
+
+// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
+func Source(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldEQ(FieldSource, v))
 }
 
 // TimeFirst applies equality check predicate on the "time_first" field. It's identical to TimeFirstEQ.
@@ -484,6 +490,71 @@ func AddressContainsFold(v string) predicate.Registrar {
 	return predicate.Registrar(sql.FieldContainsFold(FieldAddress, v))
 }
 
+// SourceEQ applies the EQ predicate on the "source" field.
+func SourceEQ(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldEQ(FieldSource, v))
+}
+
+// SourceNEQ applies the NEQ predicate on the "source" field.
+func SourceNEQ(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldNEQ(FieldSource, v))
+}
+
+// SourceIn applies the In predicate on the "source" field.
+func SourceIn(vs ...string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldIn(FieldSource, vs...))
+}
+
+// SourceNotIn applies the NotIn predicate on the "source" field.
+func SourceNotIn(vs ...string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldNotIn(FieldSource, vs...))
+}
+
+// SourceGT applies the GT predicate on the "source" field.
+func SourceGT(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldGT(FieldSource, v))
+}
+
+// SourceGTE applies the GTE predicate on the "source" field.
+func SourceGTE(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldGTE(FieldSource, v))
+}
+
+// SourceLT applies the LT predicate on the "source" field.
+func SourceLT(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldLT(FieldSource, v))
+}
+
+// SourceLTE applies the LTE predicate on the "source" field.
+func SourceLTE(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldLTE(FieldSource, v))
+}
+
+// SourceContains applies the Contains predicate on the "source" field.
+func SourceContains(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldContains(FieldSource, v))
+}
+
+// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
+func SourceHasPrefix(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldHasPrefix(FieldSource, v))
+}
+
+// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
+func SourceHasSuffix(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldHasSuffix(FieldSource, v))
+}
+
+// SourceEqualFold applies the EqualFold predicate on the "source" field.
+func SourceEqualFold(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldEqualFold(FieldSource, v))
+}
+
+// SourceContainsFold applies the ContainsFold predicate on the "source" field.
+func SourceContainsFold(v string) predicate.Registrar {
+	return predicate.Registrar(sql.FieldContainsFold(FieldSource, v))
+}
+
 // TimeFirstEQ applies the EQ predicate on the "time_first" field.
 func TimeFirstEQ(v time.Time) predicate.Registrar {
 	return predicate.Registrar(sql.FieldEQ(FieldTimeFirst, v))
@@ -562,6 +633,121 @@ func TimeLastLT(v time.Time) predicate.Registrar {
 // TimeLastLTE applies the LTE predicate on the "time_last" field.
 func TimeLastLTE(v time.Time) predicate.Registrar {
 	return predicate.Registrar(sql.FieldLTE(FieldTimeLast, v))
+}
+
+// HasIpaddress applies the HasEdge predicate on the "ipaddress" edge.
+func HasIpaddress() predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasIpaddressWith applies the HasEdge predicate on the "ipaddress" edge with a given conditions (other predicates).
+func HasIpaddressWith(preds ...predicate.IPAddress) predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := newIpaddressStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasDomain applies the HasEdge predicate on the "domain" edge.
+func HasDomain() predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasDomainWith applies the HasEdge predicate on the "domain" edge with a given conditions (other predicates).
+func HasDomainWith(preds ...predicate.Domain) predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := newDomainStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAsninfo applies the HasEdge predicate on the "asninfo" edge.
+func HasAsninfo() predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, AsninfoTable, AsninfoPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAsninfoWith applies the HasEdge predicate on the "asninfo" edge with a given conditions (other predicates).
+func HasAsninfoWith(preds ...predicate.ASNInfo) predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := newAsninfoStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasScan applies the HasEdge predicate on the "scan" edge.
+func HasScan() predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
+func HasScanWith(preds ...predicate.Scan) predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := newScanStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasWhois applies the HasEdge predicate on the "whois" edge.
+func HasWhois() predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, WhoisTable, WhoisPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasWhoisWith applies the HasEdge predicate on the "whois" edge with a given conditions (other predicates).
+func HasWhoisWith(preds ...predicate.Whois) predicate.Registrar {
+	return predicate.Registrar(func(s *sql.Selector) {
+		step := newWhoisStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

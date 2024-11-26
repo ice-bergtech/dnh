@@ -35,7 +35,7 @@ type ScanQuery struct {
 	withAsninfo    *ASNInfoQuery
 	withDnsentry   *DNSEntryQuery
 	withDomain     *DomainQuery
-	withPaths      *PathQuery
+	withPath       *PathQuery
 	withNameserver *NameserverQuery
 	withRegistrar  *RegistrarQuery
 	withWhois      *WhoisQuery
@@ -89,7 +89,7 @@ func (sq *ScanQuery) QueryIpaddress() *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.IpaddressTable, scan.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.IpaddressTable, scan.IpaddressPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -111,7 +111,7 @@ func (sq *ScanQuery) QueryAsninfo() *ASNInfoQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(asninfo.Table, asninfo.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.AsninfoTable, scan.AsninfoColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.AsninfoTable, scan.AsninfoPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -133,7 +133,7 @@ func (sq *ScanQuery) QueryDnsentry() *DNSEntryQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.DnsentryTable, scan.DnsentryColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.DnsentryTable, scan.DnsentryPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -155,7 +155,7 @@ func (sq *ScanQuery) QueryDomain() *DomainQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(domain.Table, domain.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.DomainTable, scan.DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.DomainTable, scan.DomainPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -163,8 +163,8 @@ func (sq *ScanQuery) QueryDomain() *DomainQuery {
 	return query
 }
 
-// QueryPaths chains the current query on the "paths" edge.
-func (sq *ScanQuery) QueryPaths() *PathQuery {
+// QueryPath chains the current query on the "path" edge.
+func (sq *ScanQuery) QueryPath() *PathQuery {
 	query := (&PathClient{config: sq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := sq.prepareQuery(ctx); err != nil {
@@ -177,7 +177,7 @@ func (sq *ScanQuery) QueryPaths() *PathQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(path.Table, path.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.PathsTable, scan.PathsColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.PathTable, scan.PathPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -199,7 +199,7 @@ func (sq *ScanQuery) QueryNameserver() *NameserverQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(nameserver.Table, nameserver.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.NameserverTable, scan.NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.NameserverTable, scan.NameserverPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -221,7 +221,7 @@ func (sq *ScanQuery) QueryRegistrar() *RegistrarQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(registrar.Table, registrar.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.RegistrarTable, scan.RegistrarColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.RegistrarTable, scan.RegistrarPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -243,7 +243,7 @@ func (sq *ScanQuery) QueryWhois() *WhoisQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(scan.Table, scan.FieldID, selector),
 			sqlgraph.To(whois.Table, whois.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, scan.WhoisTable, scan.WhoisColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, scan.WhoisTable, scan.WhoisPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(sq.driver.Dialect(), step)
 		return fromU, nil
@@ -447,7 +447,7 @@ func (sq *ScanQuery) Clone() *ScanQuery {
 		withAsninfo:    sq.withAsninfo.Clone(),
 		withDnsentry:   sq.withDnsentry.Clone(),
 		withDomain:     sq.withDomain.Clone(),
-		withPaths:      sq.withPaths.Clone(),
+		withPath:       sq.withPath.Clone(),
 		withNameserver: sq.withNameserver.Clone(),
 		withRegistrar:  sq.withRegistrar.Clone(),
 		withWhois:      sq.withWhois.Clone(),
@@ -501,14 +501,14 @@ func (sq *ScanQuery) WithDomain(opts ...func(*DomainQuery)) *ScanQuery {
 	return sq
 }
 
-// WithPaths tells the query-builder to eager-load the nodes that are connected to
-// the "paths" edge. The optional arguments are used to configure the query builder of the edge.
-func (sq *ScanQuery) WithPaths(opts ...func(*PathQuery)) *ScanQuery {
+// WithPath tells the query-builder to eager-load the nodes that are connected to
+// the "path" edge. The optional arguments are used to configure the query builder of the edge.
+func (sq *ScanQuery) WithPath(opts ...func(*PathQuery)) *ScanQuery {
 	query := (&PathClient{config: sq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	sq.withPaths = query
+	sq.withPath = query
 	return sq
 }
 
@@ -628,7 +628,7 @@ func (sq *ScanQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scan, e
 			sq.withAsninfo != nil,
 			sq.withDnsentry != nil,
 			sq.withDomain != nil,
-			sq.withPaths != nil,
+			sq.withPath != nil,
 			sq.withNameserver != nil,
 			sq.withRegistrar != nil,
 			sq.withWhois != nil,
@@ -680,10 +680,10 @@ func (sq *ScanQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scan, e
 			return nil, err
 		}
 	}
-	if query := sq.withPaths; query != nil {
-		if err := sq.loadPaths(ctx, query, nodes,
-			func(n *Scan) { n.Edges.Paths = []*Path{} },
-			func(n *Scan, e *Path) { n.Edges.Paths = append(n.Edges.Paths, e) }); err != nil {
+	if query := sq.withPath; query != nil {
+		if err := sq.loadPath(ctx, query, nodes,
+			func(n *Scan) { n.Edges.Path = []*Path{} },
+			func(n *Scan, e *Path) { n.Edges.Path = append(n.Edges.Path, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -712,250 +712,490 @@ func (sq *ScanQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Scan, e
 }
 
 func (sq *ScanQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *IPAddress)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.IPAddress(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.IpaddressColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.IpaddressTable)
+		s.Join(joinT).On(s.C(ipaddress.FieldID), joinT.C(scan.IpaddressPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.IpaddressPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.IpaddressPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*IPAddress](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_ipaddress
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_ipaddress" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_ipaddress" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "ipaddress" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadAsninfo(ctx context.Context, query *ASNInfoQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *ASNInfo)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.ASNInfo(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.AsninfoColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.AsninfoTable)
+		s.Join(joinT).On(s.C(asninfo.FieldID), joinT.C(scan.AsninfoPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.AsninfoPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.AsninfoPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*ASNInfo](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_asninfo
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_asninfo" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_asninfo" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "asninfo" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadDnsentry(ctx context.Context, query *DNSEntryQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *DNSEntry)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.DNSEntry(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.DnsentryColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.DnsentryTable)
+		s.Join(joinT).On(s.C(dnsentry.FieldID), joinT.C(scan.DnsentryPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.DnsentryPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.DnsentryPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*DNSEntry](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_dnsentry
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_dnsentry" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_dnsentry" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "dnsentry" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Domain)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Domain(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.DomainColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.DomainTable)
+		s.Join(joinT).On(s.C(domain.FieldID), joinT.C(scan.DomainPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.DomainPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.DomainPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Domain](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_domain
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_domain" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_domain" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "domain" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
-func (sq *ScanQuery) loadPaths(ctx context.Context, query *PathQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Path)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+func (sq *ScanQuery) loadPath(ctx context.Context, query *PathQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Path)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Path(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.PathsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.PathTable)
+		s.Join(joinT).On(s.C(path.FieldID), joinT.C(scan.PathPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.PathPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.PathPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Path](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_paths
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_paths" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_paths" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "path" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadNameserver(ctx context.Context, query *NameserverQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Nameserver)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Nameserver(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.NameserverColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.NameserverTable)
+		s.Join(joinT).On(s.C(nameserver.FieldID), joinT.C(scan.NameserverPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.NameserverPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.NameserverPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Nameserver](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_nameserver
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_nameserver" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_nameserver" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "nameserver" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadRegistrar(ctx context.Context, query *RegistrarQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Registrar)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Registrar(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.RegistrarColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.RegistrarTable)
+		s.Join(joinT).On(s.C(registrar.FieldID), joinT.C(scan.RegistrarPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.RegistrarPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.RegistrarPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Registrar](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_registrar
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_registrar" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_registrar" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "registrar" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (sq *ScanQuery) loadWhois(ctx context.Context, query *WhoisQuery, nodes []*Scan, init func(*Scan), assign func(*Scan, *Whois)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Scan)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*Scan)
+	nids := make(map[int]map[*Scan]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Whois(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(scan.WhoisColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(scan.WhoisTable)
+		s.Join(joinT).On(s.C(whois.FieldID), joinT.C(scan.WhoisPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(scan.WhoisPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(scan.WhoisPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Scan]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Whois](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.scan_whois
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "scan_whois" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "scan_whois" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "whois" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

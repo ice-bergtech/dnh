@@ -14,6 +14,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/example"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
@@ -35,6 +36,7 @@ const (
 	TypeASNInfo    = "ASNInfo"
 	TypeDNSEntry   = "DNSEntry"
 	TypeDomain     = "Domain"
+	TypeExample    = "Example"
 	TypeIPAddress  = "IPAddress"
 	TypeNameserver = "Nameserver"
 	TypePath       = "Path"
@@ -46,17 +48,29 @@ const (
 // ASNInfoMutation represents an operation that mutates the ASNInfo nodes in the graph.
 type ASNInfoMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	asn           *int
-	addasn        *int
-	country       *string
-	registry      *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*ASNInfo, error)
-	predicates    []predicate.ASNInfo
+	op               Op
+	typ              string
+	id               *int
+	asn              *int
+	addasn           *int
+	country          *string
+	registry         *string
+	clearedFields    map[string]struct{}
+	scan             map[int]struct{}
+	removedscan      map[int]struct{}
+	clearedscan      bool
+	ipaddress        map[int]struct{}
+	removedipaddress map[int]struct{}
+	clearedipaddress bool
+	registrar        map[int]struct{}
+	removedregistrar map[int]struct{}
+	clearedregistrar bool
+	whois            map[int]struct{}
+	removedwhois     map[int]struct{}
+	clearedwhois     bool
+	done             bool
+	oldValue         func(context.Context) (*ASNInfo, error)
+	predicates       []predicate.ASNInfo
 }
 
 var _ ent.Mutation = (*ASNInfoMutation)(nil)
@@ -285,6 +299,222 @@ func (m *ASNInfoMutation) ResetRegistry() {
 	m.registry = nil
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *ASNInfoMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *ASNInfoMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *ASNInfoMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *ASNInfoMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *ASNInfoMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *ASNInfoMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *ASNInfoMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
+func (m *ASNInfoMutation) AddIpaddresIDs(ids ...int) {
+	if m.ipaddress == nil {
+		m.ipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.ipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
+func (m *ASNInfoMutation) ClearIpaddress() {
+	m.clearedipaddress = true
+}
+
+// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
+func (m *ASNInfoMutation) IpaddressCleared() bool {
+	return m.clearedipaddress
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to the IPAddress entity by IDs.
+func (m *ASNInfoMutation) RemoveIpaddresIDs(ids ...int) {
+	if m.removedipaddress == nil {
+		m.removedipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.ipaddress, ids[i])
+		m.removedipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIpaddress returns the removed IDs of the "ipaddress" edge to the IPAddress entity.
+func (m *ASNInfoMutation) RemovedIpaddressIDs() (ids []int) {
+	for id := range m.removedipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
+func (m *ASNInfoMutation) IpaddressIDs() (ids []int) {
+	for id := range m.ipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIpaddress resets all changes to the "ipaddress" edge.
+func (m *ASNInfoMutation) ResetIpaddress() {
+	m.ipaddress = nil
+	m.clearedipaddress = false
+	m.removedipaddress = nil
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
+func (m *ASNInfoMutation) AddRegistrarIDs(ids ...int) {
+	if m.registrar == nil {
+		m.registrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.registrar[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRegistrar clears the "registrar" edge to the Registrar entity.
+func (m *ASNInfoMutation) ClearRegistrar() {
+	m.clearedregistrar = true
+}
+
+// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
+func (m *ASNInfoMutation) RegistrarCleared() bool {
+	return m.clearedregistrar
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
+func (m *ASNInfoMutation) RemoveRegistrarIDs(ids ...int) {
+	if m.removedregistrar == nil {
+		m.removedregistrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.registrar, ids[i])
+		m.removedregistrar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
+func (m *ASNInfoMutation) RemovedRegistrarIDs() (ids []int) {
+	for id := range m.removedregistrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RegistrarIDs returns the "registrar" edge IDs in the mutation.
+func (m *ASNInfoMutation) RegistrarIDs() (ids []int) {
+	for id := range m.registrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRegistrar resets all changes to the "registrar" edge.
+func (m *ASNInfoMutation) ResetRegistrar() {
+	m.registrar = nil
+	m.clearedregistrar = false
+	m.removedregistrar = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *ASNInfoMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *ASNInfoMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *ASNInfoMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *ASNInfoMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *ASNInfoMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *ASNInfoMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *ASNInfoMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
 // Where appends a list predicates to the ASNInfoMutation builder.
 func (m *ASNInfoMutation) Where(ps ...predicate.ASNInfo) {
 	m.predicates = append(m.predicates, ps...)
@@ -467,69 +697,195 @@ func (m *ASNInfoMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ASNInfoMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.scan != nil {
+		edges = append(edges, asninfo.EdgeScan)
+	}
+	if m.ipaddress != nil {
+		edges = append(edges, asninfo.EdgeIpaddress)
+	}
+	if m.registrar != nil {
+		edges = append(edges, asninfo.EdgeRegistrar)
+	}
+	if m.whois != nil {
+		edges = append(edges, asninfo.EdgeWhois)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *ASNInfoMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case asninfo.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.ipaddress))
+		for id := range m.ipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.registrar))
+		for id := range m.registrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ASNInfoMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.removedscan != nil {
+		edges = append(edges, asninfo.EdgeScan)
+	}
+	if m.removedipaddress != nil {
+		edges = append(edges, asninfo.EdgeIpaddress)
+	}
+	if m.removedregistrar != nil {
+		edges = append(edges, asninfo.EdgeRegistrar)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, asninfo.EdgeWhois)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *ASNInfoMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case asninfo.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.removedipaddress))
+		for id := range m.removedipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.removedregistrar))
+		for id := range m.removedregistrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case asninfo.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ASNInfoMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.clearedscan {
+		edges = append(edges, asninfo.EdgeScan)
+	}
+	if m.clearedipaddress {
+		edges = append(edges, asninfo.EdgeIpaddress)
+	}
+	if m.clearedregistrar {
+		edges = append(edges, asninfo.EdgeRegistrar)
+	}
+	if m.clearedwhois {
+		edges = append(edges, asninfo.EdgeWhois)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *ASNInfoMutation) EdgeCleared(name string) bool {
+	switch name {
+	case asninfo.EdgeScan:
+		return m.clearedscan
+	case asninfo.EdgeIpaddress:
+		return m.clearedipaddress
+	case asninfo.EdgeRegistrar:
+		return m.clearedregistrar
+	case asninfo.EdgeWhois:
+		return m.clearedwhois
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *ASNInfoMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown ASNInfo unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *ASNInfoMutation) ResetEdge(name string) error {
+	switch name {
+	case asninfo.EdgeScan:
+		m.ResetScan()
+		return nil
+	case asninfo.EdgeIpaddress:
+		m.ResetIpaddress()
+		return nil
+	case asninfo.EdgeRegistrar:
+		m.ResetRegistrar()
+		return nil
+	case asninfo.EdgeWhois:
+		m.ResetWhois()
+		return nil
+	}
 	return fmt.Errorf("unknown ASNInfo edge %s", name)
 }
 
 // DNSEntryMutation represents an operation that mutates the DNSEntry nodes in the graph.
 type DNSEntryMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	_type         *string
-	value         *string
-	ttl           *int
-	addttl        *int
-	time_first    *time.Time
-	time_last     *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*DNSEntry, error)
-	predicates    []predicate.DNSEntry
+	op                Op
+	typ               string
+	id                *int
+	name              *string
+	_type             *string
+	value             *string
+	ttl               *int
+	addttl            *int
+	time_first        *time.Time
+	time_last         *time.Time
+	clearedFields     map[string]struct{}
+	domain            map[int]struct{}
+	removeddomain     map[int]struct{}
+	cleareddomain     bool
+	ipaddress         map[int]struct{}
+	removedipaddress  map[int]struct{}
+	clearedipaddress  bool
+	nameserver        map[int]struct{}
+	removednameserver map[int]struct{}
+	clearednameserver bool
+	scan              map[int]struct{}
+	removedscan       map[int]struct{}
+	clearedscan       bool
+	done              bool
+	oldValue          func(context.Context) (*DNSEntry, error)
+	predicates        []predicate.DNSEntry
 }
 
 var _ ent.Mutation = (*DNSEntryMutation)(nil)
@@ -866,6 +1222,222 @@ func (m *DNSEntryMutation) ResetTimeLast() {
 	m.time_last = nil
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *DNSEntryMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *DNSEntryMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *DNSEntryMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *DNSEntryMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *DNSEntryMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *DNSEntryMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *DNSEntryMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
+func (m *DNSEntryMutation) AddIpaddresIDs(ids ...int) {
+	if m.ipaddress == nil {
+		m.ipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.ipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
+func (m *DNSEntryMutation) ClearIpaddress() {
+	m.clearedipaddress = true
+}
+
+// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
+func (m *DNSEntryMutation) IpaddressCleared() bool {
+	return m.clearedipaddress
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to the IPAddress entity by IDs.
+func (m *DNSEntryMutation) RemoveIpaddresIDs(ids ...int) {
+	if m.removedipaddress == nil {
+		m.removedipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.ipaddress, ids[i])
+		m.removedipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIpaddress returns the removed IDs of the "ipaddress" edge to the IPAddress entity.
+func (m *DNSEntryMutation) RemovedIpaddressIDs() (ids []int) {
+	for id := range m.removedipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
+func (m *DNSEntryMutation) IpaddressIDs() (ids []int) {
+	for id := range m.ipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIpaddress resets all changes to the "ipaddress" edge.
+func (m *DNSEntryMutation) ResetIpaddress() {
+	m.ipaddress = nil
+	m.clearedipaddress = false
+	m.removedipaddress = nil
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
+func (m *DNSEntryMutation) AddNameserverIDs(ids ...int) {
+	if m.nameserver == nil {
+		m.nameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.nameserver[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
+func (m *DNSEntryMutation) ClearNameserver() {
+	m.clearednameserver = true
+}
+
+// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
+func (m *DNSEntryMutation) NameserverCleared() bool {
+	return m.clearednameserver
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
+func (m *DNSEntryMutation) RemoveNameserverIDs(ids ...int) {
+	if m.removednameserver == nil {
+		m.removednameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.nameserver, ids[i])
+		m.removednameserver[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
+func (m *DNSEntryMutation) RemovedNameserverIDs() (ids []int) {
+	for id := range m.removednameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NameserverIDs returns the "nameserver" edge IDs in the mutation.
+func (m *DNSEntryMutation) NameserverIDs() (ids []int) {
+	for id := range m.nameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNameserver resets all changes to the "nameserver" edge.
+func (m *DNSEntryMutation) ResetNameserver() {
+	m.nameserver = nil
+	m.clearednameserver = false
+	m.removednameserver = nil
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *DNSEntryMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *DNSEntryMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *DNSEntryMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *DNSEntryMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *DNSEntryMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *DNSEntryMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *DNSEntryMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
 // Where appends a list predicates to the DNSEntryMutation builder.
 func (m *DNSEntryMutation) Where(ps ...predicate.DNSEntry) {
 	m.predicates = append(m.predicates, ps...)
@@ -1099,49 +1671,163 @@ func (m *DNSEntryMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DNSEntryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.domain != nil {
+		edges = append(edges, dnsentry.EdgeDomain)
+	}
+	if m.ipaddress != nil {
+		edges = append(edges, dnsentry.EdgeIpaddress)
+	}
+	if m.nameserver != nil {
+		edges = append(edges, dnsentry.EdgeNameserver)
+	}
+	if m.scan != nil {
+		edges = append(edges, dnsentry.EdgeScan)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *DNSEntryMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case dnsentry.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.ipaddress))
+		for id := range m.ipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.nameserver))
+		for id := range m.nameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DNSEntryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.removeddomain != nil {
+		edges = append(edges, dnsentry.EdgeDomain)
+	}
+	if m.removedipaddress != nil {
+		edges = append(edges, dnsentry.EdgeIpaddress)
+	}
+	if m.removednameserver != nil {
+		edges = append(edges, dnsentry.EdgeNameserver)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, dnsentry.EdgeScan)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *DNSEntryMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case dnsentry.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.removedipaddress))
+		for id := range m.removedipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.removednameserver))
+		for id := range m.removednameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case dnsentry.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DNSEntryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 4)
+	if m.cleareddomain {
+		edges = append(edges, dnsentry.EdgeDomain)
+	}
+	if m.clearedipaddress {
+		edges = append(edges, dnsentry.EdgeIpaddress)
+	}
+	if m.clearednameserver {
+		edges = append(edges, dnsentry.EdgeNameserver)
+	}
+	if m.clearedscan {
+		edges = append(edges, dnsentry.EdgeScan)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *DNSEntryMutation) EdgeCleared(name string) bool {
+	switch name {
+	case dnsentry.EdgeDomain:
+		return m.cleareddomain
+	case dnsentry.EdgeIpaddress:
+		return m.clearedipaddress
+	case dnsentry.EdgeNameserver:
+		return m.clearednameserver
+	case dnsentry.EdgeScan:
+		return m.clearedscan
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *DNSEntryMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown DNSEntry unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *DNSEntryMutation) ResetEdge(name string) error {
+	switch name {
+	case dnsentry.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case dnsentry.EdgeIpaddress:
+		m.ResetIpaddress()
+		return nil
+	case dnsentry.EdgeNameserver:
+		m.ResetNameserver()
+		return nil
+	case dnsentry.EdgeScan:
+		m.ResetScan()
+		return nil
+	}
 	return fmt.Errorf("unknown DNSEntry edge %s", name)
 }
 
@@ -1152,24 +1838,35 @@ type DomainMutation struct {
 	typ               string
 	id                *int
 	name              *string
+	ports             *[]int
+	appendports       []int
 	time_first        *time.Time
 	time_last         *time.Time
 	clearedFields     map[string]struct{}
 	nameserver        map[int]struct{}
 	removednameserver map[int]struct{}
 	clearednameserver bool
-	domain            map[int]struct{}
-	removeddomain     map[int]struct{}
-	cleareddomain     bool
-	dnsentry          map[int]struct{}
-	removeddnsentry   map[int]struct{}
-	cleareddnsentry   bool
+	subdomain         map[int]struct{}
+	removedsubdomain  map[int]struct{}
+	clearedsubdomain  bool
 	ipaddress         map[int]struct{}
 	removedipaddress  map[int]struct{}
 	clearedipaddress  bool
 	_path             map[int]struct{}
 	removed_path      map[int]struct{}
 	cleared_path      bool
+	scan              map[int]struct{}
+	removedscan       map[int]struct{}
+	clearedscan       bool
+	dnsentry          map[int]struct{}
+	removeddnsentry   map[int]struct{}
+	cleareddnsentry   bool
+	registrar         map[int]struct{}
+	removedregistrar  map[int]struct{}
+	clearedregistrar  bool
+	whois             map[int]struct{}
+	removedwhois      map[int]struct{}
+	clearedwhois      bool
 	done              bool
 	oldValue          func(context.Context) (*Domain, error)
 	predicates        []predicate.Domain
@@ -1309,6 +2006,57 @@ func (m *DomainMutation) ResetName() {
 	m.name = nil
 }
 
+// SetPorts sets the "ports" field.
+func (m *DomainMutation) SetPorts(i []int) {
+	m.ports = &i
+	m.appendports = nil
+}
+
+// Ports returns the value of the "ports" field in the mutation.
+func (m *DomainMutation) Ports() (r []int, exists bool) {
+	v := m.ports
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPorts returns the old "ports" field's value of the Domain entity.
+// If the Domain object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DomainMutation) OldPorts(ctx context.Context) (v []int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPorts is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPorts requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPorts: %w", err)
+	}
+	return oldValue.Ports, nil
+}
+
+// AppendPorts adds i to the "ports" field.
+func (m *DomainMutation) AppendPorts(i []int) {
+	m.appendports = append(m.appendports, i...)
+}
+
+// AppendedPorts returns the list of values that were appended to the "ports" field in this mutation.
+func (m *DomainMutation) AppendedPorts() ([]int, bool) {
+	if len(m.appendports) == 0 {
+		return nil, false
+	}
+	return m.appendports, true
+}
+
+// ResetPorts resets all changes to the "ports" field.
+func (m *DomainMutation) ResetPorts() {
+	m.ports = nil
+	m.appendports = nil
+}
+
 // SetTimeFirst sets the "time_first" field.
 func (m *DomainMutation) SetTimeFirst(t time.Time) {
 	m.time_first = &t
@@ -1435,112 +2183,58 @@ func (m *DomainMutation) ResetNameserver() {
 	m.removednameserver = nil
 }
 
-// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
-func (m *DomainMutation) AddDomainIDs(ids ...int) {
-	if m.domain == nil {
-		m.domain = make(map[int]struct{})
+// AddSubdomainIDs adds the "subdomain" edge to the Domain entity by ids.
+func (m *DomainMutation) AddSubdomainIDs(ids ...int) {
+	if m.subdomain == nil {
+		m.subdomain = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.domain[ids[i]] = struct{}{}
+		m.subdomain[ids[i]] = struct{}{}
 	}
 }
 
-// ClearDomain clears the "domain" edge to the Domain entity.
-func (m *DomainMutation) ClearDomain() {
-	m.cleareddomain = true
+// ClearSubdomain clears the "subdomain" edge to the Domain entity.
+func (m *DomainMutation) ClearSubdomain() {
+	m.clearedsubdomain = true
 }
 
-// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
-func (m *DomainMutation) DomainCleared() bool {
-	return m.cleareddomain
+// SubdomainCleared reports if the "subdomain" edge to the Domain entity was cleared.
+func (m *DomainMutation) SubdomainCleared() bool {
+	return m.clearedsubdomain
 }
 
-// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
-func (m *DomainMutation) RemoveDomainIDs(ids ...int) {
-	if m.removeddomain == nil {
-		m.removeddomain = make(map[int]struct{})
+// RemoveSubdomainIDs removes the "subdomain" edge to the Domain entity by IDs.
+func (m *DomainMutation) RemoveSubdomainIDs(ids ...int) {
+	if m.removedsubdomain == nil {
+		m.removedsubdomain = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.domain, ids[i])
-		m.removeddomain[ids[i]] = struct{}{}
+		delete(m.subdomain, ids[i])
+		m.removedsubdomain[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
-func (m *DomainMutation) RemovedDomainIDs() (ids []int) {
-	for id := range m.removeddomain {
+// RemovedSubdomain returns the removed IDs of the "subdomain" edge to the Domain entity.
+func (m *DomainMutation) RemovedSubdomainIDs() (ids []int) {
+	for id := range m.removedsubdomain {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// DomainIDs returns the "domain" edge IDs in the mutation.
-func (m *DomainMutation) DomainIDs() (ids []int) {
-	for id := range m.domain {
+// SubdomainIDs returns the "subdomain" edge IDs in the mutation.
+func (m *DomainMutation) SubdomainIDs() (ids []int) {
+	for id := range m.subdomain {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetDomain resets all changes to the "domain" edge.
-func (m *DomainMutation) ResetDomain() {
-	m.domain = nil
-	m.cleareddomain = false
-	m.removeddomain = nil
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
-func (m *DomainMutation) AddDnsentryIDs(ids ...int) {
-	if m.dnsentry == nil {
-		m.dnsentry = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.dnsentry[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
-func (m *DomainMutation) ClearDnsentry() {
-	m.cleareddnsentry = true
-}
-
-// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
-func (m *DomainMutation) DnsentryCleared() bool {
-	return m.cleareddnsentry
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
-func (m *DomainMutation) RemoveDnsentryIDs(ids ...int) {
-	if m.removeddnsentry == nil {
-		m.removeddnsentry = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.dnsentry, ids[i])
-		m.removeddnsentry[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
-func (m *DomainMutation) RemovedDnsentryIDs() (ids []int) {
-	for id := range m.removeddnsentry {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
-func (m *DomainMutation) DnsentryIDs() (ids []int) {
-	for id := range m.dnsentry {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDnsentry resets all changes to the "dnsentry" edge.
-func (m *DomainMutation) ResetDnsentry() {
-	m.dnsentry = nil
-	m.cleareddnsentry = false
-	m.removeddnsentry = nil
+// ResetSubdomain resets all changes to the "subdomain" edge.
+func (m *DomainMutation) ResetSubdomain() {
+	m.subdomain = nil
+	m.clearedsubdomain = false
+	m.removedsubdomain = nil
 }
 
 // AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
@@ -1651,6 +2345,222 @@ func (m *DomainMutation) ResetPath() {
 	m.removed_path = nil
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *DomainMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *DomainMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *DomainMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *DomainMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *DomainMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *DomainMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *DomainMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+func (m *DomainMutation) AddDnsentryIDs(ids ...int) {
+	if m.dnsentry == nil {
+		m.dnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.dnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+func (m *DomainMutation) ClearDnsentry() {
+	m.cleareddnsentry = true
+}
+
+// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+func (m *DomainMutation) DnsentryCleared() bool {
+	return m.cleareddnsentry
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+func (m *DomainMutation) RemoveDnsentryIDs(ids ...int) {
+	if m.removeddnsentry == nil {
+		m.removeddnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.dnsentry, ids[i])
+		m.removeddnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+func (m *DomainMutation) RemovedDnsentryIDs() (ids []int) {
+	for id := range m.removeddnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
+func (m *DomainMutation) DnsentryIDs() (ids []int) {
+	for id := range m.dnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDnsentry resets all changes to the "dnsentry" edge.
+func (m *DomainMutation) ResetDnsentry() {
+	m.dnsentry = nil
+	m.cleareddnsentry = false
+	m.removeddnsentry = nil
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
+func (m *DomainMutation) AddRegistrarIDs(ids ...int) {
+	if m.registrar == nil {
+		m.registrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.registrar[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRegistrar clears the "registrar" edge to the Registrar entity.
+func (m *DomainMutation) ClearRegistrar() {
+	m.clearedregistrar = true
+}
+
+// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
+func (m *DomainMutation) RegistrarCleared() bool {
+	return m.clearedregistrar
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
+func (m *DomainMutation) RemoveRegistrarIDs(ids ...int) {
+	if m.removedregistrar == nil {
+		m.removedregistrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.registrar, ids[i])
+		m.removedregistrar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
+func (m *DomainMutation) RemovedRegistrarIDs() (ids []int) {
+	for id := range m.removedregistrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RegistrarIDs returns the "registrar" edge IDs in the mutation.
+func (m *DomainMutation) RegistrarIDs() (ids []int) {
+	for id := range m.registrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRegistrar resets all changes to the "registrar" edge.
+func (m *DomainMutation) ResetRegistrar() {
+	m.registrar = nil
+	m.clearedregistrar = false
+	m.removedregistrar = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *DomainMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *DomainMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *DomainMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *DomainMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *DomainMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *DomainMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *DomainMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
 // Where appends a list predicates to the DomainMutation builder.
 func (m *DomainMutation) Where(ps ...predicate.Domain) {
 	m.predicates = append(m.predicates, ps...)
@@ -1685,9 +2595,12 @@ func (m *DomainMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DomainMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.name != nil {
 		fields = append(fields, domain.FieldName)
+	}
+	if m.ports != nil {
+		fields = append(fields, domain.FieldPorts)
 	}
 	if m.time_first != nil {
 		fields = append(fields, domain.FieldTimeFirst)
@@ -1705,6 +2618,8 @@ func (m *DomainMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case domain.FieldName:
 		return m.Name()
+	case domain.FieldPorts:
+		return m.Ports()
 	case domain.FieldTimeFirst:
 		return m.TimeFirst()
 	case domain.FieldTimeLast:
@@ -1720,6 +2635,8 @@ func (m *DomainMutation) OldField(ctx context.Context, name string) (ent.Value, 
 	switch name {
 	case domain.FieldName:
 		return m.OldName(ctx)
+	case domain.FieldPorts:
+		return m.OldPorts(ctx)
 	case domain.FieldTimeFirst:
 		return m.OldTimeFirst(ctx)
 	case domain.FieldTimeLast:
@@ -1739,6 +2656,13 @@ func (m *DomainMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case domain.FieldPorts:
+		v, ok := value.([]int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPorts(v)
 		return nil
 	case domain.FieldTimeFirst:
 		v, ok := value.(time.Time)
@@ -1806,6 +2730,9 @@ func (m *DomainMutation) ResetField(name string) error {
 	case domain.FieldName:
 		m.ResetName()
 		return nil
+	case domain.FieldPorts:
+		m.ResetPorts()
+		return nil
 	case domain.FieldTimeFirst:
 		m.ResetTimeFirst()
 		return nil
@@ -1818,21 +2745,30 @@ func (m *DomainMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DomainMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 8)
 	if m.nameserver != nil {
 		edges = append(edges, domain.EdgeNameserver)
 	}
-	if m.domain != nil {
-		edges = append(edges, domain.EdgeDomain)
-	}
-	if m.dnsentry != nil {
-		edges = append(edges, domain.EdgeDnsentry)
+	if m.subdomain != nil {
+		edges = append(edges, domain.EdgeSubdomain)
 	}
 	if m.ipaddress != nil {
 		edges = append(edges, domain.EdgeIpaddress)
 	}
 	if m._path != nil {
 		edges = append(edges, domain.EdgePath)
+	}
+	if m.scan != nil {
+		edges = append(edges, domain.EdgeScan)
+	}
+	if m.dnsentry != nil {
+		edges = append(edges, domain.EdgeDnsentry)
+	}
+	if m.registrar != nil {
+		edges = append(edges, domain.EdgeRegistrar)
+	}
+	if m.whois != nil {
+		edges = append(edges, domain.EdgeWhois)
 	}
 	return edges
 }
@@ -1847,15 +2783,9 @@ func (m *DomainMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case domain.EdgeDomain:
-		ids := make([]ent.Value, 0, len(m.domain))
-		for id := range m.domain {
-			ids = append(ids, id)
-		}
-		return ids
-	case domain.EdgeDnsentry:
-		ids := make([]ent.Value, 0, len(m.dnsentry))
-		for id := range m.dnsentry {
+	case domain.EdgeSubdomain:
+		ids := make([]ent.Value, 0, len(m.subdomain))
+		for id := range m.subdomain {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1871,27 +2801,60 @@ func (m *DomainMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case domain.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.dnsentry))
+		for id := range m.dnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.registrar))
+		for id := range m.registrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DomainMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 8)
 	if m.removednameserver != nil {
 		edges = append(edges, domain.EdgeNameserver)
 	}
-	if m.removeddomain != nil {
-		edges = append(edges, domain.EdgeDomain)
-	}
-	if m.removeddnsentry != nil {
-		edges = append(edges, domain.EdgeDnsentry)
+	if m.removedsubdomain != nil {
+		edges = append(edges, domain.EdgeSubdomain)
 	}
 	if m.removedipaddress != nil {
 		edges = append(edges, domain.EdgeIpaddress)
 	}
 	if m.removed_path != nil {
 		edges = append(edges, domain.EdgePath)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, domain.EdgeScan)
+	}
+	if m.removeddnsentry != nil {
+		edges = append(edges, domain.EdgeDnsentry)
+	}
+	if m.removedregistrar != nil {
+		edges = append(edges, domain.EdgeRegistrar)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, domain.EdgeWhois)
 	}
 	return edges
 }
@@ -1906,15 +2869,9 @@ func (m *DomainMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case domain.EdgeDomain:
-		ids := make([]ent.Value, 0, len(m.removeddomain))
-		for id := range m.removeddomain {
-			ids = append(ids, id)
-		}
-		return ids
-	case domain.EdgeDnsentry:
-		ids := make([]ent.Value, 0, len(m.removeddnsentry))
-		for id := range m.removeddnsentry {
+	case domain.EdgeSubdomain:
+		ids := make([]ent.Value, 0, len(m.removedsubdomain))
+		for id := range m.removedsubdomain {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1930,27 +2887,60 @@ func (m *DomainMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case domain.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.removeddnsentry))
+		for id := range m.removeddnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.removedregistrar))
+		for id := range m.removedregistrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case domain.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DomainMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 8)
 	if m.clearednameserver {
 		edges = append(edges, domain.EdgeNameserver)
 	}
-	if m.cleareddomain {
-		edges = append(edges, domain.EdgeDomain)
-	}
-	if m.cleareddnsentry {
-		edges = append(edges, domain.EdgeDnsentry)
+	if m.clearedsubdomain {
+		edges = append(edges, domain.EdgeSubdomain)
 	}
 	if m.clearedipaddress {
 		edges = append(edges, domain.EdgeIpaddress)
 	}
 	if m.cleared_path {
 		edges = append(edges, domain.EdgePath)
+	}
+	if m.clearedscan {
+		edges = append(edges, domain.EdgeScan)
+	}
+	if m.cleareddnsentry {
+		edges = append(edges, domain.EdgeDnsentry)
+	}
+	if m.clearedregistrar {
+		edges = append(edges, domain.EdgeRegistrar)
+	}
+	if m.clearedwhois {
+		edges = append(edges, domain.EdgeWhois)
 	}
 	return edges
 }
@@ -1961,14 +2951,20 @@ func (m *DomainMutation) EdgeCleared(name string) bool {
 	switch name {
 	case domain.EdgeNameserver:
 		return m.clearednameserver
-	case domain.EdgeDomain:
-		return m.cleareddomain
-	case domain.EdgeDnsentry:
-		return m.cleareddnsentry
+	case domain.EdgeSubdomain:
+		return m.clearedsubdomain
 	case domain.EdgeIpaddress:
 		return m.clearedipaddress
 	case domain.EdgePath:
 		return m.cleared_path
+	case domain.EdgeScan:
+		return m.clearedscan
+	case domain.EdgeDnsentry:
+		return m.cleareddnsentry
+	case domain.EdgeRegistrar:
+		return m.clearedregistrar
+	case domain.EdgeWhois:
+		return m.clearedwhois
 	}
 	return false
 }
@@ -1988,11 +2984,8 @@ func (m *DomainMutation) ResetEdge(name string) error {
 	case domain.EdgeNameserver:
 		m.ResetNameserver()
 		return nil
-	case domain.EdgeDomain:
-		m.ResetDomain()
-		return nil
-	case domain.EdgeDnsentry:
-		m.ResetDnsentry()
+	case domain.EdgeSubdomain:
+		m.ResetSubdomain()
 		return nil
 	case domain.EdgeIpaddress:
 		m.ResetIpaddress()
@@ -2000,25 +2993,1037 @@ func (m *DomainMutation) ResetEdge(name string) error {
 	case domain.EdgePath:
 		m.ResetPath()
 		return nil
+	case domain.EdgeScan:
+		m.ResetScan()
+		return nil
+	case domain.EdgeDnsentry:
+		m.ResetDnsentry()
+		return nil
+	case domain.EdgeRegistrar:
+		m.ResetRegistrar()
+		return nil
+	case domain.EdgeWhois:
+		m.ResetWhois()
+		return nil
 	}
 	return fmt.Errorf("unknown Domain edge %s", name)
+}
+
+// ExampleMutation represents an operation that mutates the Example nodes in the graph.
+type ExampleMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *string
+	timestamp         *time.Time
+	clearedFields     map[string]struct{}
+	ipaddress         *int
+	clearedipaddress  bool
+	next              map[int]struct{}
+	removednext       map[int]struct{}
+	clearednext       bool
+	dnsentry          map[int]struct{}
+	removeddnsentry   map[int]struct{}
+	cleareddnsentry   bool
+	domain            map[int]struct{}
+	removeddomain     map[int]struct{}
+	cleareddomain     bool
+	paths             map[int]struct{}
+	removedpaths      map[int]struct{}
+	clearedpaths      bool
+	nameserver        map[int]struct{}
+	removednameserver map[int]struct{}
+	clearednameserver bool
+	registrar         map[int]struct{}
+	removedregistrar  map[int]struct{}
+	clearedregistrar  bool
+	whois             map[int]struct{}
+	removedwhois      map[int]struct{}
+	clearedwhois      bool
+	done              bool
+	oldValue          func(context.Context) (*Example, error)
+	predicates        []predicate.Example
+}
+
+var _ ent.Mutation = (*ExampleMutation)(nil)
+
+// exampleOption allows management of the mutation configuration using functional options.
+type exampleOption func(*ExampleMutation)
+
+// newExampleMutation creates new mutation for the Example entity.
+func newExampleMutation(c config, op Op, opts ...exampleOption) *ExampleMutation {
+	m := &ExampleMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeExample,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withExampleID sets the ID field of the mutation.
+func withExampleID(id string) exampleOption {
+	return func(m *ExampleMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Example
+		)
+		m.oldValue = func(ctx context.Context) (*Example, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Example.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withExample sets the old Example of the mutation.
+func withExample(node *Example) exampleOption {
+	return func(m *ExampleMutation) {
+		m.oldValue = func(context.Context) (*Example, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ExampleMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ExampleMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("model_ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Example entities.
+func (m *ExampleMutation) SetID(id string) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ExampleMutation) ID() (id string, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ExampleMutation) IDs(ctx context.Context) ([]string, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []string{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Example.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *ExampleMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *ExampleMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the Example entity.
+// If the Example object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ExampleMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *ExampleMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// SetIpaddressID sets the "ipaddress" edge to the IPAddress entity by id.
+func (m *ExampleMutation) SetIpaddressID(id int) {
+	m.ipaddress = &id
+}
+
+// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
+func (m *ExampleMutation) ClearIpaddress() {
+	m.clearedipaddress = true
+}
+
+// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
+func (m *ExampleMutation) IpaddressCleared() bool {
+	return m.clearedipaddress
+}
+
+// IpaddressID returns the "ipaddress" edge ID in the mutation.
+func (m *ExampleMutation) IpaddressID() (id int, exists bool) {
+	if m.ipaddress != nil {
+		return *m.ipaddress, true
+	}
+	return
+}
+
+// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IpaddressID instead. It exists only for internal usage by the builders.
+func (m *ExampleMutation) IpaddressIDs() (ids []int) {
+	if id := m.ipaddress; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIpaddress resets all changes to the "ipaddress" edge.
+func (m *ExampleMutation) ResetIpaddress() {
+	m.ipaddress = nil
+	m.clearedipaddress = false
+}
+
+// AddNextIDs adds the "next" edge to the ASNInfo entity by ids.
+func (m *ExampleMutation) AddNextIDs(ids ...int) {
+	if m.next == nil {
+		m.next = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.next[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNext clears the "next" edge to the ASNInfo entity.
+func (m *ExampleMutation) ClearNext() {
+	m.clearednext = true
+}
+
+// NextCleared reports if the "next" edge to the ASNInfo entity was cleared.
+func (m *ExampleMutation) NextCleared() bool {
+	return m.clearednext
+}
+
+// RemoveNextIDs removes the "next" edge to the ASNInfo entity by IDs.
+func (m *ExampleMutation) RemoveNextIDs(ids ...int) {
+	if m.removednext == nil {
+		m.removednext = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.next, ids[i])
+		m.removednext[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNext returns the removed IDs of the "next" edge to the ASNInfo entity.
+func (m *ExampleMutation) RemovedNextIDs() (ids []int) {
+	for id := range m.removednext {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NextIDs returns the "next" edge IDs in the mutation.
+func (m *ExampleMutation) NextIDs() (ids []int) {
+	for id := range m.next {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNext resets all changes to the "next" edge.
+func (m *ExampleMutation) ResetNext() {
+	m.next = nil
+	m.clearednext = false
+	m.removednext = nil
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
+func (m *ExampleMutation) AddDnsentryIDs(ids ...int) {
+	if m.dnsentry == nil {
+		m.dnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.dnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
+func (m *ExampleMutation) ClearDnsentry() {
+	m.cleareddnsentry = true
+}
+
+// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
+func (m *ExampleMutation) DnsentryCleared() bool {
+	return m.cleareddnsentry
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
+func (m *ExampleMutation) RemoveDnsentryIDs(ids ...int) {
+	if m.removeddnsentry == nil {
+		m.removeddnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.dnsentry, ids[i])
+		m.removeddnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
+func (m *ExampleMutation) RemovedDnsentryIDs() (ids []int) {
+	for id := range m.removeddnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
+func (m *ExampleMutation) DnsentryIDs() (ids []int) {
+	for id := range m.dnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDnsentry resets all changes to the "dnsentry" edge.
+func (m *ExampleMutation) ResetDnsentry() {
+	m.dnsentry = nil
+	m.cleareddnsentry = false
+	m.removeddnsentry = nil
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *ExampleMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *ExampleMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *ExampleMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *ExampleMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *ExampleMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *ExampleMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *ExampleMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddPathIDs adds the "paths" edge to the Path entity by ids.
+func (m *ExampleMutation) AddPathIDs(ids ...int) {
+	if m.paths == nil {
+		m.paths = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.paths[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPaths clears the "paths" edge to the Path entity.
+func (m *ExampleMutation) ClearPaths() {
+	m.clearedpaths = true
+}
+
+// PathsCleared reports if the "paths" edge to the Path entity was cleared.
+func (m *ExampleMutation) PathsCleared() bool {
+	return m.clearedpaths
+}
+
+// RemovePathIDs removes the "paths" edge to the Path entity by IDs.
+func (m *ExampleMutation) RemovePathIDs(ids ...int) {
+	if m.removedpaths == nil {
+		m.removedpaths = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.paths, ids[i])
+		m.removedpaths[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPaths returns the removed IDs of the "paths" edge to the Path entity.
+func (m *ExampleMutation) RemovedPathsIDs() (ids []int) {
+	for id := range m.removedpaths {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PathsIDs returns the "paths" edge IDs in the mutation.
+func (m *ExampleMutation) PathsIDs() (ids []int) {
+	for id := range m.paths {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPaths resets all changes to the "paths" edge.
+func (m *ExampleMutation) ResetPaths() {
+	m.paths = nil
+	m.clearedpaths = false
+	m.removedpaths = nil
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
+func (m *ExampleMutation) AddNameserverIDs(ids ...int) {
+	if m.nameserver == nil {
+		m.nameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.nameserver[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
+func (m *ExampleMutation) ClearNameserver() {
+	m.clearednameserver = true
+}
+
+// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
+func (m *ExampleMutation) NameserverCleared() bool {
+	return m.clearednameserver
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
+func (m *ExampleMutation) RemoveNameserverIDs(ids ...int) {
+	if m.removednameserver == nil {
+		m.removednameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.nameserver, ids[i])
+		m.removednameserver[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
+func (m *ExampleMutation) RemovedNameserverIDs() (ids []int) {
+	for id := range m.removednameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NameserverIDs returns the "nameserver" edge IDs in the mutation.
+func (m *ExampleMutation) NameserverIDs() (ids []int) {
+	for id := range m.nameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNameserver resets all changes to the "nameserver" edge.
+func (m *ExampleMutation) ResetNameserver() {
+	m.nameserver = nil
+	m.clearednameserver = false
+	m.removednameserver = nil
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
+func (m *ExampleMutation) AddRegistrarIDs(ids ...int) {
+	if m.registrar == nil {
+		m.registrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.registrar[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRegistrar clears the "registrar" edge to the Registrar entity.
+func (m *ExampleMutation) ClearRegistrar() {
+	m.clearedregistrar = true
+}
+
+// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
+func (m *ExampleMutation) RegistrarCleared() bool {
+	return m.clearedregistrar
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
+func (m *ExampleMutation) RemoveRegistrarIDs(ids ...int) {
+	if m.removedregistrar == nil {
+		m.removedregistrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.registrar, ids[i])
+		m.removedregistrar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
+func (m *ExampleMutation) RemovedRegistrarIDs() (ids []int) {
+	for id := range m.removedregistrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RegistrarIDs returns the "registrar" edge IDs in the mutation.
+func (m *ExampleMutation) RegistrarIDs() (ids []int) {
+	for id := range m.registrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRegistrar resets all changes to the "registrar" edge.
+func (m *ExampleMutation) ResetRegistrar() {
+	m.registrar = nil
+	m.clearedregistrar = false
+	m.removedregistrar = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *ExampleMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *ExampleMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *ExampleMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *ExampleMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *ExampleMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *ExampleMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *ExampleMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
+// Where appends a list predicates to the ExampleMutation builder.
+func (m *ExampleMutation) Where(ps ...predicate.Example) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ExampleMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ExampleMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Example, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ExampleMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ExampleMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Example).
+func (m *ExampleMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ExampleMutation) Fields() []string {
+	fields := make([]string, 0, 1)
+	if m.timestamp != nil {
+		fields = append(fields, example.FieldTimestamp)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ExampleMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case example.FieldTimestamp:
+		return m.Timestamp()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ExampleMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case example.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	}
+	return nil, fmt.Errorf("unknown Example field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ExampleMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case example.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Example field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ExampleMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ExampleMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ExampleMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Example numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ExampleMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ExampleMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ExampleMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Example nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ExampleMutation) ResetField(name string) error {
+	switch name {
+	case example.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	}
+	return fmt.Errorf("unknown Example field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ExampleMutation) AddedEdges() []string {
+	edges := make([]string, 0, 8)
+	if m.ipaddress != nil {
+		edges = append(edges, example.EdgeIpaddress)
+	}
+	if m.next != nil {
+		edges = append(edges, example.EdgeNext)
+	}
+	if m.dnsentry != nil {
+		edges = append(edges, example.EdgeDnsentry)
+	}
+	if m.domain != nil {
+		edges = append(edges, example.EdgeDomain)
+	}
+	if m.paths != nil {
+		edges = append(edges, example.EdgePaths)
+	}
+	if m.nameserver != nil {
+		edges = append(edges, example.EdgeNameserver)
+	}
+	if m.registrar != nil {
+		edges = append(edges, example.EdgeRegistrar)
+	}
+	if m.whois != nil {
+		edges = append(edges, example.EdgeWhois)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ExampleMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case example.EdgeIpaddress:
+		if id := m.ipaddress; id != nil {
+			return []ent.Value{*id}
+		}
+	case example.EdgeNext:
+		ids := make([]ent.Value, 0, len(m.next))
+		for id := range m.next {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.dnsentry))
+		for id := range m.dnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgePaths:
+		ids := make([]ent.Value, 0, len(m.paths))
+		for id := range m.paths {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.nameserver))
+		for id := range m.nameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.registrar))
+		for id := range m.registrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ExampleMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 8)
+	if m.removednext != nil {
+		edges = append(edges, example.EdgeNext)
+	}
+	if m.removeddnsentry != nil {
+		edges = append(edges, example.EdgeDnsentry)
+	}
+	if m.removeddomain != nil {
+		edges = append(edges, example.EdgeDomain)
+	}
+	if m.removedpaths != nil {
+		edges = append(edges, example.EdgePaths)
+	}
+	if m.removednameserver != nil {
+		edges = append(edges, example.EdgeNameserver)
+	}
+	if m.removedregistrar != nil {
+		edges = append(edges, example.EdgeRegistrar)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, example.EdgeWhois)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ExampleMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case example.EdgeNext:
+		ids := make([]ent.Value, 0, len(m.removednext))
+		for id := range m.removednext {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.removeddnsentry))
+		for id := range m.removeddnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgePaths:
+		ids := make([]ent.Value, 0, len(m.removedpaths))
+		for id := range m.removedpaths {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.removednameserver))
+		for id := range m.removednameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.removedregistrar))
+		for id := range m.removedregistrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case example.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ExampleMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 8)
+	if m.clearedipaddress {
+		edges = append(edges, example.EdgeIpaddress)
+	}
+	if m.clearednext {
+		edges = append(edges, example.EdgeNext)
+	}
+	if m.cleareddnsentry {
+		edges = append(edges, example.EdgeDnsentry)
+	}
+	if m.cleareddomain {
+		edges = append(edges, example.EdgeDomain)
+	}
+	if m.clearedpaths {
+		edges = append(edges, example.EdgePaths)
+	}
+	if m.clearednameserver {
+		edges = append(edges, example.EdgeNameserver)
+	}
+	if m.clearedregistrar {
+		edges = append(edges, example.EdgeRegistrar)
+	}
+	if m.clearedwhois {
+		edges = append(edges, example.EdgeWhois)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ExampleMutation) EdgeCleared(name string) bool {
+	switch name {
+	case example.EdgeIpaddress:
+		return m.clearedipaddress
+	case example.EdgeNext:
+		return m.clearednext
+	case example.EdgeDnsentry:
+		return m.cleareddnsentry
+	case example.EdgeDomain:
+		return m.cleareddomain
+	case example.EdgePaths:
+		return m.clearedpaths
+	case example.EdgeNameserver:
+		return m.clearednameserver
+	case example.EdgeRegistrar:
+		return m.clearedregistrar
+	case example.EdgeWhois:
+		return m.clearedwhois
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ExampleMutation) ClearEdge(name string) error {
+	switch name {
+	case example.EdgeIpaddress:
+		m.ClearIpaddress()
+		return nil
+	}
+	return fmt.Errorf("unknown Example unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ExampleMutation) ResetEdge(name string) error {
+	switch name {
+	case example.EdgeIpaddress:
+		m.ResetIpaddress()
+		return nil
+	case example.EdgeNext:
+		m.ResetNext()
+		return nil
+	case example.EdgeDnsentry:
+		m.ResetDnsentry()
+		return nil
+	case example.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case example.EdgePaths:
+		m.ResetPaths()
+		return nil
+	case example.EdgeNameserver:
+		m.ResetNameserver()
+		return nil
+	case example.EdgeRegistrar:
+		m.ResetRegistrar()
+		return nil
+	case example.EdgeWhois:
+		m.ResetWhois()
+		return nil
+	}
+	return fmt.Errorf("unknown Example edge %s", name)
 }
 
 // IPAddressMutation represents an operation that mutates the IPAddress nodes in the graph.
 type IPAddressMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *int
-	ip             *string
-	mask           *string
-	clearedFields  map[string]struct{}
-	asninfo        map[int]struct{}
-	removedasninfo map[int]struct{}
-	clearedasninfo bool
-	done           bool
-	oldValue       func(context.Context) (*IPAddress, error)
-	predicates     []predicate.IPAddress
+	op                Op
+	typ               string
+	id                *int
+	ip                *string
+	mask              *string
+	clearedFields     map[string]struct{}
+	asninfo           map[int]struct{}
+	removedasninfo    map[int]struct{}
+	clearedasninfo    bool
+	scan              map[int]struct{}
+	removedscan       map[int]struct{}
+	clearedscan       bool
+	dnsentry          map[int]struct{}
+	removeddnsentry   map[int]struct{}
+	cleareddnsentry   bool
+	domain            map[int]struct{}
+	removeddomain     map[int]struct{}
+	cleareddomain     bool
+	nameserver        map[int]struct{}
+	removednameserver map[int]struct{}
+	clearednameserver bool
+	registrar         map[int]struct{}
+	removedregistrar  map[int]struct{}
+	clearedregistrar  bool
+	whois             map[int]struct{}
+	removedwhois      map[int]struct{}
+	clearedwhois      bool
+	done              bool
+	oldValue          func(context.Context) (*IPAddress, error)
+	predicates        []predicate.IPAddress
 }
 
 var _ ent.Mutation = (*IPAddressMutation)(nil)
@@ -2245,6 +4250,330 @@ func (m *IPAddressMutation) ResetAsninfo() {
 	m.removedasninfo = nil
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *IPAddressMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *IPAddressMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *IPAddressMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *IPAddressMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *IPAddressMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *IPAddressMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *IPAddressMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+func (m *IPAddressMutation) AddDnsentryIDs(ids ...int) {
+	if m.dnsentry == nil {
+		m.dnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.dnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+func (m *IPAddressMutation) ClearDnsentry() {
+	m.cleareddnsentry = true
+}
+
+// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+func (m *IPAddressMutation) DnsentryCleared() bool {
+	return m.cleareddnsentry
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+func (m *IPAddressMutation) RemoveDnsentryIDs(ids ...int) {
+	if m.removeddnsentry == nil {
+		m.removeddnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.dnsentry, ids[i])
+		m.removeddnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+func (m *IPAddressMutation) RemovedDnsentryIDs() (ids []int) {
+	for id := range m.removeddnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
+func (m *IPAddressMutation) DnsentryIDs() (ids []int) {
+	for id := range m.dnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDnsentry resets all changes to the "dnsentry" edge.
+func (m *IPAddressMutation) ResetDnsentry() {
+	m.dnsentry = nil
+	m.cleareddnsentry = false
+	m.removeddnsentry = nil
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *IPAddressMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *IPAddressMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *IPAddressMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *IPAddressMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *IPAddressMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *IPAddressMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *IPAddressMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
+func (m *IPAddressMutation) AddNameserverIDs(ids ...int) {
+	if m.nameserver == nil {
+		m.nameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.nameserver[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
+func (m *IPAddressMutation) ClearNameserver() {
+	m.clearednameserver = true
+}
+
+// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
+func (m *IPAddressMutation) NameserverCleared() bool {
+	return m.clearednameserver
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
+func (m *IPAddressMutation) RemoveNameserverIDs(ids ...int) {
+	if m.removednameserver == nil {
+		m.removednameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.nameserver, ids[i])
+		m.removednameserver[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
+func (m *IPAddressMutation) RemovedNameserverIDs() (ids []int) {
+	for id := range m.removednameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NameserverIDs returns the "nameserver" edge IDs in the mutation.
+func (m *IPAddressMutation) NameserverIDs() (ids []int) {
+	for id := range m.nameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNameserver resets all changes to the "nameserver" edge.
+func (m *IPAddressMutation) ResetNameserver() {
+	m.nameserver = nil
+	m.clearednameserver = false
+	m.removednameserver = nil
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
+func (m *IPAddressMutation) AddRegistrarIDs(ids ...int) {
+	if m.registrar == nil {
+		m.registrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.registrar[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRegistrar clears the "registrar" edge to the Registrar entity.
+func (m *IPAddressMutation) ClearRegistrar() {
+	m.clearedregistrar = true
+}
+
+// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
+func (m *IPAddressMutation) RegistrarCleared() bool {
+	return m.clearedregistrar
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
+func (m *IPAddressMutation) RemoveRegistrarIDs(ids ...int) {
+	if m.removedregistrar == nil {
+		m.removedregistrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.registrar, ids[i])
+		m.removedregistrar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
+func (m *IPAddressMutation) RemovedRegistrarIDs() (ids []int) {
+	for id := range m.removedregistrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RegistrarIDs returns the "registrar" edge IDs in the mutation.
+func (m *IPAddressMutation) RegistrarIDs() (ids []int) {
+	for id := range m.registrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRegistrar resets all changes to the "registrar" edge.
+func (m *IPAddressMutation) ResetRegistrar() {
+	m.registrar = nil
+	m.clearedregistrar = false
+	m.removedregistrar = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *IPAddressMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *IPAddressMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *IPAddressMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *IPAddressMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *IPAddressMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *IPAddressMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *IPAddressMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
 // Where appends a list predicates to the IPAddressMutation builder.
 func (m *IPAddressMutation) Where(ps ...predicate.IPAddress) {
 	m.predicates = append(m.predicates, ps...)
@@ -2395,9 +4724,27 @@ func (m *IPAddressMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IPAddressMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 7)
 	if m.asninfo != nil {
 		edges = append(edges, ipaddress.EdgeAsninfo)
+	}
+	if m.scan != nil {
+		edges = append(edges, ipaddress.EdgeScan)
+	}
+	if m.dnsentry != nil {
+		edges = append(edges, ipaddress.EdgeDnsentry)
+	}
+	if m.domain != nil {
+		edges = append(edges, ipaddress.EdgeDomain)
+	}
+	if m.nameserver != nil {
+		edges = append(edges, ipaddress.EdgeNameserver)
+	}
+	if m.registrar != nil {
+		edges = append(edges, ipaddress.EdgeRegistrar)
+	}
+	if m.whois != nil {
+		edges = append(edges, ipaddress.EdgeWhois)
 	}
 	return edges
 }
@@ -2412,15 +4759,69 @@ func (m *IPAddressMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case ipaddress.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.dnsentry))
+		for id := range m.dnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.nameserver))
+		for id := range m.nameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.registrar))
+		for id := range m.registrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IPAddressMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 7)
 	if m.removedasninfo != nil {
 		edges = append(edges, ipaddress.EdgeAsninfo)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, ipaddress.EdgeScan)
+	}
+	if m.removeddnsentry != nil {
+		edges = append(edges, ipaddress.EdgeDnsentry)
+	}
+	if m.removeddomain != nil {
+		edges = append(edges, ipaddress.EdgeDomain)
+	}
+	if m.removednameserver != nil {
+		edges = append(edges, ipaddress.EdgeNameserver)
+	}
+	if m.removedregistrar != nil {
+		edges = append(edges, ipaddress.EdgeRegistrar)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, ipaddress.EdgeWhois)
 	}
 	return edges
 }
@@ -2435,15 +4836,69 @@ func (m *IPAddressMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case ipaddress.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.removeddnsentry))
+		for id := range m.removeddnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.removednameserver))
+		for id := range m.removednameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.removedregistrar))
+		for id := range m.removedregistrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case ipaddress.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IPAddressMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 7)
 	if m.clearedasninfo {
 		edges = append(edges, ipaddress.EdgeAsninfo)
+	}
+	if m.clearedscan {
+		edges = append(edges, ipaddress.EdgeScan)
+	}
+	if m.cleareddnsentry {
+		edges = append(edges, ipaddress.EdgeDnsentry)
+	}
+	if m.cleareddomain {
+		edges = append(edges, ipaddress.EdgeDomain)
+	}
+	if m.clearednameserver {
+		edges = append(edges, ipaddress.EdgeNameserver)
+	}
+	if m.clearedregistrar {
+		edges = append(edges, ipaddress.EdgeRegistrar)
+	}
+	if m.clearedwhois {
+		edges = append(edges, ipaddress.EdgeWhois)
 	}
 	return edges
 }
@@ -2454,6 +4909,18 @@ func (m *IPAddressMutation) EdgeCleared(name string) bool {
 	switch name {
 	case ipaddress.EdgeAsninfo:
 		return m.clearedasninfo
+	case ipaddress.EdgeScan:
+		return m.clearedscan
+	case ipaddress.EdgeDnsentry:
+		return m.cleareddnsentry
+	case ipaddress.EdgeDomain:
+		return m.cleareddomain
+	case ipaddress.EdgeNameserver:
+		return m.clearednameserver
+	case ipaddress.EdgeRegistrar:
+		return m.clearedregistrar
+	case ipaddress.EdgeWhois:
+		return m.clearedwhois
 	}
 	return false
 }
@@ -2473,6 +4940,24 @@ func (m *IPAddressMutation) ResetEdge(name string) error {
 	case ipaddress.EdgeAsninfo:
 		m.ResetAsninfo()
 		return nil
+	case ipaddress.EdgeScan:
+		m.ResetScan()
+		return nil
+	case ipaddress.EdgeDnsentry:
+		m.ResetDnsentry()
+		return nil
+	case ipaddress.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case ipaddress.EdgeNameserver:
+		m.ResetNameserver()
+		return nil
+	case ipaddress.EdgeRegistrar:
+		m.ResetRegistrar()
+		return nil
+	case ipaddress.EdgeWhois:
+		m.ResetWhois()
+		return nil
 	}
 	return fmt.Errorf("unknown IPAddress edge %s", name)
 }
@@ -2490,6 +4975,18 @@ type NameserverMutation struct {
 	ipaddress        map[int]struct{}
 	removedipaddress map[int]struct{}
 	clearedipaddress bool
+	scan             map[int]struct{}
+	removedscan      map[int]struct{}
+	clearedscan      bool
+	dnsentry         map[int]struct{}
+	removeddnsentry  map[int]struct{}
+	cleareddnsentry  bool
+	domain           map[int]struct{}
+	removeddomain    map[int]struct{}
+	cleareddomain    bool
+	whois            map[int]struct{}
+	removedwhois     map[int]struct{}
+	clearedwhois     bool
 	done             bool
 	oldValue         func(context.Context) (*Nameserver, error)
 	predicates       []predicate.Nameserver
@@ -2755,6 +5252,222 @@ func (m *NameserverMutation) ResetIpaddress() {
 	m.removedipaddress = nil
 }
 
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *NameserverMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *NameserverMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *NameserverMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *NameserverMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *NameserverMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *NameserverMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *NameserverMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+func (m *NameserverMutation) AddDnsentryIDs(ids ...int) {
+	if m.dnsentry == nil {
+		m.dnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.dnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+func (m *NameserverMutation) ClearDnsentry() {
+	m.cleareddnsentry = true
+}
+
+// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+func (m *NameserverMutation) DnsentryCleared() bool {
+	return m.cleareddnsentry
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+func (m *NameserverMutation) RemoveDnsentryIDs(ids ...int) {
+	if m.removeddnsentry == nil {
+		m.removeddnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.dnsentry, ids[i])
+		m.removeddnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+func (m *NameserverMutation) RemovedDnsentryIDs() (ids []int) {
+	for id := range m.removeddnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
+func (m *NameserverMutation) DnsentryIDs() (ids []int) {
+	for id := range m.dnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDnsentry resets all changes to the "dnsentry" edge.
+func (m *NameserverMutation) ResetDnsentry() {
+	m.dnsentry = nil
+	m.cleareddnsentry = false
+	m.removeddnsentry = nil
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *NameserverMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *NameserverMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *NameserverMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *NameserverMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *NameserverMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *NameserverMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *NameserverMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *NameserverMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *NameserverMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *NameserverMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *NameserverMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *NameserverMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *NameserverMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *NameserverMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
 // Where appends a list predicates to the NameserverMutation builder.
 func (m *NameserverMutation) Where(ps ...predicate.Nameserver) {
 	m.predicates = append(m.predicates, ps...)
@@ -2922,9 +5635,21 @@ func (m *NameserverMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *NameserverMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 5)
 	if m.ipaddress != nil {
 		edges = append(edges, nameserver.EdgeIpaddress)
+	}
+	if m.scan != nil {
+		edges = append(edges, nameserver.EdgeScan)
+	}
+	if m.dnsentry != nil {
+		edges = append(edges, nameserver.EdgeDnsentry)
+	}
+	if m.domain != nil {
+		edges = append(edges, nameserver.EdgeDomain)
+	}
+	if m.whois != nil {
+		edges = append(edges, nameserver.EdgeWhois)
 	}
 	return edges
 }
@@ -2939,15 +5664,51 @@ func (m *NameserverMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case nameserver.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.dnsentry))
+		for id := range m.dnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *NameserverMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 5)
 	if m.removedipaddress != nil {
 		edges = append(edges, nameserver.EdgeIpaddress)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, nameserver.EdgeScan)
+	}
+	if m.removeddnsentry != nil {
+		edges = append(edges, nameserver.EdgeDnsentry)
+	}
+	if m.removeddomain != nil {
+		edges = append(edges, nameserver.EdgeDomain)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, nameserver.EdgeWhois)
 	}
 	return edges
 }
@@ -2962,15 +5723,51 @@ func (m *NameserverMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case nameserver.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.removeddnsentry))
+		for id := range m.removeddnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case nameserver.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *NameserverMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 5)
 	if m.clearedipaddress {
 		edges = append(edges, nameserver.EdgeIpaddress)
+	}
+	if m.clearedscan {
+		edges = append(edges, nameserver.EdgeScan)
+	}
+	if m.cleareddnsentry {
+		edges = append(edges, nameserver.EdgeDnsentry)
+	}
+	if m.cleareddomain {
+		edges = append(edges, nameserver.EdgeDomain)
+	}
+	if m.clearedwhois {
+		edges = append(edges, nameserver.EdgeWhois)
 	}
 	return edges
 }
@@ -2981,6 +5778,14 @@ func (m *NameserverMutation) EdgeCleared(name string) bool {
 	switch name {
 	case nameserver.EdgeIpaddress:
 		return m.clearedipaddress
+	case nameserver.EdgeScan:
+		return m.clearedscan
+	case nameserver.EdgeDnsentry:
+		return m.cleareddnsentry
+	case nameserver.EdgeDomain:
+		return m.cleareddomain
+	case nameserver.EdgeWhois:
+		return m.clearedwhois
 	}
 	return false
 }
@@ -3000,6 +5805,18 @@ func (m *NameserverMutation) ResetEdge(name string) error {
 	case nameserver.EdgeIpaddress:
 		m.ResetIpaddress()
 		return nil
+	case nameserver.EdgeScan:
+		m.ResetScan()
+		return nil
+	case nameserver.EdgeDnsentry:
+		m.ResetDnsentry()
+		return nil
+	case nameserver.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case nameserver.EdgeWhois:
+		m.ResetWhois()
+		return nil
 	}
 	return fmt.Errorf("unknown Nameserver edge %s", name)
 }
@@ -3012,6 +5829,12 @@ type PathMutation struct {
 	id            *int
 	_path         *string
 	clearedFields map[string]struct{}
+	domain        map[int]struct{}
+	removeddomain map[int]struct{}
+	cleareddomain bool
+	scan          map[int]struct{}
+	removedscan   map[int]struct{}
+	clearedscan   bool
 	done          bool
 	oldValue      func(context.Context) (*Path, error)
 	predicates    []predicate.Path
@@ -3151,6 +5974,114 @@ func (m *PathMutation) ResetPath() {
 	m._path = nil
 }
 
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *PathMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *PathMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *PathMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *PathMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *PathMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *PathMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *PathMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *PathMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *PathMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *PathMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *PathMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *PathMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *PathMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *PathMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
 // Where appends a list predicates to the PathMutation builder.
 func (m *PathMutation) Where(ps ...predicate.Path) {
 	m.predicates = append(m.predicates, ps...)
@@ -3284,70 +6215,148 @@ func (m *PathMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PathMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.domain != nil {
+		edges = append(edges, path.EdgeDomain)
+	}
+	if m.scan != nil {
+		edges = append(edges, path.EdgeScan)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *PathMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case path.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case path.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PathMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.removeddomain != nil {
+		edges = append(edges, path.EdgeDomain)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, path.EdgeScan)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *PathMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case path.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case path.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PathMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 2)
+	if m.cleareddomain {
+		edges = append(edges, path.EdgeDomain)
+	}
+	if m.clearedscan {
+		edges = append(edges, path.EdgeScan)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *PathMutation) EdgeCleared(name string) bool {
+	switch name {
+	case path.EdgeDomain:
+		return m.cleareddomain
+	case path.EdgeScan:
+		return m.clearedscan
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *PathMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Path unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *PathMutation) ResetEdge(name string) error {
+	switch name {
+	case path.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case path.EdgeScan:
+		m.ResetScan()
+		return nil
+	}
 	return fmt.Errorf("unknown Path edge %s", name)
 }
 
 // RegistrarMutation represents an operation that mutates the Registrar nodes in the graph.
 type RegistrarMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	name          *string
-	url           *string
-	country_code  *string
-	phone         *string
-	fax           *string
-	address       *string
-	time_first    *time.Time
-	time_last     *time.Time
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Registrar, error)
-	predicates    []predicate.Registrar
+	op               Op
+	typ              string
+	id               *int
+	name             *string
+	url              *string
+	country_code     *string
+	phone            *string
+	fax              *string
+	address          *string
+	source           *string
+	time_first       *time.Time
+	time_last        *time.Time
+	clearedFields    map[string]struct{}
+	ipaddress        map[int]struct{}
+	removedipaddress map[int]struct{}
+	clearedipaddress bool
+	domain           map[int]struct{}
+	removeddomain    map[int]struct{}
+	cleareddomain    bool
+	asninfo          map[int]struct{}
+	removedasninfo   map[int]struct{}
+	clearedasninfo   bool
+	scan             map[int]struct{}
+	removedscan      map[int]struct{}
+	clearedscan      bool
+	whois            map[int]struct{}
+	removedwhois     map[int]struct{}
+	clearedwhois     bool
+	done             bool
+	oldValue         func(context.Context) (*Registrar, error)
+	predicates       []predicate.Registrar
 }
 
 var _ ent.Mutation = (*RegistrarMutation)(nil)
@@ -3664,6 +6673,42 @@ func (m *RegistrarMutation) ResetAddress() {
 	m.address = nil
 }
 
+// SetSource sets the "source" field.
+func (m *RegistrarMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *RegistrarMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the Registrar entity.
+// If the Registrar object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *RegistrarMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *RegistrarMutation) ResetSource() {
+	m.source = nil
+}
+
 // SetTimeFirst sets the "time_first" field.
 func (m *RegistrarMutation) SetTimeFirst(t time.Time) {
 	m.time_first = &t
@@ -3736,6 +6781,276 @@ func (m *RegistrarMutation) ResetTimeLast() {
 	m.time_last = nil
 }
 
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
+func (m *RegistrarMutation) AddIpaddresIDs(ids ...int) {
+	if m.ipaddress == nil {
+		m.ipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.ipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
+func (m *RegistrarMutation) ClearIpaddress() {
+	m.clearedipaddress = true
+}
+
+// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
+func (m *RegistrarMutation) IpaddressCleared() bool {
+	return m.clearedipaddress
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to the IPAddress entity by IDs.
+func (m *RegistrarMutation) RemoveIpaddresIDs(ids ...int) {
+	if m.removedipaddress == nil {
+		m.removedipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.ipaddress, ids[i])
+		m.removedipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIpaddress returns the removed IDs of the "ipaddress" edge to the IPAddress entity.
+func (m *RegistrarMutation) RemovedIpaddressIDs() (ids []int) {
+	for id := range m.removedipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
+func (m *RegistrarMutation) IpaddressIDs() (ids []int) {
+	for id := range m.ipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIpaddress resets all changes to the "ipaddress" edge.
+func (m *RegistrarMutation) ResetIpaddress() {
+	m.ipaddress = nil
+	m.clearedipaddress = false
+	m.removedipaddress = nil
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *RegistrarMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *RegistrarMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *RegistrarMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *RegistrarMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *RegistrarMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *RegistrarMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *RegistrarMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by ids.
+func (m *RegistrarMutation) AddAsninfoIDs(ids ...int) {
+	if m.asninfo == nil {
+		m.asninfo = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.asninfo[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAsninfo clears the "asninfo" edge to the ASNInfo entity.
+func (m *RegistrarMutation) ClearAsninfo() {
+	m.clearedasninfo = true
+}
+
+// AsninfoCleared reports if the "asninfo" edge to the ASNInfo entity was cleared.
+func (m *RegistrarMutation) AsninfoCleared() bool {
+	return m.clearedasninfo
+}
+
+// RemoveAsninfoIDs removes the "asninfo" edge to the ASNInfo entity by IDs.
+func (m *RegistrarMutation) RemoveAsninfoIDs(ids ...int) {
+	if m.removedasninfo == nil {
+		m.removedasninfo = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.asninfo, ids[i])
+		m.removedasninfo[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAsninfo returns the removed IDs of the "asninfo" edge to the ASNInfo entity.
+func (m *RegistrarMutation) RemovedAsninfoIDs() (ids []int) {
+	for id := range m.removedasninfo {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AsninfoIDs returns the "asninfo" edge IDs in the mutation.
+func (m *RegistrarMutation) AsninfoIDs() (ids []int) {
+	for id := range m.asninfo {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAsninfo resets all changes to the "asninfo" edge.
+func (m *RegistrarMutation) ResetAsninfo() {
+	m.asninfo = nil
+	m.clearedasninfo = false
+	m.removedasninfo = nil
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *RegistrarMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *RegistrarMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *RegistrarMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *RegistrarMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *RegistrarMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *RegistrarMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *RegistrarMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *RegistrarMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *RegistrarMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *RegistrarMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *RegistrarMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *RegistrarMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *RegistrarMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *RegistrarMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
 // Where appends a list predicates to the RegistrarMutation builder.
 func (m *RegistrarMutation) Where(ps ...predicate.Registrar) {
 	m.predicates = append(m.predicates, ps...)
@@ -3770,7 +7085,7 @@ func (m *RegistrarMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *RegistrarMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.name != nil {
 		fields = append(fields, registrar.FieldName)
 	}
@@ -3788,6 +7103,9 @@ func (m *RegistrarMutation) Fields() []string {
 	}
 	if m.address != nil {
 		fields = append(fields, registrar.FieldAddress)
+	}
+	if m.source != nil {
+		fields = append(fields, registrar.FieldSource)
 	}
 	if m.time_first != nil {
 		fields = append(fields, registrar.FieldTimeFirst)
@@ -3815,6 +7133,8 @@ func (m *RegistrarMutation) Field(name string) (ent.Value, bool) {
 		return m.Fax()
 	case registrar.FieldAddress:
 		return m.Address()
+	case registrar.FieldSource:
+		return m.Source()
 	case registrar.FieldTimeFirst:
 		return m.TimeFirst()
 	case registrar.FieldTimeLast:
@@ -3840,6 +7160,8 @@ func (m *RegistrarMutation) OldField(ctx context.Context, name string) (ent.Valu
 		return m.OldFax(ctx)
 	case registrar.FieldAddress:
 		return m.OldAddress(ctx)
+	case registrar.FieldSource:
+		return m.OldSource(ctx)
 	case registrar.FieldTimeFirst:
 		return m.OldTimeFirst(ctx)
 	case registrar.FieldTimeLast:
@@ -3894,6 +7216,13 @@ func (m *RegistrarMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetAddress(v)
+		return nil
+	case registrar.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
 		return nil
 	case registrar.FieldTimeFirst:
 		v, ok := value.(time.Time)
@@ -3976,6 +7305,9 @@ func (m *RegistrarMutation) ResetField(name string) error {
 	case registrar.FieldAddress:
 		m.ResetAddress()
 		return nil
+	case registrar.FieldSource:
+		m.ResetSource()
+		return nil
 	case registrar.FieldTimeFirst:
 		m.ResetTimeFirst()
 		return nil
@@ -3988,49 +7320,189 @@ func (m *RegistrarMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *RegistrarMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 5)
+	if m.ipaddress != nil {
+		edges = append(edges, registrar.EdgeIpaddress)
+	}
+	if m.domain != nil {
+		edges = append(edges, registrar.EdgeDomain)
+	}
+	if m.asninfo != nil {
+		edges = append(edges, registrar.EdgeAsninfo)
+	}
+	if m.scan != nil {
+		edges = append(edges, registrar.EdgeScan)
+	}
+	if m.whois != nil {
+		edges = append(edges, registrar.EdgeWhois)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *RegistrarMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case registrar.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.ipaddress))
+		for id := range m.ipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeAsninfo:
+		ids := make([]ent.Value, 0, len(m.asninfo))
+		for id := range m.asninfo {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *RegistrarMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 5)
+	if m.removedipaddress != nil {
+		edges = append(edges, registrar.EdgeIpaddress)
+	}
+	if m.removeddomain != nil {
+		edges = append(edges, registrar.EdgeDomain)
+	}
+	if m.removedasninfo != nil {
+		edges = append(edges, registrar.EdgeAsninfo)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, registrar.EdgeScan)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, registrar.EdgeWhois)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *RegistrarMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case registrar.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.removedipaddress))
+		for id := range m.removedipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeAsninfo:
+		ids := make([]ent.Value, 0, len(m.removedasninfo))
+		for id := range m.removedasninfo {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	case registrar.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *RegistrarMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 5)
+	if m.clearedipaddress {
+		edges = append(edges, registrar.EdgeIpaddress)
+	}
+	if m.cleareddomain {
+		edges = append(edges, registrar.EdgeDomain)
+	}
+	if m.clearedasninfo {
+		edges = append(edges, registrar.EdgeAsninfo)
+	}
+	if m.clearedscan {
+		edges = append(edges, registrar.EdgeScan)
+	}
+	if m.clearedwhois {
+		edges = append(edges, registrar.EdgeWhois)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *RegistrarMutation) EdgeCleared(name string) bool {
+	switch name {
+	case registrar.EdgeIpaddress:
+		return m.clearedipaddress
+	case registrar.EdgeDomain:
+		return m.cleareddomain
+	case registrar.EdgeAsninfo:
+		return m.clearedasninfo
+	case registrar.EdgeScan:
+		return m.clearedscan
+	case registrar.EdgeWhois:
+		return m.clearedwhois
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *RegistrarMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Registrar unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *RegistrarMutation) ResetEdge(name string) error {
+	switch name {
+	case registrar.EdgeIpaddress:
+		m.ResetIpaddress()
+		return nil
+	case registrar.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case registrar.EdgeAsninfo:
+		m.ResetAsninfo()
+		return nil
+	case registrar.EdgeScan:
+		m.ResetScan()
+		return nil
+	case registrar.EdgeWhois:
+		m.ResetWhois()
+		return nil
+	}
 	return fmt.Errorf("unknown Registrar edge %s", name)
 }
 
@@ -4041,6 +7513,8 @@ type ScanMutation struct {
 	typ               string
 	id                *int
 	scanid            *string
+	input             *string
+	_type             *string
 	timestamp         *time.Time
 	clearedFields     map[string]struct{}
 	ipaddress         map[int]struct{}
@@ -4055,9 +7529,9 @@ type ScanMutation struct {
 	domain            map[int]struct{}
 	removeddomain     map[int]struct{}
 	cleareddomain     bool
-	paths             map[int]struct{}
-	removedpaths      map[int]struct{}
-	clearedpaths      bool
+	_path             map[int]struct{}
+	removed_path      map[int]struct{}
+	cleared_path      bool
 	nameserver        map[int]struct{}
 	removednameserver map[int]struct{}
 	clearednameserver bool
@@ -4204,6 +7678,78 @@ func (m *ScanMutation) OldScanid(ctx context.Context) (v string, err error) {
 // ResetScanid resets all changes to the "scanid" field.
 func (m *ScanMutation) ResetScanid() {
 	m.scanid = nil
+}
+
+// SetInput sets the "input" field.
+func (m *ScanMutation) SetInput(s string) {
+	m.input = &s
+}
+
+// Input returns the value of the "input" field in the mutation.
+func (m *ScanMutation) Input() (r string, exists bool) {
+	v := m.input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInput returns the old "input" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldInput(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInput: %w", err)
+	}
+	return oldValue.Input, nil
+}
+
+// ResetInput resets all changes to the "input" field.
+func (m *ScanMutation) ResetInput() {
+	m.input = nil
+}
+
+// SetType sets the "type" field.
+func (m *ScanMutation) SetType(s string) {
+	m._type = &s
+}
+
+// GetType returns the value of the "type" field in the mutation.
+func (m *ScanMutation) GetType() (r string, exists bool) {
+	v := m._type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldType returns the old "type" field's value of the Scan entity.
+// If the Scan object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanMutation) OldType(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldType: %w", err)
+	}
+	return oldValue.Type, nil
+}
+
+// ResetType resets all changes to the "type" field.
+func (m *ScanMutation) ResetType() {
+	m._type = nil
 }
 
 // SetTimestamp sets the "timestamp" field.
@@ -4458,58 +8004,58 @@ func (m *ScanMutation) ResetDomain() {
 	m.removeddomain = nil
 }
 
-// AddPathIDs adds the "paths" edge to the Path entity by ids.
+// AddPathIDs adds the "path" edge to the Path entity by ids.
 func (m *ScanMutation) AddPathIDs(ids ...int) {
-	if m.paths == nil {
-		m.paths = make(map[int]struct{})
+	if m._path == nil {
+		m._path = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.paths[ids[i]] = struct{}{}
+		m._path[ids[i]] = struct{}{}
 	}
 }
 
-// ClearPaths clears the "paths" edge to the Path entity.
-func (m *ScanMutation) ClearPaths() {
-	m.clearedpaths = true
+// ClearPath clears the "path" edge to the Path entity.
+func (m *ScanMutation) ClearPath() {
+	m.cleared_path = true
 }
 
-// PathsCleared reports if the "paths" edge to the Path entity was cleared.
-func (m *ScanMutation) PathsCleared() bool {
-	return m.clearedpaths
+// PathCleared reports if the "path" edge to the Path entity was cleared.
+func (m *ScanMutation) PathCleared() bool {
+	return m.cleared_path
 }
 
-// RemovePathIDs removes the "paths" edge to the Path entity by IDs.
+// RemovePathIDs removes the "path" edge to the Path entity by IDs.
 func (m *ScanMutation) RemovePathIDs(ids ...int) {
-	if m.removedpaths == nil {
-		m.removedpaths = make(map[int]struct{})
+	if m.removed_path == nil {
+		m.removed_path = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.paths, ids[i])
-		m.removedpaths[ids[i]] = struct{}{}
+		delete(m._path, ids[i])
+		m.removed_path[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedPaths returns the removed IDs of the "paths" edge to the Path entity.
-func (m *ScanMutation) RemovedPathsIDs() (ids []int) {
-	for id := range m.removedpaths {
+// RemovedPath returns the removed IDs of the "path" edge to the Path entity.
+func (m *ScanMutation) RemovedPathIDs() (ids []int) {
+	for id := range m.removed_path {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// PathsIDs returns the "paths" edge IDs in the mutation.
-func (m *ScanMutation) PathsIDs() (ids []int) {
-	for id := range m.paths {
+// PathIDs returns the "path" edge IDs in the mutation.
+func (m *ScanMutation) PathIDs() (ids []int) {
+	for id := range m._path {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetPaths resets all changes to the "paths" edge.
-func (m *ScanMutation) ResetPaths() {
-	m.paths = nil
-	m.clearedpaths = false
-	m.removedpaths = nil
+// ResetPath resets all changes to the "path" edge.
+func (m *ScanMutation) ResetPath() {
+	m._path = nil
+	m.cleared_path = false
+	m.removed_path = nil
 }
 
 // AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
@@ -4708,9 +8254,15 @@ func (m *ScanMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ScanMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 4)
 	if m.scanid != nil {
 		fields = append(fields, scan.FieldScanid)
+	}
+	if m.input != nil {
+		fields = append(fields, scan.FieldInput)
+	}
+	if m._type != nil {
+		fields = append(fields, scan.FieldType)
 	}
 	if m.timestamp != nil {
 		fields = append(fields, scan.FieldTimestamp)
@@ -4725,6 +8277,10 @@ func (m *ScanMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case scan.FieldScanid:
 		return m.Scanid()
+	case scan.FieldInput:
+		return m.Input()
+	case scan.FieldType:
+		return m.GetType()
 	case scan.FieldTimestamp:
 		return m.Timestamp()
 	}
@@ -4738,6 +8294,10 @@ func (m *ScanMutation) OldField(ctx context.Context, name string) (ent.Value, er
 	switch name {
 	case scan.FieldScanid:
 		return m.OldScanid(ctx)
+	case scan.FieldInput:
+		return m.OldInput(ctx)
+	case scan.FieldType:
+		return m.OldType(ctx)
 	case scan.FieldTimestamp:
 		return m.OldTimestamp(ctx)
 	}
@@ -4755,6 +8315,20 @@ func (m *ScanMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetScanid(v)
+		return nil
+	case scan.FieldInput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInput(v)
+		return nil
+	case scan.FieldType:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetType(v)
 		return nil
 	case scan.FieldTimestamp:
 		v, ok := value.(time.Time)
@@ -4815,6 +8389,12 @@ func (m *ScanMutation) ResetField(name string) error {
 	case scan.FieldScanid:
 		m.ResetScanid()
 		return nil
+	case scan.FieldInput:
+		m.ResetInput()
+		return nil
+	case scan.FieldType:
+		m.ResetType()
+		return nil
 	case scan.FieldTimestamp:
 		m.ResetTimestamp()
 		return nil
@@ -4837,8 +8417,8 @@ func (m *ScanMutation) AddedEdges() []string {
 	if m.domain != nil {
 		edges = append(edges, scan.EdgeDomain)
 	}
-	if m.paths != nil {
-		edges = append(edges, scan.EdgePaths)
+	if m._path != nil {
+		edges = append(edges, scan.EdgePath)
 	}
 	if m.nameserver != nil {
 		edges = append(edges, scan.EdgeNameserver)
@@ -4880,9 +8460,9 @@ func (m *ScanMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case scan.EdgePaths:
-		ids := make([]ent.Value, 0, len(m.paths))
-		for id := range m.paths {
+	case scan.EdgePath:
+		ids := make([]ent.Value, 0, len(m._path))
+		for id := range m._path {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4923,8 +8503,8 @@ func (m *ScanMutation) RemovedEdges() []string {
 	if m.removeddomain != nil {
 		edges = append(edges, scan.EdgeDomain)
 	}
-	if m.removedpaths != nil {
-		edges = append(edges, scan.EdgePaths)
+	if m.removed_path != nil {
+		edges = append(edges, scan.EdgePath)
 	}
 	if m.removednameserver != nil {
 		edges = append(edges, scan.EdgeNameserver)
@@ -4966,9 +8546,9 @@ func (m *ScanMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case scan.EdgePaths:
-		ids := make([]ent.Value, 0, len(m.removedpaths))
-		for id := range m.removedpaths {
+	case scan.EdgePath:
+		ids := make([]ent.Value, 0, len(m.removed_path))
+		for id := range m.removed_path {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5009,8 +8589,8 @@ func (m *ScanMutation) ClearedEdges() []string {
 	if m.cleareddomain {
 		edges = append(edges, scan.EdgeDomain)
 	}
-	if m.clearedpaths {
-		edges = append(edges, scan.EdgePaths)
+	if m.cleared_path {
+		edges = append(edges, scan.EdgePath)
 	}
 	if m.clearednameserver {
 		edges = append(edges, scan.EdgeNameserver)
@@ -5036,8 +8616,8 @@ func (m *ScanMutation) EdgeCleared(name string) bool {
 		return m.cleareddnsentry
 	case scan.EdgeDomain:
 		return m.cleareddomain
-	case scan.EdgePaths:
-		return m.clearedpaths
+	case scan.EdgePath:
+		return m.cleared_path
 	case scan.EdgeNameserver:
 		return m.clearednameserver
 	case scan.EdgeRegistrar:
@@ -5072,8 +8652,8 @@ func (m *ScanMutation) ResetEdge(name string) error {
 	case scan.EdgeDomain:
 		m.ResetDomain()
 		return nil
-	case scan.EdgePaths:
-		m.ResetPaths()
+	case scan.EdgePath:
+		m.ResetPath()
 		return nil
 	case scan.EdgeNameserver:
 		m.ResetNameserver()
@@ -5091,36 +8671,39 @@ func (m *ScanMutation) ResetEdge(name string) error {
 // WhoisMutation represents an operation that mutates the Whois nodes in the graph.
 type WhoisMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	query              *string
-	server             *string
-	raw                *string
-	country            *string
-	created            *time.Time
-	updated            *time.Time
-	time_first         *time.Time
-	time_last          *time.Time
-	clearedFields      map[string]struct{}
-	iprange            map[int]struct{}
-	removediprange     map[int]struct{}
-	clearediprange     bool
-	domain             map[int]struct{}
-	removeddomain      map[int]struct{}
-	cleareddomain      bool
-	asn                map[int]struct{}
-	removedasn         map[int]struct{}
-	clearedasn         bool
-	registrar          map[int]struct{}
-	removedregistrar   map[int]struct{}
-	clearedregistrar   bool
-	nameservers        map[int]struct{}
-	removednameservers map[int]struct{}
-	clearednameservers bool
-	done               bool
-	oldValue           func(context.Context) (*Whois, error)
-	predicates         []predicate.Whois
+	op                Op
+	typ               string
+	id                *int
+	query             *string
+	server            *string
+	raw               *string
+	country           *string
+	created           *time.Time
+	updated           *time.Time
+	time_first        *time.Time
+	time_last         *time.Time
+	clearedFields     map[string]struct{}
+	iprange           map[int]struct{}
+	removediprange    map[int]struct{}
+	clearediprange    bool
+	domain            map[int]struct{}
+	removeddomain     map[int]struct{}
+	cleareddomain     bool
+	asn               map[int]struct{}
+	removedasn        map[int]struct{}
+	clearedasn        bool
+	registrar         map[int]struct{}
+	removedregistrar  map[int]struct{}
+	clearedregistrar  bool
+	nameserver        map[int]struct{}
+	removednameserver map[int]struct{}
+	clearednameserver bool
+	scan              map[int]struct{}
+	removedscan       map[int]struct{}
+	clearedscan       bool
+	done              bool
+	oldValue          func(context.Context) (*Whois, error)
+	predicates        []predicate.Whois
 }
 
 var _ ent.Mutation = (*WhoisMutation)(nil)
@@ -5725,58 +9308,112 @@ func (m *WhoisMutation) ResetRegistrar() {
 	m.removedregistrar = nil
 }
 
-// AddNameserverIDs adds the "nameservers" edge to the Nameserver entity by ids.
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
 func (m *WhoisMutation) AddNameserverIDs(ids ...int) {
-	if m.nameservers == nil {
-		m.nameservers = make(map[int]struct{})
+	if m.nameserver == nil {
+		m.nameserver = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.nameservers[ids[i]] = struct{}{}
+		m.nameserver[ids[i]] = struct{}{}
 	}
 }
 
-// ClearNameservers clears the "nameservers" edge to the Nameserver entity.
-func (m *WhoisMutation) ClearNameservers() {
-	m.clearednameservers = true
+// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
+func (m *WhoisMutation) ClearNameserver() {
+	m.clearednameserver = true
 }
 
-// NameserversCleared reports if the "nameservers" edge to the Nameserver entity was cleared.
-func (m *WhoisMutation) NameserversCleared() bool {
-	return m.clearednameservers
+// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
+func (m *WhoisMutation) NameserverCleared() bool {
+	return m.clearednameserver
 }
 
-// RemoveNameserverIDs removes the "nameservers" edge to the Nameserver entity by IDs.
+// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
 func (m *WhoisMutation) RemoveNameserverIDs(ids ...int) {
-	if m.removednameservers == nil {
-		m.removednameservers = make(map[int]struct{})
+	if m.removednameserver == nil {
+		m.removednameserver = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.nameservers, ids[i])
-		m.removednameservers[ids[i]] = struct{}{}
+		delete(m.nameserver, ids[i])
+		m.removednameserver[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedNameservers returns the removed IDs of the "nameservers" edge to the Nameserver entity.
-func (m *WhoisMutation) RemovedNameserversIDs() (ids []int) {
-	for id := range m.removednameservers {
+// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
+func (m *WhoisMutation) RemovedNameserverIDs() (ids []int) {
+	for id := range m.removednameserver {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// NameserversIDs returns the "nameservers" edge IDs in the mutation.
-func (m *WhoisMutation) NameserversIDs() (ids []int) {
-	for id := range m.nameservers {
+// NameserverIDs returns the "nameserver" edge IDs in the mutation.
+func (m *WhoisMutation) NameserverIDs() (ids []int) {
+	for id := range m.nameserver {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetNameservers resets all changes to the "nameservers" edge.
-func (m *WhoisMutation) ResetNameservers() {
-	m.nameservers = nil
-	m.clearednameservers = false
-	m.removednameservers = nil
+// ResetNameserver resets all changes to the "nameserver" edge.
+func (m *WhoisMutation) ResetNameserver() {
+	m.nameserver = nil
+	m.clearednameserver = false
+	m.removednameserver = nil
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *WhoisMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *WhoisMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *WhoisMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *WhoisMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *WhoisMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *WhoisMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *WhoisMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
 }
 
 // Where appends a list predicates to the WhoisMutation builder.
@@ -6031,7 +9668,7 @@ func (m *WhoisMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *WhoisMutation) AddedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.iprange != nil {
 		edges = append(edges, whois.EdgeIprange)
 	}
@@ -6044,8 +9681,11 @@ func (m *WhoisMutation) AddedEdges() []string {
 	if m.registrar != nil {
 		edges = append(edges, whois.EdgeRegistrar)
 	}
-	if m.nameservers != nil {
-		edges = append(edges, whois.EdgeNameservers)
+	if m.nameserver != nil {
+		edges = append(edges, whois.EdgeNameserver)
+	}
+	if m.scan != nil {
+		edges = append(edges, whois.EdgeScan)
 	}
 	return edges
 }
@@ -6078,9 +9718,15 @@ func (m *WhoisMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case whois.EdgeNameservers:
-		ids := make([]ent.Value, 0, len(m.nameservers))
-		for id := range m.nameservers {
+	case whois.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.nameserver))
+		for id := range m.nameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case whois.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6090,7 +9736,7 @@ func (m *WhoisMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *WhoisMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.removediprange != nil {
 		edges = append(edges, whois.EdgeIprange)
 	}
@@ -6103,8 +9749,11 @@ func (m *WhoisMutation) RemovedEdges() []string {
 	if m.removedregistrar != nil {
 		edges = append(edges, whois.EdgeRegistrar)
 	}
-	if m.removednameservers != nil {
-		edges = append(edges, whois.EdgeNameservers)
+	if m.removednameserver != nil {
+		edges = append(edges, whois.EdgeNameserver)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, whois.EdgeScan)
 	}
 	return edges
 }
@@ -6137,9 +9786,15 @@ func (m *WhoisMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case whois.EdgeNameservers:
-		ids := make([]ent.Value, 0, len(m.removednameservers))
-		for id := range m.removednameservers {
+	case whois.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.removednameserver))
+		for id := range m.removednameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case whois.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
 			ids = append(ids, id)
 		}
 		return ids
@@ -6149,7 +9804,7 @@ func (m *WhoisMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *WhoisMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 5)
+	edges := make([]string, 0, 6)
 	if m.clearediprange {
 		edges = append(edges, whois.EdgeIprange)
 	}
@@ -6162,8 +9817,11 @@ func (m *WhoisMutation) ClearedEdges() []string {
 	if m.clearedregistrar {
 		edges = append(edges, whois.EdgeRegistrar)
 	}
-	if m.clearednameservers {
-		edges = append(edges, whois.EdgeNameservers)
+	if m.clearednameserver {
+		edges = append(edges, whois.EdgeNameserver)
+	}
+	if m.clearedscan {
+		edges = append(edges, whois.EdgeScan)
 	}
 	return edges
 }
@@ -6180,8 +9838,10 @@ func (m *WhoisMutation) EdgeCleared(name string) bool {
 		return m.clearedasn
 	case whois.EdgeRegistrar:
 		return m.clearedregistrar
-	case whois.EdgeNameservers:
-		return m.clearednameservers
+	case whois.EdgeNameserver:
+		return m.clearednameserver
+	case whois.EdgeScan:
+		return m.clearedscan
 	}
 	return false
 }
@@ -6210,8 +9870,11 @@ func (m *WhoisMutation) ResetEdge(name string) error {
 	case whois.EdgeRegistrar:
 		m.ResetRegistrar()
 		return nil
-	case whois.EdgeNameservers:
-		m.ResetNameservers()
+	case whois.EdgeNameserver:
+		m.ResetNameserver()
+		return nil
+	case whois.EdgeScan:
+		m.ResetScan()
 		return nil
 	}
 	return fmt.Errorf("unknown Whois edge %s", name)

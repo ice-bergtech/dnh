@@ -45,6 +45,18 @@ func (f DomainFunc) Mutate(ctx context.Context, m model_ent.Mutation) (model_ent
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *model_ent.DomainMutation", m)
 }
 
+// The ExampleFunc type is an adapter to allow the use of ordinary
+// function as Example mutator.
+type ExampleFunc func(context.Context, *model_ent.ExampleMutation) (model_ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ExampleFunc) Mutate(ctx context.Context, m model_ent.Mutation) (model_ent.Value, error) {
+	if mv, ok := m.(*model_ent.ExampleMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *model_ent.ExampleMutation", m)
+}
+
 // The IPAddressFunc type is an adapter to allow the use of ordinary
 // function as IPAddress mutator.
 type IPAddressFunc func(context.Context, *model_ent.IPAddressMutation) (model_ent.Value, error)

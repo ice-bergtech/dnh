@@ -4,6 +4,7 @@ package asninfo
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -17,8 +18,36 @@ const (
 	FieldCountry = "country"
 	// FieldRegistry holds the string denoting the registry field in the database.
 	FieldRegistry = "registry"
+	// EdgeScan holds the string denoting the scan edge name in mutations.
+	EdgeScan = "scan"
+	// EdgeIpaddress holds the string denoting the ipaddress edge name in mutations.
+	EdgeIpaddress = "ipaddress"
+	// EdgeRegistrar holds the string denoting the registrar edge name in mutations.
+	EdgeRegistrar = "registrar"
+	// EdgeWhois holds the string denoting the whois edge name in mutations.
+	EdgeWhois = "whois"
 	// Table holds the table name of the asninfo in the database.
 	Table = "asn_infos"
+	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
+	ScanTable = "scan_asninfo"
+	// ScanInverseTable is the table name for the Scan entity.
+	// It exists in this package in order to avoid circular dependency with the "scan" package.
+	ScanInverseTable = "scans"
+	// IpaddressTable is the table that holds the ipaddress relation/edge. The primary key declared below.
+	IpaddressTable = "ip_address_asninfo"
+	// IpaddressInverseTable is the table name for the IPAddress entity.
+	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
+	IpaddressInverseTable = "ip_addresses"
+	// RegistrarTable is the table that holds the registrar relation/edge. The primary key declared below.
+	RegistrarTable = "registrar_asninfo"
+	// RegistrarInverseTable is the table name for the Registrar entity.
+	// It exists in this package in order to avoid circular dependency with the "registrar" package.
+	RegistrarInverseTable = "registrars"
+	// WhoisTable is the table that holds the whois relation/edge. The primary key declared below.
+	WhoisTable = "whois_asn"
+	// WhoisInverseTable is the table name for the Whois entity.
+	// It exists in this package in order to avoid circular dependency with the "whois" package.
+	WhoisInverseTable = "whois"
 )
 
 // Columns holds all SQL columns for asninfo fields.
@@ -32,10 +61,23 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "asn_infos"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"ip_address_asninfo",
-	"scan_asninfo",
-	"whois_asn",
+	"example_next",
 }
+
+var (
+	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
+	// primary key for the scan relation (M2M).
+	ScanPrimaryKey = []string{"scan_id", "asn_info_id"}
+	// IpaddressPrimaryKey and IpaddressColumn2 are the table columns denoting the
+	// primary key for the ipaddress relation (M2M).
+	IpaddressPrimaryKey = []string{"ip_address_id", "asn_info_id"}
+	// RegistrarPrimaryKey and RegistrarColumn2 are the table columns denoting the
+	// primary key for the registrar relation (M2M).
+	RegistrarPrimaryKey = []string{"registrar_id", "asn_info_id"}
+	// WhoisPrimaryKey and WhoisColumn2 are the table columns denoting the
+	// primary key for the whois relation (M2M).
+	WhoisPrimaryKey = []string{"whois_id", "asn_info_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -73,4 +115,88 @@ func ByCountry(opts ...sql.OrderTermOption) OrderOption {
 // ByRegistry orders the results by the registry field.
 func ByRegistry(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRegistry, opts...).ToFunc()
+}
+
+// ByScanCount orders the results by scan count.
+func ByScanCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newScanStep(), opts...)
+	}
+}
+
+// ByScan orders the results by scan terms.
+func ByScan(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newScanStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByIpaddressCount orders the results by ipaddress count.
+func ByIpaddressCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newIpaddressStep(), opts...)
+	}
+}
+
+// ByIpaddress orders the results by ipaddress terms.
+func ByIpaddress(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newIpaddressStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByRegistrarCount orders the results by registrar count.
+func ByRegistrarCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRegistrarStep(), opts...)
+	}
+}
+
+// ByRegistrar orders the results by registrar terms.
+func ByRegistrar(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRegistrarStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByWhoisCount orders the results by whois count.
+func ByWhoisCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newWhoisStep(), opts...)
+	}
+}
+
+// ByWhois orders the results by whois terms.
+func ByWhois(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newWhoisStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newScanStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ScanInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, ScanTable, ScanPrimaryKey...),
+	)
+}
+func newIpaddressStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(IpaddressInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, IpaddressTable, IpaddressPrimaryKey...),
+	)
+}
+func newRegistrarStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RegistrarInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, RegistrarTable, RegistrarPrimaryKey...),
+	)
+}
+func newWhoisStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(WhoisInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, WhoisTable, WhoisPrimaryKey...),
+	)
 }

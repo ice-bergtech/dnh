@@ -10,11 +10,13 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
 // DomainCreate is the builder for creating a Domain entity.
@@ -27,6 +29,12 @@ type DomainCreate struct {
 // SetName sets the "name" field.
 func (dc *DomainCreate) SetName(s string) *DomainCreate {
 	dc.mutation.SetName(s)
+	return dc
+}
+
+// SetPorts sets the "ports" field.
+func (dc *DomainCreate) SetPorts(i []int) *DomainCreate {
+	dc.mutation.SetPorts(i)
 	return dc
 }
 
@@ -57,34 +65,19 @@ func (dc *DomainCreate) AddNameserver(n ...*Nameserver) *DomainCreate {
 	return dc.AddNameserverIDs(ids...)
 }
 
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (dc *DomainCreate) AddDomainIDs(ids ...int) *DomainCreate {
-	dc.mutation.AddDomainIDs(ids...)
+// AddSubdomainIDs adds the "subdomain" edge to the Domain entity by IDs.
+func (dc *DomainCreate) AddSubdomainIDs(ids ...int) *DomainCreate {
+	dc.mutation.AddSubdomainIDs(ids...)
 	return dc
 }
 
-// AddDomain adds the "domain" edges to the Domain entity.
-func (dc *DomainCreate) AddDomain(d ...*Domain) *DomainCreate {
+// AddSubdomain adds the "subdomain" edges to the Domain entity.
+func (dc *DomainCreate) AddSubdomain(d ...*Domain) *DomainCreate {
 	ids := make([]int, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
-	return dc.AddDomainIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (dc *DomainCreate) AddDnsentryIDs(ids ...int) *DomainCreate {
-	dc.mutation.AddDnsentryIDs(ids...)
-	return dc
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (dc *DomainCreate) AddDnsentry(d ...*DNSEntry) *DomainCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return dc.AddDnsentryIDs(ids...)
+	return dc.AddSubdomainIDs(ids...)
 }
 
 // AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
@@ -115,6 +108,66 @@ func (dc *DomainCreate) AddPath(p ...*Path) *DomainCreate {
 		ids[i] = p[i].ID
 	}
 	return dc.AddPathIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (dc *DomainCreate) AddScanIDs(ids ...int) *DomainCreate {
+	dc.mutation.AddScanIDs(ids...)
+	return dc
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (dc *DomainCreate) AddScan(s ...*Scan) *DomainCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return dc.AddScanIDs(ids...)
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+func (dc *DomainCreate) AddDnsentryIDs(ids ...int) *DomainCreate {
+	dc.mutation.AddDnsentryIDs(ids...)
+	return dc
+}
+
+// AddDnsentry adds the "dnsentry" edges to the Scan entity.
+func (dc *DomainCreate) AddDnsentry(s ...*Scan) *DomainCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return dc.AddDnsentryIDs(ids...)
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
+func (dc *DomainCreate) AddRegistrarIDs(ids ...int) *DomainCreate {
+	dc.mutation.AddRegistrarIDs(ids...)
+	return dc
+}
+
+// AddRegistrar adds the "registrar" edges to the Registrar entity.
+func (dc *DomainCreate) AddRegistrar(r ...*Registrar) *DomainCreate {
+	ids := make([]int, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return dc.AddRegistrarIDs(ids...)
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
+func (dc *DomainCreate) AddWhoiIDs(ids ...int) *DomainCreate {
+	dc.mutation.AddWhoiIDs(ids...)
+	return dc
+}
+
+// AddWhois adds the "whois" edges to the Whois entity.
+func (dc *DomainCreate) AddWhois(w ...*Whois) *DomainCreate {
+	ids := make([]int, len(w))
+	for i := range w {
+		ids[i] = w[i].ID
+	}
+	return dc.AddWhoiIDs(ids...)
 }
 
 // Mutation returns the DomainMutation object of the builder.
@@ -154,6 +207,9 @@ func (dc *DomainCreate) check() error {
 	if _, ok := dc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`model_ent: missing required field "Domain.name"`)}
 	}
+	if _, ok := dc.mutation.Ports(); !ok {
+		return &ValidationError{Name: "ports", err: errors.New(`model_ent: missing required field "Domain.ports"`)}
+	}
 	if _, ok := dc.mutation.TimeFirst(); !ok {
 		return &ValidationError{Name: "time_first", err: errors.New(`model_ent: missing required field "Domain.time_first"`)}
 	}
@@ -190,6 +246,10 @@ func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 		_spec.SetField(domain.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
+	if value, ok := dc.mutation.Ports(); ok {
+		_spec.SetField(domain.FieldPorts, field.TypeJSON, value)
+		_node.Ports = value
+	}
 	if value, ok := dc.mutation.TimeFirst(); ok {
 		_spec.SetField(domain.FieldTimeFirst, field.TypeTime, value)
 		_node.TimeFirst = value
@@ -200,10 +260,10 @@ func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 	}
 	if nodes := dc.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.NameserverTable,
-			Columns: []string{domain.NameserverColumn},
+			Columns: domain.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -214,12 +274,12 @@ func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := dc.mutation.DomainIDs(); len(nodes) > 0 {
+	if nodes := dc.mutation.SubdomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   domain.DomainTable,
-			Columns: domain.DomainPrimaryKey,
+			Table:   domain.SubdomainTable,
+			Columns: domain.SubdomainPrimaryKey,
 			Bidi:    true,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -230,28 +290,12 @@ func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := dc.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   domain.DnsentryTable,
-			Columns: []string{domain.DnsentryColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := dc.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.IpaddressTable,
-			Columns: []string{domain.IpaddressColumn},
+			Columns: domain.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -264,13 +308,77 @@ func (dc *DomainCreate) createSpec() (*Domain, *sqlgraph.CreateSpec) {
 	}
 	if nodes := dc.mutation.PathIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   domain.PathTable,
-			Columns: []string{domain.PathColumn},
+			Columns: domain.PathPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.ScanTable,
+			Columns: domain.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.DnsentryIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.DnsentryTable,
+			Columns: domain.DnsentryPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.RegistrarIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.RegistrarTable,
+			Columns: domain.RegistrarPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.WhoisIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   domain.WhoisTable,
+			Columns: domain.WhoisPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

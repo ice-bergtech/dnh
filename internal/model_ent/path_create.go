@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
 )
 
 // PathCreate is the builder for creating a Path entity.
@@ -23,6 +25,36 @@ type PathCreate struct {
 func (pc *PathCreate) SetPath(s string) *PathCreate {
 	pc.mutation.SetPath(s)
 	return pc
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
+func (pc *PathCreate) AddDomainIDs(ids ...int) *PathCreate {
+	pc.mutation.AddDomainIDs(ids...)
+	return pc
+}
+
+// AddDomain adds the "domain" edges to the Domain entity.
+func (pc *PathCreate) AddDomain(d ...*Domain) *PathCreate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
+	}
+	return pc.AddDomainIDs(ids...)
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+func (pc *PathCreate) AddScanIDs(ids ...int) *PathCreate {
+	pc.mutation.AddScanIDs(ids...)
+	return pc
+}
+
+// AddScan adds the "scan" edges to the Scan entity.
+func (pc *PathCreate) AddScan(s ...*Scan) *PathCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
+	}
+	return pc.AddScanIDs(ids...)
 }
 
 // Mutation returns the PathMutation object of the builder.
@@ -91,6 +123,38 @@ func (pc *PathCreate) createSpec() (*Path, *sqlgraph.CreateSpec) {
 	if value, ok := pc.mutation.Path(); ok {
 		_spec.SetField(path.FieldPath, field.TypeString, value)
 		_node.Path = value
+	}
+	if nodes := pc.mutation.DomainIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.DomainTable,
+			Columns: path.DomainPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := pc.mutation.ScanIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   path.ScanTable,
+			Columns: path.ScanPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
