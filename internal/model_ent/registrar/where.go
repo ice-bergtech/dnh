@@ -716,7 +716,7 @@ func HasScan() predicate.Registrar {
 }
 
 // HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
-func HasScanWith(preds ...predicate.Scan) predicate.Registrar {
+func HasScanWith(preds ...predicate.ScanJob) predicate.Registrar {
 	return predicate.Registrar(func(s *sql.Selector) {
 		step := newScanStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

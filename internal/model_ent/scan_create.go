@@ -10,15 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // ScanCreate is the builder for creating a Scan entity.
@@ -52,124 +45,19 @@ func (sc *ScanCreate) SetTimestamp(t time.Time) *ScanCreate {
 	return sc
 }
 
-// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
-func (sc *ScanCreate) AddIpaddresIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddIpaddresIDs(ids...)
+// AddScanjobIDs adds the "scanjob" edge to the ScanJob entity by IDs.
+func (sc *ScanCreate) AddScanjobIDs(ids ...int) *ScanCreate {
+	sc.mutation.AddScanjobIDs(ids...)
 	return sc
 }
 
-// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
-func (sc *ScanCreate) AddIpaddress(i ...*IPAddress) *ScanCreate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddScanjob adds the "scanjob" edges to the ScanJob entity.
+func (sc *ScanCreate) AddScanjob(s ...*ScanJob) *ScanCreate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return sc.AddIpaddresIDs(ids...)
-}
-
-// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
-func (sc *ScanCreate) AddAsninfoIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddAsninfoIDs(ids...)
-	return sc
-}
-
-// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
-func (sc *ScanCreate) AddAsninfo(a ...*ASNInfo) *ScanCreate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return sc.AddAsninfoIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (sc *ScanCreate) AddDnsentryIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddDnsentryIDs(ids...)
-	return sc
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (sc *ScanCreate) AddDnsentry(d ...*DNSEntry) *ScanCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return sc.AddDnsentryIDs(ids...)
-}
-
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (sc *ScanCreate) AddDomainIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddDomainIDs(ids...)
-	return sc
-}
-
-// AddDomain adds the "domain" edges to the Domain entity.
-func (sc *ScanCreate) AddDomain(d ...*Domain) *ScanCreate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return sc.AddDomainIDs(ids...)
-}
-
-// AddPathIDs adds the "path" edge to the Path entity by IDs.
-func (sc *ScanCreate) AddPathIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddPathIDs(ids...)
-	return sc
-}
-
-// AddPath adds the "path" edges to the Path entity.
-func (sc *ScanCreate) AddPath(p ...*Path) *ScanCreate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return sc.AddPathIDs(ids...)
-}
-
-// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
-func (sc *ScanCreate) AddNameserverIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddNameserverIDs(ids...)
-	return sc
-}
-
-// AddNameserver adds the "nameserver" edges to the Nameserver entity.
-func (sc *ScanCreate) AddNameserver(n ...*Nameserver) *ScanCreate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return sc.AddNameserverIDs(ids...)
-}
-
-// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
-func (sc *ScanCreate) AddRegistrarIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddRegistrarIDs(ids...)
-	return sc
-}
-
-// AddRegistrar adds the "registrar" edges to the Registrar entity.
-func (sc *ScanCreate) AddRegistrar(r ...*Registrar) *ScanCreate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return sc.AddRegistrarIDs(ids...)
-}
-
-// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
-func (sc *ScanCreate) AddWhoiIDs(ids ...int) *ScanCreate {
-	sc.mutation.AddWhoiIDs(ids...)
-	return sc
-}
-
-// AddWhois adds the "whois" edges to the Whois entity.
-func (sc *ScanCreate) AddWhois(w ...*Whois) *ScanCreate {
-	ids := make([]int, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return sc.AddWhoiIDs(ids...)
+	return sc.AddScanjobIDs(ids...)
 }
 
 // Mutation returns the ScanMutation object of the builder.
@@ -260,127 +148,15 @@ func (sc *ScanCreate) createSpec() (*Scan, *sqlgraph.CreateSpec) {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 		_node.Timestamp = value
 	}
-	if nodes := sc.mutation.IpaddressIDs(); len(nodes) > 0 {
+	if nodes := sc.mutation.ScanjobIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.AsninfoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.DomainIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.PathIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.NameserverIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.RegistrarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := sc.mutation.WhoisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

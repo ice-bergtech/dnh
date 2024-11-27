@@ -30,7 +30,7 @@ type PathEdges struct {
 	// Domain holds the value of the domain edge.
 	Domain []*Domain `json:"domain,omitempty"`
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -47,7 +47,7 @@ func (e PathEdges) DomainOrErr() ([]*Domain, error) {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e PathEdges) ScanOrErr() ([]*Scan, error) {
+func (e PathEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[1] {
 		return e.Scan, nil
 	}
@@ -118,7 +118,7 @@ func (pa *Path) QueryDomain() *DomainQuery {
 }
 
 // QueryScan queries the "scan" edge of the Path entity.
-func (pa *Path) QueryScan() *ScanQuery {
+func (pa *Path) QueryScan() *ScanJobQuery {
 	return NewPathClient(pa.config).QueryScan(pa)
 }
 

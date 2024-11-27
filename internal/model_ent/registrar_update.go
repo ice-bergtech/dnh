@@ -16,7 +16,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -204,14 +204,14 @@ func (ru *RegistrarUpdate) AddAsninfo(a ...*ASNInfo) *RegistrarUpdate {
 	return ru.AddAsninfoIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (ru *RegistrarUpdate) AddScanIDs(ids ...int) *RegistrarUpdate {
 	ru.mutation.AddScanIDs(ids...)
 	return ru
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (ru *RegistrarUpdate) AddScan(s ...*Scan) *RegistrarUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (ru *RegistrarUpdate) AddScan(s ...*ScanJob) *RegistrarUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -302,20 +302,20 @@ func (ru *RegistrarUpdate) RemoveAsninfo(a ...*ASNInfo) *RegistrarUpdate {
 	return ru.RemoveAsninfoIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (ru *RegistrarUpdate) ClearScan() *RegistrarUpdate {
 	ru.mutation.ClearScan()
 	return ru
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (ru *RegistrarUpdate) RemoveScanIDs(ids ...int) *RegistrarUpdate {
 	ru.mutation.RemoveScanIDs(ids...)
 	return ru
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (ru *RegistrarUpdate) RemoveScan(s ...*Scan) *RegistrarUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (ru *RegistrarUpdate) RemoveScan(s ...*ScanJob) *RegistrarUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -550,7 +550,7 @@ func (ru *RegistrarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -563,7 +563,7 @@ func (ru *RegistrarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -579,7 +579,7 @@ func (ru *RegistrarUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -823,14 +823,14 @@ func (ruo *RegistrarUpdateOne) AddAsninfo(a ...*ASNInfo) *RegistrarUpdateOne {
 	return ruo.AddAsninfoIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (ruo *RegistrarUpdateOne) AddScanIDs(ids ...int) *RegistrarUpdateOne {
 	ruo.mutation.AddScanIDs(ids...)
 	return ruo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (ruo *RegistrarUpdateOne) AddScan(s ...*Scan) *RegistrarUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (ruo *RegistrarUpdateOne) AddScan(s ...*ScanJob) *RegistrarUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -921,20 +921,20 @@ func (ruo *RegistrarUpdateOne) RemoveAsninfo(a ...*ASNInfo) *RegistrarUpdateOne 
 	return ruo.RemoveAsninfoIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (ruo *RegistrarUpdateOne) ClearScan() *RegistrarUpdateOne {
 	ruo.mutation.ClearScan()
 	return ruo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (ruo *RegistrarUpdateOne) RemoveScanIDs(ids ...int) *RegistrarUpdateOne {
 	ruo.mutation.RemoveScanIDs(ids...)
 	return ruo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (ruo *RegistrarUpdateOne) RemoveScan(s ...*Scan) *RegistrarUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (ruo *RegistrarUpdateOne) RemoveScan(s ...*ScanJob) *RegistrarUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -1199,7 +1199,7 @@ func (ruo *RegistrarUpdateOne) sqlSave(ctx context.Context) (_node *Registrar, e
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1212,7 +1212,7 @@ func (ruo *RegistrarUpdateOne) sqlSave(ctx context.Context) (_node *Registrar, e
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1228,7 +1228,7 @@ func (ruo *RegistrarUpdateOne) sqlSave(ctx context.Context) (_node *Registrar, e
 			Columns: registrar.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

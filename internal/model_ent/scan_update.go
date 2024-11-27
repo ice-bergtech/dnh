@@ -11,16 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // ScanUpdate is the builder for updating Scan entities.
@@ -92,124 +85,19 @@ func (su *ScanUpdate) SetNillableTimestamp(t *time.Time) *ScanUpdate {
 	return su
 }
 
-// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
-func (su *ScanUpdate) AddIpaddresIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddIpaddresIDs(ids...)
+// AddScanjobIDs adds the "scanjob" edge to the ScanJob entity by IDs.
+func (su *ScanUpdate) AddScanjobIDs(ids ...int) *ScanUpdate {
+	su.mutation.AddScanjobIDs(ids...)
 	return su
 }
 
-// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
-func (su *ScanUpdate) AddIpaddress(i ...*IPAddress) *ScanUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddScanjob adds the "scanjob" edges to the ScanJob entity.
+func (su *ScanUpdate) AddScanjob(s ...*ScanJob) *ScanUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return su.AddIpaddresIDs(ids...)
-}
-
-// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
-func (su *ScanUpdate) AddAsninfoIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddAsninfoIDs(ids...)
-	return su
-}
-
-// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
-func (su *ScanUpdate) AddAsninfo(a ...*ASNInfo) *ScanUpdate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return su.AddAsninfoIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (su *ScanUpdate) AddDnsentryIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddDnsentryIDs(ids...)
-	return su
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (su *ScanUpdate) AddDnsentry(d ...*DNSEntry) *ScanUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return su.AddDnsentryIDs(ids...)
-}
-
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (su *ScanUpdate) AddDomainIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddDomainIDs(ids...)
-	return su
-}
-
-// AddDomain adds the "domain" edges to the Domain entity.
-func (su *ScanUpdate) AddDomain(d ...*Domain) *ScanUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return su.AddDomainIDs(ids...)
-}
-
-// AddPathIDs adds the "path" edge to the Path entity by IDs.
-func (su *ScanUpdate) AddPathIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddPathIDs(ids...)
-	return su
-}
-
-// AddPath adds the "path" edges to the Path entity.
-func (su *ScanUpdate) AddPath(p ...*Path) *ScanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return su.AddPathIDs(ids...)
-}
-
-// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
-func (su *ScanUpdate) AddNameserverIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddNameserverIDs(ids...)
-	return su
-}
-
-// AddNameserver adds the "nameserver" edges to the Nameserver entity.
-func (su *ScanUpdate) AddNameserver(n ...*Nameserver) *ScanUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return su.AddNameserverIDs(ids...)
-}
-
-// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
-func (su *ScanUpdate) AddRegistrarIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddRegistrarIDs(ids...)
-	return su
-}
-
-// AddRegistrar adds the "registrar" edges to the Registrar entity.
-func (su *ScanUpdate) AddRegistrar(r ...*Registrar) *ScanUpdate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return su.AddRegistrarIDs(ids...)
-}
-
-// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
-func (su *ScanUpdate) AddWhoiIDs(ids ...int) *ScanUpdate {
-	su.mutation.AddWhoiIDs(ids...)
-	return su
-}
-
-// AddWhois adds the "whois" edges to the Whois entity.
-func (su *ScanUpdate) AddWhois(w ...*Whois) *ScanUpdate {
-	ids := make([]int, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return su.AddWhoiIDs(ids...)
+	return su.AddScanjobIDs(ids...)
 }
 
 // Mutation returns the ScanMutation object of the builder.
@@ -217,172 +105,25 @@ func (su *ScanUpdate) Mutation() *ScanMutation {
 	return su.mutation
 }
 
-// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
-func (su *ScanUpdate) ClearIpaddress() *ScanUpdate {
-	su.mutation.ClearIpaddress()
+// ClearScanjob clears all "scanjob" edges to the ScanJob entity.
+func (su *ScanUpdate) ClearScanjob() *ScanUpdate {
+	su.mutation.ClearScanjob()
 	return su
 }
 
-// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
-func (su *ScanUpdate) RemoveIpaddresIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveIpaddresIDs(ids...)
+// RemoveScanjobIDs removes the "scanjob" edge to ScanJob entities by IDs.
+func (su *ScanUpdate) RemoveScanjobIDs(ids ...int) *ScanUpdate {
+	su.mutation.RemoveScanjobIDs(ids...)
 	return su
 }
 
-// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
-func (su *ScanUpdate) RemoveIpaddress(i ...*IPAddress) *ScanUpdate {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// RemoveScanjob removes "scanjob" edges to ScanJob entities.
+func (su *ScanUpdate) RemoveScanjob(s ...*ScanJob) *ScanUpdate {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return su.RemoveIpaddresIDs(ids...)
-}
-
-// ClearAsninfo clears all "asninfo" edges to the ASNInfo entity.
-func (su *ScanUpdate) ClearAsninfo() *ScanUpdate {
-	su.mutation.ClearAsninfo()
-	return su
-}
-
-// RemoveAsninfoIDs removes the "asninfo" edge to ASNInfo entities by IDs.
-func (su *ScanUpdate) RemoveAsninfoIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveAsninfoIDs(ids...)
-	return su
-}
-
-// RemoveAsninfo removes "asninfo" edges to ASNInfo entities.
-func (su *ScanUpdate) RemoveAsninfo(a ...*ASNInfo) *ScanUpdate {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return su.RemoveAsninfoIDs(ids...)
-}
-
-// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
-func (su *ScanUpdate) ClearDnsentry() *ScanUpdate {
-	su.mutation.ClearDnsentry()
-	return su
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
-func (su *ScanUpdate) RemoveDnsentryIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveDnsentryIDs(ids...)
-	return su
-}
-
-// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
-func (su *ScanUpdate) RemoveDnsentry(d ...*DNSEntry) *ScanUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return su.RemoveDnsentryIDs(ids...)
-}
-
-// ClearDomain clears all "domain" edges to the Domain entity.
-func (su *ScanUpdate) ClearDomain() *ScanUpdate {
-	su.mutation.ClearDomain()
-	return su
-}
-
-// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
-func (su *ScanUpdate) RemoveDomainIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveDomainIDs(ids...)
-	return su
-}
-
-// RemoveDomain removes "domain" edges to Domain entities.
-func (su *ScanUpdate) RemoveDomain(d ...*Domain) *ScanUpdate {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return su.RemoveDomainIDs(ids...)
-}
-
-// ClearPath clears all "path" edges to the Path entity.
-func (su *ScanUpdate) ClearPath() *ScanUpdate {
-	su.mutation.ClearPath()
-	return su
-}
-
-// RemovePathIDs removes the "path" edge to Path entities by IDs.
-func (su *ScanUpdate) RemovePathIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemovePathIDs(ids...)
-	return su
-}
-
-// RemovePath removes "path" edges to Path entities.
-func (su *ScanUpdate) RemovePath(p ...*Path) *ScanUpdate {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return su.RemovePathIDs(ids...)
-}
-
-// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
-func (su *ScanUpdate) ClearNameserver() *ScanUpdate {
-	su.mutation.ClearNameserver()
-	return su
-}
-
-// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
-func (su *ScanUpdate) RemoveNameserverIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveNameserverIDs(ids...)
-	return su
-}
-
-// RemoveNameserver removes "nameserver" edges to Nameserver entities.
-func (su *ScanUpdate) RemoveNameserver(n ...*Nameserver) *ScanUpdate {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return su.RemoveNameserverIDs(ids...)
-}
-
-// ClearRegistrar clears all "registrar" edges to the Registrar entity.
-func (su *ScanUpdate) ClearRegistrar() *ScanUpdate {
-	su.mutation.ClearRegistrar()
-	return su
-}
-
-// RemoveRegistrarIDs removes the "registrar" edge to Registrar entities by IDs.
-func (su *ScanUpdate) RemoveRegistrarIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveRegistrarIDs(ids...)
-	return su
-}
-
-// RemoveRegistrar removes "registrar" edges to Registrar entities.
-func (su *ScanUpdate) RemoveRegistrar(r ...*Registrar) *ScanUpdate {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return su.RemoveRegistrarIDs(ids...)
-}
-
-// ClearWhois clears all "whois" edges to the Whois entity.
-func (su *ScanUpdate) ClearWhois() *ScanUpdate {
-	su.mutation.ClearWhois()
-	return su
-}
-
-// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
-func (su *ScanUpdate) RemoveWhoiIDs(ids ...int) *ScanUpdate {
-	su.mutation.RemoveWhoiIDs(ids...)
-	return su
-}
-
-// RemoveWhois removes "whois" edges to Whois entities.
-func (su *ScanUpdate) RemoveWhois(w ...*Whois) *ScanUpdate {
-	ids := make([]int, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return su.RemoveWhoiIDs(ids...)
+	return su.RemoveScanjobIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -433,28 +174,28 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := su.mutation.Timestamp(); ok {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 	}
-	if su.mutation.IpaddressCleared() {
+	if su.mutation.ScanjobCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !su.mutation.IpaddressCleared() {
+	if nodes := su.mutation.RemovedScanjobIDs(); len(nodes) > 0 && !su.mutation.ScanjobCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -462,330 +203,15 @@ func (su *ScanUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := su.mutation.IpaddressIDs(); len(nodes) > 0 {
+	if nodes := su.mutation.ScanjobIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.AsninfoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !su.mutation.AsninfoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.AsninfoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !su.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.DomainCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedDomainIDs(); len(nodes) > 0 && !su.mutation.DomainCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.DomainIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.PathCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedPathIDs(); len(nodes) > 0 && !su.mutation.PathCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.PathIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.NameserverCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !su.mutation.NameserverCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.NameserverIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.RegistrarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !su.mutation.RegistrarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RegistrarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if su.mutation.WhoisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !su.mutation.WhoisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := su.mutation.WhoisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -869,124 +295,19 @@ func (suo *ScanUpdateOne) SetNillableTimestamp(t *time.Time) *ScanUpdateOne {
 	return suo
 }
 
-// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by IDs.
-func (suo *ScanUpdateOne) AddIpaddresIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddIpaddresIDs(ids...)
+// AddScanjobIDs adds the "scanjob" edge to the ScanJob entity by IDs.
+func (suo *ScanUpdateOne) AddScanjobIDs(ids ...int) *ScanUpdateOne {
+	suo.mutation.AddScanjobIDs(ids...)
 	return suo
 }
 
-// AddIpaddress adds the "ipaddress" edges to the IPAddress entity.
-func (suo *ScanUpdateOne) AddIpaddress(i ...*IPAddress) *ScanUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// AddScanjob adds the "scanjob" edges to the ScanJob entity.
+func (suo *ScanUpdateOne) AddScanjob(s ...*ScanJob) *ScanUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return suo.AddIpaddresIDs(ids...)
-}
-
-// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by IDs.
-func (suo *ScanUpdateOne) AddAsninfoIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddAsninfoIDs(ids...)
-	return suo
-}
-
-// AddAsninfo adds the "asninfo" edges to the ASNInfo entity.
-func (suo *ScanUpdateOne) AddAsninfo(a ...*ASNInfo) *ScanUpdateOne {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return suo.AddAsninfoIDs(ids...)
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
-func (suo *ScanUpdateOne) AddDnsentryIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddDnsentryIDs(ids...)
-	return suo
-}
-
-// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
-func (suo *ScanUpdateOne) AddDnsentry(d ...*DNSEntry) *ScanUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return suo.AddDnsentryIDs(ids...)
-}
-
-// AddDomainIDs adds the "domain" edge to the Domain entity by IDs.
-func (suo *ScanUpdateOne) AddDomainIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddDomainIDs(ids...)
-	return suo
-}
-
-// AddDomain adds the "domain" edges to the Domain entity.
-func (suo *ScanUpdateOne) AddDomain(d ...*Domain) *ScanUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return suo.AddDomainIDs(ids...)
-}
-
-// AddPathIDs adds the "path" edge to the Path entity by IDs.
-func (suo *ScanUpdateOne) AddPathIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddPathIDs(ids...)
-	return suo
-}
-
-// AddPath adds the "path" edges to the Path entity.
-func (suo *ScanUpdateOne) AddPath(p ...*Path) *ScanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return suo.AddPathIDs(ids...)
-}
-
-// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by IDs.
-func (suo *ScanUpdateOne) AddNameserverIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddNameserverIDs(ids...)
-	return suo
-}
-
-// AddNameserver adds the "nameserver" edges to the Nameserver entity.
-func (suo *ScanUpdateOne) AddNameserver(n ...*Nameserver) *ScanUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return suo.AddNameserverIDs(ids...)
-}
-
-// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by IDs.
-func (suo *ScanUpdateOne) AddRegistrarIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddRegistrarIDs(ids...)
-	return suo
-}
-
-// AddRegistrar adds the "registrar" edges to the Registrar entity.
-func (suo *ScanUpdateOne) AddRegistrar(r ...*Registrar) *ScanUpdateOne {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return suo.AddRegistrarIDs(ids...)
-}
-
-// AddWhoiIDs adds the "whois" edge to the Whois entity by IDs.
-func (suo *ScanUpdateOne) AddWhoiIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.AddWhoiIDs(ids...)
-	return suo
-}
-
-// AddWhois adds the "whois" edges to the Whois entity.
-func (suo *ScanUpdateOne) AddWhois(w ...*Whois) *ScanUpdateOne {
-	ids := make([]int, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return suo.AddWhoiIDs(ids...)
+	return suo.AddScanjobIDs(ids...)
 }
 
 // Mutation returns the ScanMutation object of the builder.
@@ -994,172 +315,25 @@ func (suo *ScanUpdateOne) Mutation() *ScanMutation {
 	return suo.mutation
 }
 
-// ClearIpaddress clears all "ipaddress" edges to the IPAddress entity.
-func (suo *ScanUpdateOne) ClearIpaddress() *ScanUpdateOne {
-	suo.mutation.ClearIpaddress()
+// ClearScanjob clears all "scanjob" edges to the ScanJob entity.
+func (suo *ScanUpdateOne) ClearScanjob() *ScanUpdateOne {
+	suo.mutation.ClearScanjob()
 	return suo
 }
 
-// RemoveIpaddresIDs removes the "ipaddress" edge to IPAddress entities by IDs.
-func (suo *ScanUpdateOne) RemoveIpaddresIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveIpaddresIDs(ids...)
+// RemoveScanjobIDs removes the "scanjob" edge to ScanJob entities by IDs.
+func (suo *ScanUpdateOne) RemoveScanjobIDs(ids ...int) *ScanUpdateOne {
+	suo.mutation.RemoveScanjobIDs(ids...)
 	return suo
 }
 
-// RemoveIpaddress removes "ipaddress" edges to IPAddress entities.
-func (suo *ScanUpdateOne) RemoveIpaddress(i ...*IPAddress) *ScanUpdateOne {
-	ids := make([]int, len(i))
-	for j := range i {
-		ids[j] = i[j].ID
+// RemoveScanjob removes "scanjob" edges to ScanJob entities.
+func (suo *ScanUpdateOne) RemoveScanjob(s ...*ScanJob) *ScanUpdateOne {
+	ids := make([]int, len(s))
+	for i := range s {
+		ids[i] = s[i].ID
 	}
-	return suo.RemoveIpaddresIDs(ids...)
-}
-
-// ClearAsninfo clears all "asninfo" edges to the ASNInfo entity.
-func (suo *ScanUpdateOne) ClearAsninfo() *ScanUpdateOne {
-	suo.mutation.ClearAsninfo()
-	return suo
-}
-
-// RemoveAsninfoIDs removes the "asninfo" edge to ASNInfo entities by IDs.
-func (suo *ScanUpdateOne) RemoveAsninfoIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveAsninfoIDs(ids...)
-	return suo
-}
-
-// RemoveAsninfo removes "asninfo" edges to ASNInfo entities.
-func (suo *ScanUpdateOne) RemoveAsninfo(a ...*ASNInfo) *ScanUpdateOne {
-	ids := make([]int, len(a))
-	for i := range a {
-		ids[i] = a[i].ID
-	}
-	return suo.RemoveAsninfoIDs(ids...)
-}
-
-// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
-func (suo *ScanUpdateOne) ClearDnsentry() *ScanUpdateOne {
-	suo.mutation.ClearDnsentry()
-	return suo
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
-func (suo *ScanUpdateOne) RemoveDnsentryIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveDnsentryIDs(ids...)
-	return suo
-}
-
-// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
-func (suo *ScanUpdateOne) RemoveDnsentry(d ...*DNSEntry) *ScanUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return suo.RemoveDnsentryIDs(ids...)
-}
-
-// ClearDomain clears all "domain" edges to the Domain entity.
-func (suo *ScanUpdateOne) ClearDomain() *ScanUpdateOne {
-	suo.mutation.ClearDomain()
-	return suo
-}
-
-// RemoveDomainIDs removes the "domain" edge to Domain entities by IDs.
-func (suo *ScanUpdateOne) RemoveDomainIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveDomainIDs(ids...)
-	return suo
-}
-
-// RemoveDomain removes "domain" edges to Domain entities.
-func (suo *ScanUpdateOne) RemoveDomain(d ...*Domain) *ScanUpdateOne {
-	ids := make([]int, len(d))
-	for i := range d {
-		ids[i] = d[i].ID
-	}
-	return suo.RemoveDomainIDs(ids...)
-}
-
-// ClearPath clears all "path" edges to the Path entity.
-func (suo *ScanUpdateOne) ClearPath() *ScanUpdateOne {
-	suo.mutation.ClearPath()
-	return suo
-}
-
-// RemovePathIDs removes the "path" edge to Path entities by IDs.
-func (suo *ScanUpdateOne) RemovePathIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemovePathIDs(ids...)
-	return suo
-}
-
-// RemovePath removes "path" edges to Path entities.
-func (suo *ScanUpdateOne) RemovePath(p ...*Path) *ScanUpdateOne {
-	ids := make([]int, len(p))
-	for i := range p {
-		ids[i] = p[i].ID
-	}
-	return suo.RemovePathIDs(ids...)
-}
-
-// ClearNameserver clears all "nameserver" edges to the Nameserver entity.
-func (suo *ScanUpdateOne) ClearNameserver() *ScanUpdateOne {
-	suo.mutation.ClearNameserver()
-	return suo
-}
-
-// RemoveNameserverIDs removes the "nameserver" edge to Nameserver entities by IDs.
-func (suo *ScanUpdateOne) RemoveNameserverIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveNameserverIDs(ids...)
-	return suo
-}
-
-// RemoveNameserver removes "nameserver" edges to Nameserver entities.
-func (suo *ScanUpdateOne) RemoveNameserver(n ...*Nameserver) *ScanUpdateOne {
-	ids := make([]int, len(n))
-	for i := range n {
-		ids[i] = n[i].ID
-	}
-	return suo.RemoveNameserverIDs(ids...)
-}
-
-// ClearRegistrar clears all "registrar" edges to the Registrar entity.
-func (suo *ScanUpdateOne) ClearRegistrar() *ScanUpdateOne {
-	suo.mutation.ClearRegistrar()
-	return suo
-}
-
-// RemoveRegistrarIDs removes the "registrar" edge to Registrar entities by IDs.
-func (suo *ScanUpdateOne) RemoveRegistrarIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveRegistrarIDs(ids...)
-	return suo
-}
-
-// RemoveRegistrar removes "registrar" edges to Registrar entities.
-func (suo *ScanUpdateOne) RemoveRegistrar(r ...*Registrar) *ScanUpdateOne {
-	ids := make([]int, len(r))
-	for i := range r {
-		ids[i] = r[i].ID
-	}
-	return suo.RemoveRegistrarIDs(ids...)
-}
-
-// ClearWhois clears all "whois" edges to the Whois entity.
-func (suo *ScanUpdateOne) ClearWhois() *ScanUpdateOne {
-	suo.mutation.ClearWhois()
-	return suo
-}
-
-// RemoveWhoiIDs removes the "whois" edge to Whois entities by IDs.
-func (suo *ScanUpdateOne) RemoveWhoiIDs(ids ...int) *ScanUpdateOne {
-	suo.mutation.RemoveWhoiIDs(ids...)
-	return suo
-}
-
-// RemoveWhois removes "whois" edges to Whois entities.
-func (suo *ScanUpdateOne) RemoveWhois(w ...*Whois) *ScanUpdateOne {
-	ids := make([]int, len(w))
-	for i := range w {
-		ids[i] = w[i].ID
-	}
-	return suo.RemoveWhoiIDs(ids...)
+	return suo.RemoveScanjobIDs(ids...)
 }
 
 // Where appends a list predicates to the ScanUpdate builder.
@@ -1240,28 +414,28 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 	if value, ok := suo.mutation.Timestamp(); ok {
 		_spec.SetField(scan.FieldTimestamp, field.TypeTime, value)
 	}
-	if suo.mutation.IpaddressCleared() {
+	if suo.mutation.ScanjobCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.RemovedIpaddressIDs(); len(nodes) > 0 && !suo.mutation.IpaddressCleared() {
+	if nodes := suo.mutation.RemovedScanjobIDs(); len(nodes) > 0 && !suo.mutation.ScanjobCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1269,330 +443,15 @@ func (suo *ScanUpdateOne) sqlSave(ctx context.Context) (_node *Scan, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := suo.mutation.IpaddressIDs(); len(nodes) > 0 {
+	if nodes := suo.mutation.ScanjobIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
 			Inverse: false,
-			Table:   scan.IpaddressTable,
-			Columns: scan.IpaddressPrimaryKey,
+			Table:   scan.ScanjobTable,
+			Columns: scan.ScanjobPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.AsninfoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedAsninfoIDs(); len(nodes) > 0 && !suo.mutation.AsninfoCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.AsninfoIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.AsninfoTable,
-			Columns: scan.AsninfoPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedDnsentryIDs(); len(nodes) > 0 && !suo.mutation.DnsentryCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.DnsentryIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DnsentryTable,
-			Columns: scan.DnsentryPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.DomainCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedDomainIDs(); len(nodes) > 0 && !suo.mutation.DomainCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.DomainIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.DomainTable,
-			Columns: scan.DomainPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.PathCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedPathIDs(); len(nodes) > 0 && !suo.mutation.PathCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.PathIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.PathTable,
-			Columns: scan.PathPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.NameserverCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedNameserverIDs(); len(nodes) > 0 && !suo.mutation.NameserverCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.NameserverIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.NameserverTable,
-			Columns: scan.NameserverPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.RegistrarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedRegistrarIDs(); len(nodes) > 0 && !suo.mutation.RegistrarCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RegistrarIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.RegistrarTable,
-			Columns: scan.RegistrarPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if suo.mutation.WhoisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.RemovedWhoisIDs(); len(nodes) > 0 && !suo.mutation.WhoisCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := suo.mutation.WhoisIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   scan.WhoisTable,
-			Columns: scan.WhoisPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

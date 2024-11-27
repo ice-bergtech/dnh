@@ -117,6 +117,18 @@ func (f ScanFunc) Mutate(ctx context.Context, m model_ent.Mutation) (model_ent.V
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *model_ent.ScanMutation", m)
 }
 
+// The ScanJobFunc type is an adapter to allow the use of ordinary
+// function as ScanJob mutator.
+type ScanJobFunc func(context.Context, *model_ent.ScanJobMutation) (model_ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ScanJobFunc) Mutate(ctx context.Context, m model_ent.Mutation) (model_ent.Value, error) {
+	if mv, ok := m.(*model_ent.ScanJobMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *model_ent.ScanJobMutation", m)
+}
+
 // The WhoisFunc type is an adapter to allow the use of ordinary
 // function as Whois mutator.
 type WhoisFunc func(context.Context, *model_ent.WhoisMutation) (model_ent.Value, error)

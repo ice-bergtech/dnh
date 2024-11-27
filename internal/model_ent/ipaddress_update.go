@@ -11,12 +11,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -76,14 +77,14 @@ func (iau *IPAddressUpdate) AddAsninfo(a ...*ASNInfo) *IPAddressUpdate {
 	return iau.AddAsninfoIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (iau *IPAddressUpdate) AddScanIDs(ids ...int) *IPAddressUpdate {
 	iau.mutation.AddScanIDs(ids...)
 	return iau
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (iau *IPAddressUpdate) AddScan(s ...*Scan) *IPAddressUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (iau *IPAddressUpdate) AddScan(s ...*ScanJob) *IPAddressUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -91,17 +92,17 @@ func (iau *IPAddressUpdate) AddScan(s ...*Scan) *IPAddressUpdate {
 	return iau.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (iau *IPAddressUpdate) AddDnsentryIDs(ids ...int) *IPAddressUpdate {
 	iau.mutation.AddDnsentryIDs(ids...)
 	return iau
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (iau *IPAddressUpdate) AddDnsentry(s ...*Scan) *IPAddressUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (iau *IPAddressUpdate) AddDnsentry(d ...*DNSEntry) *IPAddressUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return iau.AddDnsentryIDs(ids...)
 }
@@ -192,20 +193,20 @@ func (iau *IPAddressUpdate) RemoveAsninfo(a ...*ASNInfo) *IPAddressUpdate {
 	return iau.RemoveAsninfoIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (iau *IPAddressUpdate) ClearScan() *IPAddressUpdate {
 	iau.mutation.ClearScan()
 	return iau
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (iau *IPAddressUpdate) RemoveScanIDs(ids ...int) *IPAddressUpdate {
 	iau.mutation.RemoveScanIDs(ids...)
 	return iau
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (iau *IPAddressUpdate) RemoveScan(s ...*Scan) *IPAddressUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (iau *IPAddressUpdate) RemoveScan(s ...*ScanJob) *IPAddressUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -213,23 +214,23 @@ func (iau *IPAddressUpdate) RemoveScan(s ...*Scan) *IPAddressUpdate {
 	return iau.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (iau *IPAddressUpdate) ClearDnsentry() *IPAddressUpdate {
 	iau.mutation.ClearDnsentry()
 	return iau
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (iau *IPAddressUpdate) RemoveDnsentryIDs(ids ...int) *IPAddressUpdate {
 	iau.mutation.RemoveDnsentryIDs(ids...)
 	return iau
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (iau *IPAddressUpdate) RemoveDnsentry(s ...*Scan) *IPAddressUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (iau *IPAddressUpdate) RemoveDnsentry(d ...*DNSEntry) *IPAddressUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return iau.RemoveDnsentryIDs(ids...)
 }
@@ -413,7 +414,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -426,7 +427,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -442,7 +443,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -458,7 +459,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -471,7 +472,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -487,7 +488,7 @@ func (iau *IPAddressUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -738,14 +739,14 @@ func (iauo *IPAddressUpdateOne) AddAsninfo(a ...*ASNInfo) *IPAddressUpdateOne {
 	return iauo.AddAsninfoIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (iauo *IPAddressUpdateOne) AddScanIDs(ids ...int) *IPAddressUpdateOne {
 	iauo.mutation.AddScanIDs(ids...)
 	return iauo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (iauo *IPAddressUpdateOne) AddScan(s ...*Scan) *IPAddressUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (iauo *IPAddressUpdateOne) AddScan(s ...*ScanJob) *IPAddressUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -753,17 +754,17 @@ func (iauo *IPAddressUpdateOne) AddScan(s ...*Scan) *IPAddressUpdateOne {
 	return iauo.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (iauo *IPAddressUpdateOne) AddDnsentryIDs(ids ...int) *IPAddressUpdateOne {
 	iauo.mutation.AddDnsentryIDs(ids...)
 	return iauo
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (iauo *IPAddressUpdateOne) AddDnsentry(s ...*Scan) *IPAddressUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (iauo *IPAddressUpdateOne) AddDnsentry(d ...*DNSEntry) *IPAddressUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return iauo.AddDnsentryIDs(ids...)
 }
@@ -854,20 +855,20 @@ func (iauo *IPAddressUpdateOne) RemoveAsninfo(a ...*ASNInfo) *IPAddressUpdateOne
 	return iauo.RemoveAsninfoIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (iauo *IPAddressUpdateOne) ClearScan() *IPAddressUpdateOne {
 	iauo.mutation.ClearScan()
 	return iauo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (iauo *IPAddressUpdateOne) RemoveScanIDs(ids ...int) *IPAddressUpdateOne {
 	iauo.mutation.RemoveScanIDs(ids...)
 	return iauo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (iauo *IPAddressUpdateOne) RemoveScan(s ...*Scan) *IPAddressUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (iauo *IPAddressUpdateOne) RemoveScan(s ...*ScanJob) *IPAddressUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -875,23 +876,23 @@ func (iauo *IPAddressUpdateOne) RemoveScan(s ...*Scan) *IPAddressUpdateOne {
 	return iauo.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (iauo *IPAddressUpdateOne) ClearDnsentry() *IPAddressUpdateOne {
 	iauo.mutation.ClearDnsentry()
 	return iauo
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (iauo *IPAddressUpdateOne) RemoveDnsentryIDs(ids ...int) *IPAddressUpdateOne {
 	iauo.mutation.RemoveDnsentryIDs(ids...)
 	return iauo
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (iauo *IPAddressUpdateOne) RemoveDnsentry(s ...*Scan) *IPAddressUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (iauo *IPAddressUpdateOne) RemoveDnsentry(d ...*DNSEntry) *IPAddressUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return iauo.RemoveDnsentryIDs(ids...)
 }
@@ -1105,7 +1106,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1118,7 +1119,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1134,7 +1135,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1150,7 +1151,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1163,7 +1164,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1179,7 +1180,7 @@ func (iauo *IPAddressUpdateOne) sqlSave(ctx context.Context) (_node *IPAddress, 
 			Columns: ipaddress.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

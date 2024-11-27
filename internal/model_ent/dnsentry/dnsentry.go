@@ -34,32 +34,26 @@ const (
 	EdgeScan = "scan"
 	// Table holds the table name of the dnsentry in the database.
 	Table = "dns_entries"
-	// DomainTable is the table that holds the domain relation/edge.
-	DomainTable = "domains"
+	// DomainTable is the table that holds the domain relation/edge. The primary key declared below.
+	DomainTable = "dns_entry_domain"
 	// DomainInverseTable is the table name for the Domain entity.
 	// It exists in this package in order to avoid circular dependency with the "domain" package.
 	DomainInverseTable = "domains"
-	// DomainColumn is the table column denoting the domain relation/edge.
-	DomainColumn = "dns_entry_domain"
-	// IpaddressTable is the table that holds the ipaddress relation/edge.
-	IpaddressTable = "ip_addresses"
+	// IpaddressTable is the table that holds the ipaddress relation/edge. The primary key declared below.
+	IpaddressTable = "dns_entry_ipaddress"
 	// IpaddressInverseTable is the table name for the IPAddress entity.
 	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
 	IpaddressInverseTable = "ip_addresses"
-	// IpaddressColumn is the table column denoting the ipaddress relation/edge.
-	IpaddressColumn = "dns_entry_ipaddress"
-	// NameserverTable is the table that holds the nameserver relation/edge.
-	NameserverTable = "nameservers"
+	// NameserverTable is the table that holds the nameserver relation/edge. The primary key declared below.
+	NameserverTable = "dns_entry_nameserver"
 	// NameserverInverseTable is the table name for the Nameserver entity.
 	// It exists in this package in order to avoid circular dependency with the "nameserver" package.
 	NameserverInverseTable = "nameservers"
-	// NameserverColumn is the table column denoting the nameserver relation/edge.
-	NameserverColumn = "dns_entry_nameserver"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_dnsentry"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_dnsentry"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 )
 
 // Columns holds all SQL columns for dnsentry fields.
@@ -80,9 +74,18 @@ var ForeignKeys = []string{
 }
 
 var (
+	// DomainPrimaryKey and DomainColumn2 are the table columns denoting the
+	// primary key for the domain relation (M2M).
+	DomainPrimaryKey = []string{"dns_entry_id", "domain_id"}
+	// IpaddressPrimaryKey and IpaddressColumn2 are the table columns denoting the
+	// primary key for the ipaddress relation (M2M).
+	IpaddressPrimaryKey = []string{"dns_entry_id", "ip_address_id"}
+	// NameserverPrimaryKey and NameserverColumn2 are the table columns denoting the
+	// primary key for the nameserver relation (M2M).
+	NameserverPrimaryKey = []string{"dns_entry_id", "nameserver_id"}
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "dns_entry_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "dns_entry_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -197,21 +200,21 @@ func newDomainStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(DomainInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
 	)
 }
 func newIpaddressStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(IpaddressInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
 	)
 }
 func newNameserverStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(NameserverInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+		sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
 	)
 }
 func newScanStep() *sqlgraph.Step {

@@ -12,13 +12,14 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -33,8 +34,8 @@ type DomainQuery struct {
 	withSubdomain  *DomainQuery
 	withIpaddress  *IPAddressQuery
 	withPath       *PathQuery
-	withScan       *ScanQuery
-	withDnsentry   *ScanQuery
+	withScan       *ScanJobQuery
+	withDnsentry   *DNSEntryQuery
 	withRegistrar  *RegistrarQuery
 	withWhois      *WhoisQuery
 	withFKs        bool
@@ -163,8 +164,8 @@ func (dq *DomainQuery) QueryPath() *PathQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (dq *DomainQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: dq.config}).Query()
+func (dq *DomainQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: dq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -175,7 +176,7 @@ func (dq *DomainQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, domain.ScanTable, domain.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
@@ -185,8 +186,8 @@ func (dq *DomainQuery) QueryScan() *ScanQuery {
 }
 
 // QueryDnsentry chains the current query on the "dnsentry" edge.
-func (dq *DomainQuery) QueryDnsentry() *ScanQuery {
-	query := (&ScanClient{config: dq.config}).Query()
+func (dq *DomainQuery) QueryDnsentry() *DNSEntryQuery {
+	query := (&DNSEntryClient{config: dq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -197,7 +198,7 @@ func (dq *DomainQuery) QueryDnsentry() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(domain.Table, domain.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, domain.DnsentryTable, domain.DnsentryPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
@@ -502,8 +503,8 @@ func (dq *DomainQuery) WithPath(opts ...func(*PathQuery)) *DomainQuery {
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DomainQuery) WithScan(opts ...func(*ScanQuery)) *DomainQuery {
-	query := (&ScanClient{config: dq.config}).Query()
+func (dq *DomainQuery) WithScan(opts ...func(*ScanJobQuery)) *DomainQuery {
+	query := (&ScanJobClient{config: dq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -513,8 +514,8 @@ func (dq *DomainQuery) WithScan(opts ...func(*ScanQuery)) *DomainQuery {
 
 // WithDnsentry tells the query-builder to eager-load the nodes that are connected to
 // the "dnsentry" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DomainQuery) WithDnsentry(opts ...func(*ScanQuery)) *DomainQuery {
-	query := (&ScanClient{config: dq.config}).Query()
+func (dq *DomainQuery) WithDnsentry(opts ...func(*DNSEntryQuery)) *DomainQuery {
+	query := (&DNSEntryClient{config: dq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -685,15 +686,15 @@ func (dq *DomainQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Domai
 	}
 	if query := dq.withScan; query != nil {
 		if err := dq.loadScan(ctx, query, nodes,
-			func(n *Domain) { n.Edges.Scan = []*Scan{} },
-			func(n *Domain, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *Domain) { n.Edges.Scan = []*ScanJob{} },
+			func(n *Domain, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
 	if query := dq.withDnsentry; query != nil {
 		if err := dq.loadDnsentry(ctx, query, nodes,
-			func(n *Domain) { n.Edges.Dnsentry = []*Scan{} },
-			func(n *Domain, e *Scan) { n.Edges.Dnsentry = append(n.Edges.Dnsentry, e) }); err != nil {
+			func(n *Domain) { n.Edges.Dnsentry = []*DNSEntry{} },
+			func(n *Domain, e *DNSEntry) { n.Edges.Dnsentry = append(n.Edges.Dnsentry, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -958,7 +959,7 @@ func (dq *DomainQuery) loadPath(ctx context.Context, query *PathQuery, nodes []*
 	}
 	return nil
 }
-func (dq *DomainQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Domain, init func(*Domain), assign func(*Domain, *Scan)) error {
+func (dq *DomainQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*Domain, init func(*Domain), assign func(*Domain, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Domain)
 	nids := make(map[int]map[*Domain]struct{})
@@ -971,7 +972,7 @@ func (dq *DomainQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(domain.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(domain.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(domain.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(domain.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(domain.ScanPrimaryKey[1]))
@@ -1004,7 +1005,7 @@ func (dq *DomainQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -1019,7 +1020,7 @@ func (dq *DomainQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*
 	}
 	return nil
 }
-func (dq *DomainQuery) loadDnsentry(ctx context.Context, query *ScanQuery, nodes []*Domain, init func(*Domain), assign func(*Domain, *Scan)) error {
+func (dq *DomainQuery) loadDnsentry(ctx context.Context, query *DNSEntryQuery, nodes []*Domain, init func(*Domain), assign func(*Domain, *DNSEntry)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Domain)
 	nids := make(map[int]map[*Domain]struct{})
@@ -1032,7 +1033,7 @@ func (dq *DomainQuery) loadDnsentry(ctx context.Context, query *ScanQuery, nodes
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(domain.DnsentryTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(domain.DnsentryPrimaryKey[0]))
+		s.Join(joinT).On(s.C(dnsentry.FieldID), joinT.C(domain.DnsentryPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(domain.DnsentryPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(domain.DnsentryPrimaryKey[1]))
@@ -1065,7 +1066,7 @@ func (dq *DomainQuery) loadDnsentry(ctx context.Context, query *ScanQuery, nodes
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*DNSEntry](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

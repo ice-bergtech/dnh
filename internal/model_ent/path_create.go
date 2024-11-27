@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // PathCreate is the builder for creating a Path entity.
@@ -42,14 +42,14 @@ func (pc *PathCreate) AddDomain(d ...*Domain) *PathCreate {
 	return pc.AddDomainIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (pc *PathCreate) AddScanIDs(ids ...int) *PathCreate {
 	pc.mutation.AddScanIDs(ids...)
 	return pc
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (pc *PathCreate) AddScan(s ...*Scan) *PathCreate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (pc *PathCreate) AddScan(s ...*ScanJob) *PathCreate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -148,7 +148,7 @@ func (pc *PathCreate) createSpec() (*Path, *sqlgraph.CreateSpec) {
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

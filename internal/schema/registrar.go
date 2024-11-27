@@ -33,7 +33,7 @@ func (Registrar) Edges() []ent.Edge {
 		edge.To("domain", Domain.Type),
 		edge.To("asninfo", ASNInfo.Type),
 		//
-		edge.From("scan", Scan.Type).Ref("registrar"),
+		edge.From("scan", ScanJob.Type).Ref("registrar"),
 		edge.From("whois", Whois.Type).Ref("registrar"),
 	}
 }

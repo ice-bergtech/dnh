@@ -51,7 +51,7 @@ type RegistrarEdges struct {
 	// Asninfo holds the value of the asninfo edge.
 	Asninfo []*ASNInfo `json:"asninfo,omitempty"`
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// Whois holds the value of the whois edge.
 	Whois []*Whois `json:"whois,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -88,7 +88,7 @@ func (e RegistrarEdges) AsninfoOrErr() ([]*ASNInfo, error) {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e RegistrarEdges) ScanOrErr() ([]*Scan, error) {
+func (e RegistrarEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[3] {
 		return e.Scan, nil
 	}
@@ -228,7 +228,7 @@ func (r *Registrar) QueryAsninfo() *ASNInfoQuery {
 }
 
 // QueryScan queries the "scan" edge of the Registrar entity.
-func (r *Registrar) QueryScan() *ScanQuery {
+func (r *Registrar) QueryScan() *ScanJobQuery {
 	return NewRegistrarClient(r.config).QueryScan(r)
 }
 

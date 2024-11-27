@@ -25,10 +25,9 @@ type Nameserver struct {
 	TimeLast time.Time `json:"time_last,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NameserverQuery when eager-loading is set.
-	Edges                NameserverEdges `json:"edges"`
-	dns_entry_nameserver *int
-	example_nameserver   *string
-	selectValues         sql.SelectValues
+	Edges              NameserverEdges `json:"edges"`
+	example_nameserver *string
+	selectValues       sql.SelectValues
 }
 
 // NameserverEdges holds the relations/edges for other nodes in the graph.
@@ -36,9 +35,9 @@ type NameserverEdges struct {
 	// Ipaddress holds the value of the ipaddress edge.
 	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// Dnsentry holds the value of the dnsentry edge.
-	Dnsentry []*Scan `json:"dnsentry,omitempty"`
+	Dnsentry []*DNSEntry `json:"dnsentry,omitempty"`
 	// Domain holds the value of the domain edge.
 	Domain []*Domain `json:"domain,omitempty"`
 	// Whois holds the value of the whois edge.
@@ -59,7 +58,7 @@ func (e NameserverEdges) IpaddressOrErr() ([]*IPAddress, error) {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e NameserverEdges) ScanOrErr() ([]*Scan, error) {
+func (e NameserverEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[1] {
 		return e.Scan, nil
 	}
@@ -68,7 +67,7 @@ func (e NameserverEdges) ScanOrErr() ([]*Scan, error) {
 
 // DnsentryOrErr returns the Dnsentry value or an error if the edge
 // was not loaded in eager-loading.
-func (e NameserverEdges) DnsentryOrErr() ([]*Scan, error) {
+func (e NameserverEdges) DnsentryOrErr() ([]*DNSEntry, error) {
 	if e.loadedTypes[2] {
 		return e.Dnsentry, nil
 	}
@@ -104,9 +103,7 @@ func (*Nameserver) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case nameserver.FieldTimeFirst, nameserver.FieldTimeLast:
 			values[i] = new(sql.NullTime)
-		case nameserver.ForeignKeys[0]: // dns_entry_nameserver
-			values[i] = new(sql.NullInt64)
-		case nameserver.ForeignKeys[1]: // example_nameserver
+		case nameserver.ForeignKeys[0]: // example_nameserver
 			values[i] = new(sql.NullString)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -148,13 +145,6 @@ func (n *Nameserver) assignValues(columns []string, values []any) error {
 				n.TimeLast = value.Time
 			}
 		case nameserver.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field dns_entry_nameserver", value)
-			} else if value.Valid {
-				n.dns_entry_nameserver = new(int)
-				*n.dns_entry_nameserver = int(value.Int64)
-			}
-		case nameserver.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field example_nameserver", values[i])
 			} else if value.Valid {
@@ -180,12 +170,12 @@ func (n *Nameserver) QueryIpaddress() *IPAddressQuery {
 }
 
 // QueryScan queries the "scan" edge of the Nameserver entity.
-func (n *Nameserver) QueryScan() *ScanQuery {
+func (n *Nameserver) QueryScan() *ScanJobQuery {
 	return NewNameserverClient(n.config).QueryScan(n)
 }
 
 // QueryDnsentry queries the "dnsentry" edge of the Nameserver entity.
-func (n *Nameserver) QueryDnsentry() *ScanQuery {
+func (n *Nameserver) QueryDnsentry() *DNSEntryQuery {
 	return NewNameserverClient(n.config).QueryDnsentry(n)
 }
 

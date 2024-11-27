@@ -14,7 +14,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // DNSEntryCreate is the builder for creating a DNSEntry entity.
@@ -105,14 +105,14 @@ func (dec *DNSEntryCreate) AddNameserver(n ...*Nameserver) *DNSEntryCreate {
 	return dec.AddNameserverIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (dec *DNSEntryCreate) AddScanIDs(ids ...int) *DNSEntryCreate {
 	dec.mutation.AddScanIDs(ids...)
 	return dec
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (dec *DNSEntryCreate) AddScan(s ...*Scan) *DNSEntryCreate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (dec *DNSEntryCreate) AddScan(s ...*ScanJob) *DNSEntryCreate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -224,10 +224,10 @@ func (dec *DNSEntryCreate) createSpec() (*DNSEntry, *sqlgraph.CreateSpec) {
 	}
 	if nodes := dec.mutation.DomainIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   dnsentry.DomainTable,
-			Columns: []string{dnsentry.DomainColumn},
+			Columns: dnsentry.DomainPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(domain.FieldID, field.TypeInt),
@@ -240,10 +240,10 @@ func (dec *DNSEntryCreate) createSpec() (*DNSEntry, *sqlgraph.CreateSpec) {
 	}
 	if nodes := dec.mutation.IpaddressIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   dnsentry.IpaddressTable,
-			Columns: []string{dnsentry.IpaddressColumn},
+			Columns: dnsentry.IpaddressPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt),
@@ -256,10 +256,10 @@ func (dec *DNSEntryCreate) createSpec() (*DNSEntry, *sqlgraph.CreateSpec) {
 	}
 	if nodes := dec.mutation.NameserverIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.M2M,
 			Inverse: false,
 			Table:   dnsentry.NameserverTable,
-			Columns: []string{dnsentry.NameserverColumn},
+			Columns: dnsentry.NameserverPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt),
@@ -278,7 +278,7 @@ func (dec *DNSEntryCreate) createSpec() (*DNSEntry, *sqlgraph.CreateSpec) {
 			Columns: dnsentry.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -405,7 +405,7 @@ func HasDomain() predicate.DNSEntry {
 	return predicate.DNSEntry(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DomainTable, DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, DomainTable, DomainPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -428,7 +428,7 @@ func HasIpaddress() predicate.DNSEntry {
 	return predicate.DNSEntry(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, IpaddressTable, IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, IpaddressTable, IpaddressPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -451,7 +451,7 @@ func HasNameserver() predicate.DNSEntry {
 	return predicate.DNSEntry(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, NameserverTable, NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, NameserverTable, NameserverPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -481,7 +481,7 @@ func HasScan() predicate.DNSEntry {
 }
 
 // HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
-func HasScanWith(preds ...predicate.Scan) predicate.DNSEntry {
+func HasScanWith(preds ...predicate.ScanJob) predicate.DNSEntry {
 	return predicate.DNSEntry(func(s *sql.Selector) {
 		step := newScanStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

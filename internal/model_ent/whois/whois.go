@@ -68,10 +68,10 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "nameserver" package.
 	NameserverInverseTable = "nameservers"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_whois"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_whois"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 )
 
 // Columns holds all SQL columns for whois fields.
@@ -111,7 +111,7 @@ var (
 	NameserverPrimaryKey = []string{"whois_id", "nameserver_id"}
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "whois_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "whois_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

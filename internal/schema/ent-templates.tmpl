@@ -1,0 +1,7 @@
+{{ define "model/fields/additional" }}
+    {{- if eq $.Name "ScanJob" }}
+        // Function defined by template.
+        FuncPtr *func()
+        FuncParams []any
+    {{- end }}
+{{ end }}

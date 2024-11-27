@@ -13,12 +13,13 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -30,13 +31,12 @@ type IPAddressQuery struct {
 	inters         []Interceptor
 	predicates     []predicate.IPAddress
 	withAsninfo    *ASNInfoQuery
-	withScan       *ScanQuery
-	withDnsentry   *ScanQuery
+	withScan       *ScanJobQuery
+	withDnsentry   *DNSEntryQuery
 	withDomain     *DomainQuery
 	withNameserver *NameserverQuery
 	withRegistrar  *RegistrarQuery
 	withWhois      *WhoisQuery
-	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -96,8 +96,8 @@ func (iaq *IPAddressQuery) QueryAsninfo() *ASNInfoQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (iaq *IPAddressQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: iaq.config}).Query()
+func (iaq *IPAddressQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: iaq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iaq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -108,7 +108,7 @@ func (iaq *IPAddressQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.ScanTable, ipaddress.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iaq.driver.Dialect(), step)
@@ -118,8 +118,8 @@ func (iaq *IPAddressQuery) QueryScan() *ScanQuery {
 }
 
 // QueryDnsentry chains the current query on the "dnsentry" edge.
-func (iaq *IPAddressQuery) QueryDnsentry() *ScanQuery {
-	query := (&ScanClient{config: iaq.config}).Query()
+func (iaq *IPAddressQuery) QueryDnsentry() *DNSEntryQuery {
+	query := (&DNSEntryClient{config: iaq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := iaq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -130,7 +130,7 @@ func (iaq *IPAddressQuery) QueryDnsentry() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(ipaddress.Table, ipaddress.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(dnsentry.Table, dnsentry.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, ipaddress.DnsentryTable, ipaddress.DnsentryPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(iaq.driver.Dialect(), step)
@@ -445,8 +445,8 @@ func (iaq *IPAddressQuery) WithAsninfo(opts ...func(*ASNInfoQuery)) *IPAddressQu
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (iaq *IPAddressQuery) WithScan(opts ...func(*ScanQuery)) *IPAddressQuery {
-	query := (&ScanClient{config: iaq.config}).Query()
+func (iaq *IPAddressQuery) WithScan(opts ...func(*ScanJobQuery)) *IPAddressQuery {
+	query := (&ScanJobClient{config: iaq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -456,8 +456,8 @@ func (iaq *IPAddressQuery) WithScan(opts ...func(*ScanQuery)) *IPAddressQuery {
 
 // WithDnsentry tells the query-builder to eager-load the nodes that are connected to
 // the "dnsentry" edge. The optional arguments are used to configure the query builder of the edge.
-func (iaq *IPAddressQuery) WithDnsentry(opts ...func(*ScanQuery)) *IPAddressQuery {
-	query := (&ScanClient{config: iaq.config}).Query()
+func (iaq *IPAddressQuery) WithDnsentry(opts ...func(*DNSEntryQuery)) *IPAddressQuery {
+	query := (&DNSEntryClient{config: iaq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -586,7 +586,6 @@ func (iaq *IPAddressQuery) prepareQuery(ctx context.Context) error {
 func (iaq *IPAddressQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IPAddress, error) {
 	var (
 		nodes       = []*IPAddress{}
-		withFKs     = iaq.withFKs
 		_spec       = iaq.querySpec()
 		loadedTypes = [7]bool{
 			iaq.withAsninfo != nil,
@@ -598,9 +597,6 @@ func (iaq *IPAddressQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*I
 			iaq.withWhois != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, ipaddress.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*IPAddress).scanValues(nil, columns)
 	}
@@ -628,15 +624,15 @@ func (iaq *IPAddressQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*I
 	}
 	if query := iaq.withScan; query != nil {
 		if err := iaq.loadScan(ctx, query, nodes,
-			func(n *IPAddress) { n.Edges.Scan = []*Scan{} },
-			func(n *IPAddress, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *IPAddress) { n.Edges.Scan = []*ScanJob{} },
+			func(n *IPAddress, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
 	if query := iaq.withDnsentry; query != nil {
 		if err := iaq.loadDnsentry(ctx, query, nodes,
-			func(n *IPAddress) { n.Edges.Dnsentry = []*Scan{} },
-			func(n *IPAddress, e *Scan) { n.Edges.Dnsentry = append(n.Edges.Dnsentry, e) }); err != nil {
+			func(n *IPAddress) { n.Edges.Dnsentry = []*DNSEntry{} },
+			func(n *IPAddress, e *DNSEntry) { n.Edges.Dnsentry = append(n.Edges.Dnsentry, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -732,7 +728,7 @@ func (iaq *IPAddressQuery) loadAsninfo(ctx context.Context, query *ASNInfoQuery,
 	}
 	return nil
 }
-func (iaq *IPAddressQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*IPAddress, init func(*IPAddress), assign func(*IPAddress, *Scan)) error {
+func (iaq *IPAddressQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*IPAddress, init func(*IPAddress), assign func(*IPAddress, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*IPAddress)
 	nids := make(map[int]map[*IPAddress]struct{})
@@ -745,7 +741,7 @@ func (iaq *IPAddressQuery) loadScan(ctx context.Context, query *ScanQuery, nodes
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(ipaddress.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(ipaddress.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(ipaddress.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(ipaddress.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(ipaddress.ScanPrimaryKey[1]))
@@ -778,7 +774,7 @@ func (iaq *IPAddressQuery) loadScan(ctx context.Context, query *ScanQuery, nodes
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -793,7 +789,7 @@ func (iaq *IPAddressQuery) loadScan(ctx context.Context, query *ScanQuery, nodes
 	}
 	return nil
 }
-func (iaq *IPAddressQuery) loadDnsentry(ctx context.Context, query *ScanQuery, nodes []*IPAddress, init func(*IPAddress), assign func(*IPAddress, *Scan)) error {
+func (iaq *IPAddressQuery) loadDnsentry(ctx context.Context, query *DNSEntryQuery, nodes []*IPAddress, init func(*IPAddress), assign func(*IPAddress, *DNSEntry)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*IPAddress)
 	nids := make(map[int]map[*IPAddress]struct{})
@@ -806,7 +802,7 @@ func (iaq *IPAddressQuery) loadDnsentry(ctx context.Context, query *ScanQuery, n
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(ipaddress.DnsentryTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(ipaddress.DnsentryPrimaryKey[0]))
+		s.Join(joinT).On(s.C(dnsentry.FieldID), joinT.C(ipaddress.DnsentryPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(ipaddress.DnsentryPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(ipaddress.DnsentryPrimaryKey[1]))
@@ -839,7 +835,7 @@ func (iaq *IPAddressQuery) loadDnsentry(ctx context.Context, query *ScanQuery, n
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*DNSEntry](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

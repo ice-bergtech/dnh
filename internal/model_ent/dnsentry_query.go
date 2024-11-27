@@ -17,7 +17,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // DNSEntryQuery is the builder for querying DNSEntry entities.
@@ -30,7 +30,7 @@ type DNSEntryQuery struct {
 	withDomain     *DomainQuery
 	withIpaddress  *IPAddressQuery
 	withNameserver *NameserverQuery
-	withScan       *ScanQuery
+	withScan       *ScanJobQuery
 	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -82,7 +82,7 @@ func (deq *DNSEntryQuery) QueryDomain() *DomainQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
 			sqlgraph.To(domain.Table, domain.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.DomainTable, dnsentry.DomainColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, dnsentry.DomainTable, dnsentry.DomainPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
 		return fromU, nil
@@ -104,7 +104,7 @@ func (deq *DNSEntryQuery) QueryIpaddress() *IPAddressQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
 			sqlgraph.To(ipaddress.Table, ipaddress.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.IpaddressTable, dnsentry.IpaddressColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, dnsentry.IpaddressTable, dnsentry.IpaddressPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
 		return fromU, nil
@@ -126,7 +126,7 @@ func (deq *DNSEntryQuery) QueryNameserver() *NameserverQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
 			sqlgraph.To(nameserver.Table, nameserver.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dnsentry.NameserverTable, dnsentry.NameserverColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, dnsentry.NameserverTable, dnsentry.NameserverPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
 		return fromU, nil
@@ -135,8 +135,8 @@ func (deq *DNSEntryQuery) QueryNameserver() *NameserverQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (deq *DNSEntryQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: deq.config}).Query()
+func (deq *DNSEntryQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: deq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := deq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -147,7 +147,7 @@ func (deq *DNSEntryQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dnsentry.Table, dnsentry.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, dnsentry.ScanTable, dnsentry.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(deq.driver.Dialect(), step)
@@ -393,8 +393,8 @@ func (deq *DNSEntryQuery) WithNameserver(opts ...func(*NameserverQuery)) *DNSEnt
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (deq *DNSEntryQuery) WithScan(opts ...func(*ScanQuery)) *DNSEntryQuery {
-	query := (&ScanClient{config: deq.config}).Query()
+func (deq *DNSEntryQuery) WithScan(opts ...func(*ScanJobQuery)) *DNSEntryQuery {
+	query := (&ScanJobClient{config: deq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -532,8 +532,8 @@ func (deq *DNSEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DN
 	}
 	if query := deq.withScan; query != nil {
 		if err := deq.loadScan(ctx, query, nodes,
-			func(n *DNSEntry) { n.Edges.Scan = []*Scan{} },
-			func(n *DNSEntry, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *DNSEntry) { n.Edges.Scan = []*ScanJob{} },
+			func(n *DNSEntry, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -541,99 +541,189 @@ func (deq *DNSEntryQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*DN
 }
 
 func (deq *DNSEntryQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Domain)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*DNSEntry)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*DNSEntry)
+	nids := make(map[int]map[*DNSEntry]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Domain(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(dnsentry.DomainColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dnsentry.DomainTable)
+		s.Join(joinT).On(s.C(domain.FieldID), joinT.C(dnsentry.DomainPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(dnsentry.DomainPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dnsentry.DomainPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*DNSEntry]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Domain](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.dns_entry_domain
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "dns_entry_domain" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_domain" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "domain" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (deq *DNSEntryQuery) loadIpaddress(ctx context.Context, query *IPAddressQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *IPAddress)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*DNSEntry)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*DNSEntry)
+	nids := make(map[int]map[*DNSEntry]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.IPAddress(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(dnsentry.IpaddressColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dnsentry.IpaddressTable)
+		s.Join(joinT).On(s.C(ipaddress.FieldID), joinT.C(dnsentry.IpaddressPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(dnsentry.IpaddressPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dnsentry.IpaddressPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*DNSEntry]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*IPAddress](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.dns_entry_ipaddress
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "dns_entry_ipaddress" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_ipaddress" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "ipaddress" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
 func (deq *DNSEntryQuery) loadNameserver(ctx context.Context, query *NameserverQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Nameserver)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*DNSEntry)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[int]*DNSEntry)
+	nids := make(map[int]map[*DNSEntry]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Nameserver(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(dnsentry.NameserverColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dnsentry.NameserverTable)
+		s.Join(joinT).On(s.C(nameserver.FieldID), joinT.C(dnsentry.NameserverPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(dnsentry.NameserverPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dnsentry.NameserverPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(sql.NullInt64)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := int(values[0].(*sql.NullInt64).Int64)
+				inValue := int(values[1].(*sql.NullInt64).Int64)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*DNSEntry]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*Nameserver](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.dns_entry_nameserver
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "dns_entry_nameserver" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "dns_entry_nameserver" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "nameserver" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }
-func (deq *DNSEntryQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *Scan)) error {
+func (deq *DNSEntryQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*DNSEntry, init func(*DNSEntry), assign func(*DNSEntry, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*DNSEntry)
 	nids := make(map[int]map[*DNSEntry]struct{})
@@ -646,7 +736,7 @@ func (deq *DNSEntryQuery) loadScan(ctx context.Context, query *ScanQuery, nodes 
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(dnsentry.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(dnsentry.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(dnsentry.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(dnsentry.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(dnsentry.ScanPrimaryKey[1]))
@@ -679,7 +769,7 @@ func (deq *DNSEntryQuery) loadScan(ctx context.Context, query *ScanQuery, nodes 
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

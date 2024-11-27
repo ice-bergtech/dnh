@@ -53,7 +53,7 @@ type WhoisEdges struct {
 	// Nameserver holds the value of the nameserver edge.
 	Nameserver []*Nameserver `json:"nameserver,omitempty"`
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -106,7 +106,7 @@ func (e WhoisEdges) NameserverOrErr() ([]*Nameserver, error) {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e WhoisEdges) ScanOrErr() ([]*Scan, error) {
+func (e WhoisEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[5] {
 		return e.Scan, nil
 	}
@@ -241,7 +241,7 @@ func (w *Whois) QueryNameserver() *NameserverQuery {
 }
 
 // QueryScan queries the "scan" edge of the Whois entity.
-func (w *Whois) QueryScan() *ScanQuery {
+func (w *Whois) QueryScan() *ScanJobQuery {
 	return NewWhoisClient(w.config).QueryScan(w)
 }
 

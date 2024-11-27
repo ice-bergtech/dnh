@@ -17,7 +17,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -221,14 +221,14 @@ func (wu *WhoisUpdate) AddNameserver(n ...*Nameserver) *WhoisUpdate {
 	return wu.AddNameserverIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (wu *WhoisUpdate) AddScanIDs(ids ...int) *WhoisUpdate {
 	wu.mutation.AddScanIDs(ids...)
 	return wu
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (wu *WhoisUpdate) AddScan(s ...*Scan) *WhoisUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (wu *WhoisUpdate) AddScan(s ...*ScanJob) *WhoisUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -346,20 +346,20 @@ func (wu *WhoisUpdate) RemoveNameserver(n ...*Nameserver) *WhoisUpdate {
 	return wu.RemoveNameserverIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (wu *WhoisUpdate) ClearScan() *WhoisUpdate {
 	wu.mutation.ClearScan()
 	return wu
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (wu *WhoisUpdate) RemoveScanIDs(ids ...int) *WhoisUpdate {
 	wu.mutation.RemoveScanIDs(ids...)
 	return wu
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (wu *WhoisUpdate) RemoveScan(s ...*Scan) *WhoisUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (wu *WhoisUpdate) RemoveScan(s ...*ScanJob) *WhoisUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -660,7 +660,7 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -673,7 +673,7 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -689,7 +689,7 @@ func (wu *WhoisUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -904,14 +904,14 @@ func (wuo *WhoisUpdateOne) AddNameserver(n ...*Nameserver) *WhoisUpdateOne {
 	return wuo.AddNameserverIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (wuo *WhoisUpdateOne) AddScanIDs(ids ...int) *WhoisUpdateOne {
 	wuo.mutation.AddScanIDs(ids...)
 	return wuo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (wuo *WhoisUpdateOne) AddScan(s ...*Scan) *WhoisUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (wuo *WhoisUpdateOne) AddScan(s ...*ScanJob) *WhoisUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -1029,20 +1029,20 @@ func (wuo *WhoisUpdateOne) RemoveNameserver(n ...*Nameserver) *WhoisUpdateOne {
 	return wuo.RemoveNameserverIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (wuo *WhoisUpdateOne) ClearScan() *WhoisUpdateOne {
 	wuo.mutation.ClearScan()
 	return wuo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (wuo *WhoisUpdateOne) RemoveScanIDs(ids ...int) *WhoisUpdateOne {
 	wuo.mutation.RemoveScanIDs(ids...)
 	return wuo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (wuo *WhoisUpdateOne) RemoveScan(s ...*Scan) *WhoisUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (wuo *WhoisUpdateOne) RemoveScan(s ...*ScanJob) *WhoisUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -1373,7 +1373,7 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1386,7 +1386,7 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1402,7 +1402,7 @@ func (wuo *WhoisUpdateOne) sqlSave(ctx context.Context) (_node *Whois, err error
 			Columns: whois.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

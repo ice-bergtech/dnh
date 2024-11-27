@@ -250,7 +250,7 @@ func HasScan() predicate.ASNInfo {
 }
 
 // HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
-func HasScanWith(preds ...predicate.Scan) predicate.ASNInfo {
+func HasScanWith(preds ...predicate.ScanJob) predicate.ASNInfo {
 	return predicate.ASNInfo(func(s *sql.Selector) {
 		step := newScanStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

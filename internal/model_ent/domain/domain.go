@@ -56,15 +56,15 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "path" package.
 	PathInverseTable = "paths"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_domain"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_domain"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 	// DnsentryTable is the table that holds the dnsentry relation/edge. The primary key declared below.
-	DnsentryTable = "scan_domain"
-	// DnsentryInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	DnsentryInverseTable = "scans"
+	DnsentryTable = "dns_entry_domain"
+	// DnsentryInverseTable is the table name for the DNSEntry entity.
+	// It exists in this package in order to avoid circular dependency with the "dnsentry" package.
+	DnsentryInverseTable = "dns_entries"
 	// RegistrarTable is the table that holds the registrar relation/edge. The primary key declared below.
 	RegistrarTable = "registrar_domain"
 	// RegistrarInverseTable is the table name for the Registrar entity.
@@ -89,7 +89,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "domains"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"dns_entry_domain",
 	"example_domain",
 }
 
@@ -108,10 +107,10 @@ var (
 	PathPrimaryKey = []string{"domain_id", "path_id"}
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "domain_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "domain_id"}
 	// DnsentryPrimaryKey and DnsentryColumn2 are the table columns denoting the
 	// primary key for the dnsentry relation (M2M).
-	DnsentryPrimaryKey = []string{"scan_id", "domain_id"}
+	DnsentryPrimaryKey = []string{"dns_entry_id", "domain_id"}
 	// RegistrarPrimaryKey and RegistrarColumn2 are the table columns denoting the
 	// primary key for the registrar relation (M2M).
 	RegistrarPrimaryKey = []string{"registrar_id", "domain_id"}

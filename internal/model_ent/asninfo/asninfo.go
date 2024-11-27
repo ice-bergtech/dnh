@@ -29,10 +29,10 @@ const (
 	// Table holds the table name of the asninfo in the database.
 	Table = "asn_infos"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_asninfo"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_asninfo"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 	// IpaddressTable is the table that holds the ipaddress relation/edge. The primary key declared below.
 	IpaddressTable = "ip_address_asninfo"
 	// IpaddressInverseTable is the table name for the IPAddress entity.
@@ -67,7 +67,7 @@ var ForeignKeys = []string{
 var (
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "asn_info_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "asn_info_id"}
 	// IpaddressPrimaryKey and IpaddressColumn2 are the table columns denoting the
 	// primary key for the ipaddress relation (M2M).
 	IpaddressPrimaryKey = []string{"ip_address_id", "asn_info_id"}

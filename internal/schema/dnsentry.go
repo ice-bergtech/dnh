@@ -30,6 +30,6 @@ func (DNSEntry) Edges() []ent.Edge {
 		edge.To("ipaddress", IPAddress.Type),
 		edge.To("nameserver", Nameserver.Type),
 		//
-		edge.From("scan", Scan.Type).Ref("dnsentry"),
+		edge.From("scan", ScanJob.Type).Ref("dnsentry"),
 	}
 }

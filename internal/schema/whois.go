@@ -34,6 +34,6 @@ func (Whois) Edges() []ent.Edge {
 		edge.To("registrar", Registrar.Type),
 		edge.To("nameserver", Nameserver.Type),
 		//
-		edge.From("scan", Scan.Type).Ref("whois"),
+		edge.From("scan", ScanJob.Type).Ref("whois"),
 	}
 }

@@ -29,8 +29,8 @@ func (Domain) Edges() []ent.Edge {
 		edge.To("ipaddress", IPAddress.Type),
 		edge.To("path", Path.Type),
 		//
-		edge.From("scan", Scan.Type).Ref("domain"),
-		edge.From("dnsentry", Scan.Type).Ref("domain"),
+		edge.From("scan", ScanJob.Type).Ref("domain"),
+		edge.From("dnsentry", DNSEntry.Type).Ref("domain"),
 		edge.From("registrar", Registrar.Type).Ref("domain"),
 		edge.From("whois", Whois.Type).Ref("domain"),
 	}

@@ -23,6 +23,6 @@ func (Path) Edges() []ent.Edge {
 	return []ent.Edge{
 		//
 		edge.From("domain", Domain.Type).Ref("path"),
-		edge.From("scan", Scan.Type).Ref("path"),
+		edge.From("scan", ScanJob.Type).Ref("path"),
 	}
 }

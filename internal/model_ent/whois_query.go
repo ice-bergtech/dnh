@@ -18,7 +18,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -34,7 +34,7 @@ type WhoisQuery struct {
 	withAsn        *ASNInfoQuery
 	withRegistrar  *RegistrarQuery
 	withNameserver *NameserverQuery
-	withScan       *ScanQuery
+	withScan       *ScanJobQuery
 	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -183,8 +183,8 @@ func (wq *WhoisQuery) QueryNameserver() *NameserverQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (wq *WhoisQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: wq.config}).Query()
+func (wq *WhoisQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: wq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := wq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -195,7 +195,7 @@ func (wq *WhoisQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(whois.Table, whois.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, whois.ScanTable, whois.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(wq.driver.Dialect(), step)
@@ -465,8 +465,8 @@ func (wq *WhoisQuery) WithNameserver(opts ...func(*NameserverQuery)) *WhoisQuery
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (wq *WhoisQuery) WithScan(opts ...func(*ScanQuery)) *WhoisQuery {
-	query := (&ScanClient{config: wq.config}).Query()
+func (wq *WhoisQuery) WithScan(opts ...func(*ScanJobQuery)) *WhoisQuery {
+	query := (&ScanJobClient{config: wq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -620,8 +620,8 @@ func (wq *WhoisQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Whois,
 	}
 	if query := wq.withScan; query != nil {
 		if err := wq.loadScan(ctx, query, nodes,
-			func(n *Whois) { n.Edges.Scan = []*Scan{} },
-			func(n *Whois, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *Whois) { n.Edges.Scan = []*ScanJob{} },
+			func(n *Whois, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -933,7 +933,7 @@ func (wq *WhoisQuery) loadNameserver(ctx context.Context, query *NameserverQuery
 	}
 	return nil
 }
-func (wq *WhoisQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Whois, init func(*Whois), assign func(*Whois, *Scan)) error {
+func (wq *WhoisQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*Whois, init func(*Whois), assign func(*Whois, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Whois)
 	nids := make(map[int]map[*Whois]struct{})
@@ -946,7 +946,7 @@ func (wq *WhoisQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*W
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(whois.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(whois.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(whois.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(whois.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(whois.ScanPrimaryKey[1]))
@@ -979,7 +979,7 @@ func (wq *WhoisQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*W
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

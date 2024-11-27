@@ -21,6 +21,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -42,6 +43,7 @@ const (
 	TypePath       = "Path"
 	TypeRegistrar  = "Registrar"
 	TypeScan       = "Scan"
+	TypeScanJob    = "ScanJob"
 	TypeWhois      = "Whois"
 )
 
@@ -299,7 +301,7 @@ func (m *ASNInfoMutation) ResetRegistry() {
 	m.registry = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *ASNInfoMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -309,17 +311,17 @@ func (m *ASNInfoMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *ASNInfoMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *ASNInfoMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *ASNInfoMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -330,7 +332,7 @@ func (m *ASNInfoMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *ASNInfoMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -1384,7 +1386,7 @@ func (m *DNSEntryMutation) ResetNameserver() {
 	m.removednameserver = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *DNSEntryMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -1394,17 +1396,17 @@ func (m *DNSEntryMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *DNSEntryMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *DNSEntryMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *DNSEntryMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -1415,7 +1417,7 @@ func (m *DNSEntryMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *DNSEntryMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -2345,7 +2347,7 @@ func (m *DomainMutation) ResetPath() {
 	m.removed_path = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *DomainMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -2355,17 +2357,17 @@ func (m *DomainMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *DomainMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *DomainMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *DomainMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -2376,7 +2378,7 @@ func (m *DomainMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *DomainMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -2399,7 +2401,7 @@ func (m *DomainMutation) ResetScan() {
 	m.removedscan = nil
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
 func (m *DomainMutation) AddDnsentryIDs(ids ...int) {
 	if m.dnsentry == nil {
 		m.dnsentry = make(map[int]struct{})
@@ -2409,17 +2411,17 @@ func (m *DomainMutation) AddDnsentryIDs(ids ...int) {
 	}
 }
 
-// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
 func (m *DomainMutation) ClearDnsentry() {
 	m.cleareddnsentry = true
 }
 
-// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
 func (m *DomainMutation) DnsentryCleared() bool {
 	return m.cleareddnsentry
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
 func (m *DomainMutation) RemoveDnsentryIDs(ids ...int) {
 	if m.removeddnsentry == nil {
 		m.removeddnsentry = make(map[int]struct{})
@@ -2430,7 +2432,7 @@ func (m *DomainMutation) RemoveDnsentryIDs(ids ...int) {
 	}
 }
 
-// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
 func (m *DomainMutation) RemovedDnsentryIDs() (ids []int) {
 	for id := range m.removeddnsentry {
 		ids = append(ids, id)
@@ -4250,7 +4252,7 @@ func (m *IPAddressMutation) ResetAsninfo() {
 	m.removedasninfo = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *IPAddressMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -4260,17 +4262,17 @@ func (m *IPAddressMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *IPAddressMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *IPAddressMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *IPAddressMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -4281,7 +4283,7 @@ func (m *IPAddressMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *IPAddressMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -4304,7 +4306,7 @@ func (m *IPAddressMutation) ResetScan() {
 	m.removedscan = nil
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
 func (m *IPAddressMutation) AddDnsentryIDs(ids ...int) {
 	if m.dnsentry == nil {
 		m.dnsentry = make(map[int]struct{})
@@ -4314,17 +4316,17 @@ func (m *IPAddressMutation) AddDnsentryIDs(ids ...int) {
 	}
 }
 
-// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
 func (m *IPAddressMutation) ClearDnsentry() {
 	m.cleareddnsentry = true
 }
 
-// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
 func (m *IPAddressMutation) DnsentryCleared() bool {
 	return m.cleareddnsentry
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
 func (m *IPAddressMutation) RemoveDnsentryIDs(ids ...int) {
 	if m.removeddnsentry == nil {
 		m.removeddnsentry = make(map[int]struct{})
@@ -4335,7 +4337,7 @@ func (m *IPAddressMutation) RemoveDnsentryIDs(ids ...int) {
 	}
 }
 
-// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
 func (m *IPAddressMutation) RemovedDnsentryIDs() (ids []int) {
 	for id := range m.removeddnsentry {
 		ids = append(ids, id)
@@ -5252,7 +5254,7 @@ func (m *NameserverMutation) ResetIpaddress() {
 	m.removedipaddress = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *NameserverMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -5262,17 +5264,17 @@ func (m *NameserverMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *NameserverMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *NameserverMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *NameserverMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -5283,7 +5285,7 @@ func (m *NameserverMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *NameserverMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -5306,7 +5308,7 @@ func (m *NameserverMutation) ResetScan() {
 	m.removedscan = nil
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by ids.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
 func (m *NameserverMutation) AddDnsentryIDs(ids ...int) {
 	if m.dnsentry == nil {
 		m.dnsentry = make(map[int]struct{})
@@ -5316,17 +5318,17 @@ func (m *NameserverMutation) AddDnsentryIDs(ids ...int) {
 	}
 }
 
-// ClearDnsentry clears the "dnsentry" edge to the Scan entity.
+// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
 func (m *NameserverMutation) ClearDnsentry() {
 	m.cleareddnsentry = true
 }
 
-// DnsentryCleared reports if the "dnsentry" edge to the Scan entity was cleared.
+// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
 func (m *NameserverMutation) DnsentryCleared() bool {
 	return m.cleareddnsentry
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to the Scan entity by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
 func (m *NameserverMutation) RemoveDnsentryIDs(ids ...int) {
 	if m.removeddnsentry == nil {
 		m.removeddnsentry = make(map[int]struct{})
@@ -5337,7 +5339,7 @@ func (m *NameserverMutation) RemoveDnsentryIDs(ids ...int) {
 	}
 }
 
-// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the Scan entity.
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
 func (m *NameserverMutation) RemovedDnsentryIDs() (ids []int) {
 	for id := range m.removeddnsentry {
 		ids = append(ids, id)
@@ -6028,7 +6030,7 @@ func (m *PathMutation) ResetDomain() {
 	m.removeddomain = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *PathMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -6038,17 +6040,17 @@ func (m *PathMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *PathMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *PathMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *PathMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -6059,7 +6061,7 @@ func (m *PathMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *PathMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -6943,7 +6945,7 @@ func (m *RegistrarMutation) ResetAsninfo() {
 	m.removedasninfo = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *RegistrarMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -6953,17 +6955,17 @@ func (m *RegistrarMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *RegistrarMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *RegistrarMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *RegistrarMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -6974,7 +6976,7 @@ func (m *RegistrarMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *RegistrarMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)
@@ -7509,41 +7511,20 @@ func (m *RegistrarMutation) ResetEdge(name string) error {
 // ScanMutation represents an operation that mutates the Scan nodes in the graph.
 type ScanMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *int
-	scanid            *string
-	input             *string
-	_type             *string
-	timestamp         *time.Time
-	clearedFields     map[string]struct{}
-	ipaddress         map[int]struct{}
-	removedipaddress  map[int]struct{}
-	clearedipaddress  bool
-	asninfo           map[int]struct{}
-	removedasninfo    map[int]struct{}
-	clearedasninfo    bool
-	dnsentry          map[int]struct{}
-	removeddnsentry   map[int]struct{}
-	cleareddnsentry   bool
-	domain            map[int]struct{}
-	removeddomain     map[int]struct{}
-	cleareddomain     bool
-	_path             map[int]struct{}
-	removed_path      map[int]struct{}
-	cleared_path      bool
-	nameserver        map[int]struct{}
-	removednameserver map[int]struct{}
-	clearednameserver bool
-	registrar         map[int]struct{}
-	removedregistrar  map[int]struct{}
-	clearedregistrar  bool
-	whois             map[int]struct{}
-	removedwhois      map[int]struct{}
-	clearedwhois      bool
-	done              bool
-	oldValue          func(context.Context) (*Scan, error)
-	predicates        []predicate.Scan
+	op             Op
+	typ            string
+	id             *int
+	scanid         *string
+	input          *string
+	_type          *string
+	timestamp      *time.Time
+	clearedFields  map[string]struct{}
+	scanjob        map[int]struct{}
+	removedscanjob map[int]struct{}
+	clearedscanjob bool
+	done           bool
+	oldValue       func(context.Context) (*Scan, error)
+	predicates     []predicate.Scan
 }
 
 var _ ent.Mutation = (*ScanMutation)(nil)
@@ -7788,436 +7769,58 @@ func (m *ScanMutation) ResetTimestamp() {
 	m.timestamp = nil
 }
 
-// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
-func (m *ScanMutation) AddIpaddresIDs(ids ...int) {
-	if m.ipaddress == nil {
-		m.ipaddress = make(map[int]struct{})
+// AddScanjobIDs adds the "scanjob" edge to the ScanJob entity by ids.
+func (m *ScanMutation) AddScanjobIDs(ids ...int) {
+	if m.scanjob == nil {
+		m.scanjob = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.ipaddress[ids[i]] = struct{}{}
+		m.scanjob[ids[i]] = struct{}{}
 	}
 }
 
-// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
-func (m *ScanMutation) ClearIpaddress() {
-	m.clearedipaddress = true
+// ClearScanjob clears the "scanjob" edge to the ScanJob entity.
+func (m *ScanMutation) ClearScanjob() {
+	m.clearedscanjob = true
 }
 
-// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
-func (m *ScanMutation) IpaddressCleared() bool {
-	return m.clearedipaddress
+// ScanjobCleared reports if the "scanjob" edge to the ScanJob entity was cleared.
+func (m *ScanMutation) ScanjobCleared() bool {
+	return m.clearedscanjob
 }
 
-// RemoveIpaddresIDs removes the "ipaddress" edge to the IPAddress entity by IDs.
-func (m *ScanMutation) RemoveIpaddresIDs(ids ...int) {
-	if m.removedipaddress == nil {
-		m.removedipaddress = make(map[int]struct{})
+// RemoveScanjobIDs removes the "scanjob" edge to the ScanJob entity by IDs.
+func (m *ScanMutation) RemoveScanjobIDs(ids ...int) {
+	if m.removedscanjob == nil {
+		m.removedscanjob = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.ipaddress, ids[i])
-		m.removedipaddress[ids[i]] = struct{}{}
+		delete(m.scanjob, ids[i])
+		m.removedscanjob[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedIpaddress returns the removed IDs of the "ipaddress" edge to the IPAddress entity.
-func (m *ScanMutation) RemovedIpaddressIDs() (ids []int) {
-	for id := range m.removedipaddress {
+// RemovedScanjob returns the removed IDs of the "scanjob" edge to the ScanJob entity.
+func (m *ScanMutation) RemovedScanjobIDs() (ids []int) {
+	for id := range m.removedscanjob {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
-func (m *ScanMutation) IpaddressIDs() (ids []int) {
-	for id := range m.ipaddress {
+// ScanjobIDs returns the "scanjob" edge IDs in the mutation.
+func (m *ScanMutation) ScanjobIDs() (ids []int) {
+	for id := range m.scanjob {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetIpaddress resets all changes to the "ipaddress" edge.
-func (m *ScanMutation) ResetIpaddress() {
-	m.ipaddress = nil
-	m.clearedipaddress = false
-	m.removedipaddress = nil
-}
-
-// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by ids.
-func (m *ScanMutation) AddAsninfoIDs(ids ...int) {
-	if m.asninfo == nil {
-		m.asninfo = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.asninfo[ids[i]] = struct{}{}
-	}
-}
-
-// ClearAsninfo clears the "asninfo" edge to the ASNInfo entity.
-func (m *ScanMutation) ClearAsninfo() {
-	m.clearedasninfo = true
-}
-
-// AsninfoCleared reports if the "asninfo" edge to the ASNInfo entity was cleared.
-func (m *ScanMutation) AsninfoCleared() bool {
-	return m.clearedasninfo
-}
-
-// RemoveAsninfoIDs removes the "asninfo" edge to the ASNInfo entity by IDs.
-func (m *ScanMutation) RemoveAsninfoIDs(ids ...int) {
-	if m.removedasninfo == nil {
-		m.removedasninfo = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.asninfo, ids[i])
-		m.removedasninfo[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedAsninfo returns the removed IDs of the "asninfo" edge to the ASNInfo entity.
-func (m *ScanMutation) RemovedAsninfoIDs() (ids []int) {
-	for id := range m.removedasninfo {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// AsninfoIDs returns the "asninfo" edge IDs in the mutation.
-func (m *ScanMutation) AsninfoIDs() (ids []int) {
-	for id := range m.asninfo {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetAsninfo resets all changes to the "asninfo" edge.
-func (m *ScanMutation) ResetAsninfo() {
-	m.asninfo = nil
-	m.clearedasninfo = false
-	m.removedasninfo = nil
-}
-
-// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
-func (m *ScanMutation) AddDnsentryIDs(ids ...int) {
-	if m.dnsentry == nil {
-		m.dnsentry = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.dnsentry[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
-func (m *ScanMutation) ClearDnsentry() {
-	m.cleareddnsentry = true
-}
-
-// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
-func (m *ScanMutation) DnsentryCleared() bool {
-	return m.cleareddnsentry
-}
-
-// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
-func (m *ScanMutation) RemoveDnsentryIDs(ids ...int) {
-	if m.removeddnsentry == nil {
-		m.removeddnsentry = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.dnsentry, ids[i])
-		m.removeddnsentry[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
-func (m *ScanMutation) RemovedDnsentryIDs() (ids []int) {
-	for id := range m.removeddnsentry {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
-func (m *ScanMutation) DnsentryIDs() (ids []int) {
-	for id := range m.dnsentry {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDnsentry resets all changes to the "dnsentry" edge.
-func (m *ScanMutation) ResetDnsentry() {
-	m.dnsentry = nil
-	m.cleareddnsentry = false
-	m.removeddnsentry = nil
-}
-
-// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
-func (m *ScanMutation) AddDomainIDs(ids ...int) {
-	if m.domain == nil {
-		m.domain = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.domain[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDomain clears the "domain" edge to the Domain entity.
-func (m *ScanMutation) ClearDomain() {
-	m.cleareddomain = true
-}
-
-// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
-func (m *ScanMutation) DomainCleared() bool {
-	return m.cleareddomain
-}
-
-// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
-func (m *ScanMutation) RemoveDomainIDs(ids ...int) {
-	if m.removeddomain == nil {
-		m.removeddomain = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.domain, ids[i])
-		m.removeddomain[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
-func (m *ScanMutation) RemovedDomainIDs() (ids []int) {
-	for id := range m.removeddomain {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DomainIDs returns the "domain" edge IDs in the mutation.
-func (m *ScanMutation) DomainIDs() (ids []int) {
-	for id := range m.domain {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDomain resets all changes to the "domain" edge.
-func (m *ScanMutation) ResetDomain() {
-	m.domain = nil
-	m.cleareddomain = false
-	m.removeddomain = nil
-}
-
-// AddPathIDs adds the "path" edge to the Path entity by ids.
-func (m *ScanMutation) AddPathIDs(ids ...int) {
-	if m._path == nil {
-		m._path = make(map[int]struct{})
-	}
-	for i := range ids {
-		m._path[ids[i]] = struct{}{}
-	}
-}
-
-// ClearPath clears the "path" edge to the Path entity.
-func (m *ScanMutation) ClearPath() {
-	m.cleared_path = true
-}
-
-// PathCleared reports if the "path" edge to the Path entity was cleared.
-func (m *ScanMutation) PathCleared() bool {
-	return m.cleared_path
-}
-
-// RemovePathIDs removes the "path" edge to the Path entity by IDs.
-func (m *ScanMutation) RemovePathIDs(ids ...int) {
-	if m.removed_path == nil {
-		m.removed_path = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m._path, ids[i])
-		m.removed_path[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPath returns the removed IDs of the "path" edge to the Path entity.
-func (m *ScanMutation) RemovedPathIDs() (ids []int) {
-	for id := range m.removed_path {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PathIDs returns the "path" edge IDs in the mutation.
-func (m *ScanMutation) PathIDs() (ids []int) {
-	for id := range m._path {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetPath resets all changes to the "path" edge.
-func (m *ScanMutation) ResetPath() {
-	m._path = nil
-	m.cleared_path = false
-	m.removed_path = nil
-}
-
-// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
-func (m *ScanMutation) AddNameserverIDs(ids ...int) {
-	if m.nameserver == nil {
-		m.nameserver = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.nameserver[ids[i]] = struct{}{}
-	}
-}
-
-// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
-func (m *ScanMutation) ClearNameserver() {
-	m.clearednameserver = true
-}
-
-// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
-func (m *ScanMutation) NameserverCleared() bool {
-	return m.clearednameserver
-}
-
-// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
-func (m *ScanMutation) RemoveNameserverIDs(ids ...int) {
-	if m.removednameserver == nil {
-		m.removednameserver = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.nameserver, ids[i])
-		m.removednameserver[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
-func (m *ScanMutation) RemovedNameserverIDs() (ids []int) {
-	for id := range m.removednameserver {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// NameserverIDs returns the "nameserver" edge IDs in the mutation.
-func (m *ScanMutation) NameserverIDs() (ids []int) {
-	for id := range m.nameserver {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetNameserver resets all changes to the "nameserver" edge.
-func (m *ScanMutation) ResetNameserver() {
-	m.nameserver = nil
-	m.clearednameserver = false
-	m.removednameserver = nil
-}
-
-// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
-func (m *ScanMutation) AddRegistrarIDs(ids ...int) {
-	if m.registrar == nil {
-		m.registrar = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.registrar[ids[i]] = struct{}{}
-	}
-}
-
-// ClearRegistrar clears the "registrar" edge to the Registrar entity.
-func (m *ScanMutation) ClearRegistrar() {
-	m.clearedregistrar = true
-}
-
-// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
-func (m *ScanMutation) RegistrarCleared() bool {
-	return m.clearedregistrar
-}
-
-// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
-func (m *ScanMutation) RemoveRegistrarIDs(ids ...int) {
-	if m.removedregistrar == nil {
-		m.removedregistrar = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.registrar, ids[i])
-		m.removedregistrar[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
-func (m *ScanMutation) RemovedRegistrarIDs() (ids []int) {
-	for id := range m.removedregistrar {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// RegistrarIDs returns the "registrar" edge IDs in the mutation.
-func (m *ScanMutation) RegistrarIDs() (ids []int) {
-	for id := range m.registrar {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetRegistrar resets all changes to the "registrar" edge.
-func (m *ScanMutation) ResetRegistrar() {
-	m.registrar = nil
-	m.clearedregistrar = false
-	m.removedregistrar = nil
-}
-
-// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
-func (m *ScanMutation) AddWhoiIDs(ids ...int) {
-	if m.whois == nil {
-		m.whois = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.whois[ids[i]] = struct{}{}
-	}
-}
-
-// ClearWhois clears the "whois" edge to the Whois entity.
-func (m *ScanMutation) ClearWhois() {
-	m.clearedwhois = true
-}
-
-// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
-func (m *ScanMutation) WhoisCleared() bool {
-	return m.clearedwhois
-}
-
-// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
-func (m *ScanMutation) RemoveWhoiIDs(ids ...int) {
-	if m.removedwhois == nil {
-		m.removedwhois = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.whois, ids[i])
-		m.removedwhois[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
-func (m *ScanMutation) RemovedWhoisIDs() (ids []int) {
-	for id := range m.removedwhois {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// WhoisIDs returns the "whois" edge IDs in the mutation.
-func (m *ScanMutation) WhoisIDs() (ids []int) {
-	for id := range m.whois {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetWhois resets all changes to the "whois" edge.
-func (m *ScanMutation) ResetWhois() {
-	m.whois = nil
-	m.clearedwhois = false
-	m.removedwhois = nil
+// ResetScanjob resets all changes to the "scanjob" edge.
+func (m *ScanMutation) ResetScanjob() {
+	m.scanjob = nil
+	m.clearedscanjob = false
+	m.removedscanjob = nil
 }
 
 // Where appends a list predicates to the ScanMutation builder.
@@ -8404,30 +8007,9 @@ func (m *ScanMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *ScanMutation) AddedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.ipaddress != nil {
-		edges = append(edges, scan.EdgeIpaddress)
-	}
-	if m.asninfo != nil {
-		edges = append(edges, scan.EdgeAsninfo)
-	}
-	if m.dnsentry != nil {
-		edges = append(edges, scan.EdgeDnsentry)
-	}
-	if m.domain != nil {
-		edges = append(edges, scan.EdgeDomain)
-	}
-	if m._path != nil {
-		edges = append(edges, scan.EdgePath)
-	}
-	if m.nameserver != nil {
-		edges = append(edges, scan.EdgeNameserver)
-	}
-	if m.registrar != nil {
-		edges = append(edges, scan.EdgeRegistrar)
-	}
-	if m.whois != nil {
-		edges = append(edges, scan.EdgeWhois)
+	edges := make([]string, 0, 1)
+	if m.scanjob != nil {
+		edges = append(edges, scan.EdgeScanjob)
 	}
 	return edges
 }
@@ -8436,51 +8018,9 @@ func (m *ScanMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *ScanMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case scan.EdgeIpaddress:
-		ids := make([]ent.Value, 0, len(m.ipaddress))
-		for id := range m.ipaddress {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeAsninfo:
-		ids := make([]ent.Value, 0, len(m.asninfo))
-		for id := range m.asninfo {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeDnsentry:
-		ids := make([]ent.Value, 0, len(m.dnsentry))
-		for id := range m.dnsentry {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeDomain:
-		ids := make([]ent.Value, 0, len(m.domain))
-		for id := range m.domain {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgePath:
-		ids := make([]ent.Value, 0, len(m._path))
-		for id := range m._path {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeNameserver:
-		ids := make([]ent.Value, 0, len(m.nameserver))
-		for id := range m.nameserver {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeRegistrar:
-		ids := make([]ent.Value, 0, len(m.registrar))
-		for id := range m.registrar {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeWhois:
-		ids := make([]ent.Value, 0, len(m.whois))
-		for id := range m.whois {
+	case scan.EdgeScanjob:
+		ids := make([]ent.Value, 0, len(m.scanjob))
+		for id := range m.scanjob {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8490,30 +8030,9 @@ func (m *ScanMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ScanMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.removedipaddress != nil {
-		edges = append(edges, scan.EdgeIpaddress)
-	}
-	if m.removedasninfo != nil {
-		edges = append(edges, scan.EdgeAsninfo)
-	}
-	if m.removeddnsentry != nil {
-		edges = append(edges, scan.EdgeDnsentry)
-	}
-	if m.removeddomain != nil {
-		edges = append(edges, scan.EdgeDomain)
-	}
-	if m.removed_path != nil {
-		edges = append(edges, scan.EdgePath)
-	}
-	if m.removednameserver != nil {
-		edges = append(edges, scan.EdgeNameserver)
-	}
-	if m.removedregistrar != nil {
-		edges = append(edges, scan.EdgeRegistrar)
-	}
-	if m.removedwhois != nil {
-		edges = append(edges, scan.EdgeWhois)
+	edges := make([]string, 0, 1)
+	if m.removedscanjob != nil {
+		edges = append(edges, scan.EdgeScanjob)
 	}
 	return edges
 }
@@ -8522,51 +8041,9 @@ func (m *ScanMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ScanMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case scan.EdgeIpaddress:
-		ids := make([]ent.Value, 0, len(m.removedipaddress))
-		for id := range m.removedipaddress {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeAsninfo:
-		ids := make([]ent.Value, 0, len(m.removedasninfo))
-		for id := range m.removedasninfo {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeDnsentry:
-		ids := make([]ent.Value, 0, len(m.removeddnsentry))
-		for id := range m.removeddnsentry {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeDomain:
-		ids := make([]ent.Value, 0, len(m.removeddomain))
-		for id := range m.removeddomain {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgePath:
-		ids := make([]ent.Value, 0, len(m.removed_path))
-		for id := range m.removed_path {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeNameserver:
-		ids := make([]ent.Value, 0, len(m.removednameserver))
-		for id := range m.removednameserver {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeRegistrar:
-		ids := make([]ent.Value, 0, len(m.removedregistrar))
-		for id := range m.removedregistrar {
-			ids = append(ids, id)
-		}
-		return ids
-	case scan.EdgeWhois:
-		ids := make([]ent.Value, 0, len(m.removedwhois))
-		for id := range m.removedwhois {
+	case scan.EdgeScanjob:
+		ids := make([]ent.Value, 0, len(m.removedscanjob))
+		for id := range m.removedscanjob {
 			ids = append(ids, id)
 		}
 		return ids
@@ -8576,30 +8053,9 @@ func (m *ScanMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *ScanMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 8)
-	if m.clearedipaddress {
-		edges = append(edges, scan.EdgeIpaddress)
-	}
-	if m.clearedasninfo {
-		edges = append(edges, scan.EdgeAsninfo)
-	}
-	if m.cleareddnsentry {
-		edges = append(edges, scan.EdgeDnsentry)
-	}
-	if m.cleareddomain {
-		edges = append(edges, scan.EdgeDomain)
-	}
-	if m.cleared_path {
-		edges = append(edges, scan.EdgePath)
-	}
-	if m.clearednameserver {
-		edges = append(edges, scan.EdgeNameserver)
-	}
-	if m.clearedregistrar {
-		edges = append(edges, scan.EdgeRegistrar)
-	}
-	if m.clearedwhois {
-		edges = append(edges, scan.EdgeWhois)
+	edges := make([]string, 0, 1)
+	if m.clearedscanjob {
+		edges = append(edges, scan.EdgeScanjob)
 	}
 	return edges
 }
@@ -8608,22 +8064,8 @@ func (m *ScanMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *ScanMutation) EdgeCleared(name string) bool {
 	switch name {
-	case scan.EdgeIpaddress:
-		return m.clearedipaddress
-	case scan.EdgeAsninfo:
-		return m.clearedasninfo
-	case scan.EdgeDnsentry:
-		return m.cleareddnsentry
-	case scan.EdgeDomain:
-		return m.cleareddomain
-	case scan.EdgePath:
-		return m.cleared_path
-	case scan.EdgeNameserver:
-		return m.clearednameserver
-	case scan.EdgeRegistrar:
-		return m.clearedregistrar
-	case scan.EdgeWhois:
-		return m.clearedwhois
+	case scan.EdgeScanjob:
+		return m.clearedscanjob
 	}
 	return false
 }
@@ -8640,32 +8082,1454 @@ func (m *ScanMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *ScanMutation) ResetEdge(name string) error {
 	switch name {
-	case scan.EdgeIpaddress:
-		m.ResetIpaddress()
-		return nil
-	case scan.EdgeAsninfo:
-		m.ResetAsninfo()
-		return nil
-	case scan.EdgeDnsentry:
-		m.ResetDnsentry()
-		return nil
-	case scan.EdgeDomain:
-		m.ResetDomain()
-		return nil
-	case scan.EdgePath:
-		m.ResetPath()
-		return nil
-	case scan.EdgeNameserver:
-		m.ResetNameserver()
-		return nil
-	case scan.EdgeRegistrar:
-		m.ResetRegistrar()
-		return nil
-	case scan.EdgeWhois:
-		m.ResetWhois()
+	case scan.EdgeScanjob:
+		m.ResetScanjob()
 		return nil
 	}
 	return fmt.Errorf("unknown Scan edge %s", name)
+}
+
+// ScanJobMutation represents an operation that mutates the ScanJob nodes in the graph.
+type ScanJobMutation struct {
+	config
+	op                Op
+	typ               string
+	id                *int
+	scanid            *string
+	timeout           *int
+	addtimeout        *int
+	status            *scanjob.Status
+	input             *string
+	output            *string
+	command           *string
+	timestamp         *time.Time
+	clearedFields     map[string]struct{}
+	ipaddress         map[int]struct{}
+	removedipaddress  map[int]struct{}
+	clearedipaddress  bool
+	asninfo           map[int]struct{}
+	removedasninfo    map[int]struct{}
+	clearedasninfo    bool
+	dnsentry          map[int]struct{}
+	removeddnsentry   map[int]struct{}
+	cleareddnsentry   bool
+	domain            map[int]struct{}
+	removeddomain     map[int]struct{}
+	cleareddomain     bool
+	_path             map[int]struct{}
+	removed_path      map[int]struct{}
+	cleared_path      bool
+	nameserver        map[int]struct{}
+	removednameserver map[int]struct{}
+	clearednameserver bool
+	registrar         map[int]struct{}
+	removedregistrar  map[int]struct{}
+	clearedregistrar  bool
+	whois             map[int]struct{}
+	removedwhois      map[int]struct{}
+	clearedwhois      bool
+	scan              map[int]struct{}
+	removedscan       map[int]struct{}
+	clearedscan       bool
+	done              bool
+	oldValue          func(context.Context) (*ScanJob, error)
+	predicates        []predicate.ScanJob
+}
+
+var _ ent.Mutation = (*ScanJobMutation)(nil)
+
+// scanjobOption allows management of the mutation configuration using functional options.
+type scanjobOption func(*ScanJobMutation)
+
+// newScanJobMutation creates new mutation for the ScanJob entity.
+func newScanJobMutation(c config, op Op, opts ...scanjobOption) *ScanJobMutation {
+	m := &ScanJobMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeScanJob,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withScanJobID sets the ID field of the mutation.
+func withScanJobID(id int) scanjobOption {
+	return func(m *ScanJobMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *ScanJob
+		)
+		m.oldValue = func(ctx context.Context) (*ScanJob, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().ScanJob.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withScanJob sets the old ScanJob of the mutation.
+func withScanJob(node *ScanJob) scanjobOption {
+	return func(m *ScanJobMutation) {
+		m.oldValue = func(context.Context) (*ScanJob, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m ScanJobMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m ScanJobMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("model_ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *ScanJobMutation) ID() (id int, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *ScanJobMutation) IDs(ctx context.Context) ([]int, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []int{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().ScanJob.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetScanid sets the "scanid" field.
+func (m *ScanJobMutation) SetScanid(s string) {
+	m.scanid = &s
+}
+
+// Scanid returns the value of the "scanid" field in the mutation.
+func (m *ScanJobMutation) Scanid() (r string, exists bool) {
+	v := m.scanid
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScanid returns the old "scanid" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldScanid(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScanid is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScanid requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScanid: %w", err)
+	}
+	return oldValue.Scanid, nil
+}
+
+// ResetScanid resets all changes to the "scanid" field.
+func (m *ScanJobMutation) ResetScanid() {
+	m.scanid = nil
+}
+
+// SetTimeout sets the "timeout" field.
+func (m *ScanJobMutation) SetTimeout(i int) {
+	m.timeout = &i
+	m.addtimeout = nil
+}
+
+// Timeout returns the value of the "timeout" field in the mutation.
+func (m *ScanJobMutation) Timeout() (r int, exists bool) {
+	v := m.timeout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimeout returns the old "timeout" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldTimeout(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimeout is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimeout requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimeout: %w", err)
+	}
+	return oldValue.Timeout, nil
+}
+
+// AddTimeout adds i to the "timeout" field.
+func (m *ScanJobMutation) AddTimeout(i int) {
+	if m.addtimeout != nil {
+		*m.addtimeout += i
+	} else {
+		m.addtimeout = &i
+	}
+}
+
+// AddedTimeout returns the value that was added to the "timeout" field in this mutation.
+func (m *ScanJobMutation) AddedTimeout() (r int, exists bool) {
+	v := m.addtimeout
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetTimeout resets all changes to the "timeout" field.
+func (m *ScanJobMutation) ResetTimeout() {
+	m.timeout = nil
+	m.addtimeout = nil
+}
+
+// SetStatus sets the "status" field.
+func (m *ScanJobMutation) SetStatus(s scanjob.Status) {
+	m.status = &s
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *ScanJobMutation) Status() (r scanjob.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldStatus(ctx context.Context) (v scanjob.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *ScanJobMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetInput sets the "input" field.
+func (m *ScanJobMutation) SetInput(s string) {
+	m.input = &s
+}
+
+// Input returns the value of the "input" field in the mutation.
+func (m *ScanJobMutation) Input() (r string, exists bool) {
+	v := m.input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldInput returns the old "input" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldInput(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldInput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldInput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldInput: %w", err)
+	}
+	return oldValue.Input, nil
+}
+
+// ResetInput resets all changes to the "input" field.
+func (m *ScanJobMutation) ResetInput() {
+	m.input = nil
+}
+
+// SetOutput sets the "output" field.
+func (m *ScanJobMutation) SetOutput(s string) {
+	m.output = &s
+}
+
+// Output returns the value of the "output" field in the mutation.
+func (m *ScanJobMutation) Output() (r string, exists bool) {
+	v := m.output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldOutput returns the old "output" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldOutput(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldOutput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldOutput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldOutput: %w", err)
+	}
+	return oldValue.Output, nil
+}
+
+// ResetOutput resets all changes to the "output" field.
+func (m *ScanJobMutation) ResetOutput() {
+	m.output = nil
+}
+
+// SetCommand sets the "command" field.
+func (m *ScanJobMutation) SetCommand(s string) {
+	m.command = &s
+}
+
+// Command returns the value of the "command" field in the mutation.
+func (m *ScanJobMutation) Command() (r string, exists bool) {
+	v := m.command
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCommand returns the old "command" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldCommand(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCommand is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCommand requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCommand: %w", err)
+	}
+	return oldValue.Command, nil
+}
+
+// ResetCommand resets all changes to the "command" field.
+func (m *ScanJobMutation) ResetCommand() {
+	m.command = nil
+}
+
+// SetTimestamp sets the "timestamp" field.
+func (m *ScanJobMutation) SetTimestamp(t time.Time) {
+	m.timestamp = &t
+}
+
+// Timestamp returns the value of the "timestamp" field in the mutation.
+func (m *ScanJobMutation) Timestamp() (r time.Time, exists bool) {
+	v := m.timestamp
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTimestamp returns the old "timestamp" field's value of the ScanJob entity.
+// If the ScanJob object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ScanJobMutation) OldTimestamp(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTimestamp is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTimestamp requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTimestamp: %w", err)
+	}
+	return oldValue.Timestamp, nil
+}
+
+// ResetTimestamp resets all changes to the "timestamp" field.
+func (m *ScanJobMutation) ResetTimestamp() {
+	m.timestamp = nil
+}
+
+// AddIpaddresIDs adds the "ipaddress" edge to the IPAddress entity by ids.
+func (m *ScanJobMutation) AddIpaddresIDs(ids ...int) {
+	if m.ipaddress == nil {
+		m.ipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.ipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// ClearIpaddress clears the "ipaddress" edge to the IPAddress entity.
+func (m *ScanJobMutation) ClearIpaddress() {
+	m.clearedipaddress = true
+}
+
+// IpaddressCleared reports if the "ipaddress" edge to the IPAddress entity was cleared.
+func (m *ScanJobMutation) IpaddressCleared() bool {
+	return m.clearedipaddress
+}
+
+// RemoveIpaddresIDs removes the "ipaddress" edge to the IPAddress entity by IDs.
+func (m *ScanJobMutation) RemoveIpaddresIDs(ids ...int) {
+	if m.removedipaddress == nil {
+		m.removedipaddress = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.ipaddress, ids[i])
+		m.removedipaddress[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedIpaddress returns the removed IDs of the "ipaddress" edge to the IPAddress entity.
+func (m *ScanJobMutation) RemovedIpaddressIDs() (ids []int) {
+	for id := range m.removedipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// IpaddressIDs returns the "ipaddress" edge IDs in the mutation.
+func (m *ScanJobMutation) IpaddressIDs() (ids []int) {
+	for id := range m.ipaddress {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetIpaddress resets all changes to the "ipaddress" edge.
+func (m *ScanJobMutation) ResetIpaddress() {
+	m.ipaddress = nil
+	m.clearedipaddress = false
+	m.removedipaddress = nil
+}
+
+// AddAsninfoIDs adds the "asninfo" edge to the ASNInfo entity by ids.
+func (m *ScanJobMutation) AddAsninfoIDs(ids ...int) {
+	if m.asninfo == nil {
+		m.asninfo = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.asninfo[ids[i]] = struct{}{}
+	}
+}
+
+// ClearAsninfo clears the "asninfo" edge to the ASNInfo entity.
+func (m *ScanJobMutation) ClearAsninfo() {
+	m.clearedasninfo = true
+}
+
+// AsninfoCleared reports if the "asninfo" edge to the ASNInfo entity was cleared.
+func (m *ScanJobMutation) AsninfoCleared() bool {
+	return m.clearedasninfo
+}
+
+// RemoveAsninfoIDs removes the "asninfo" edge to the ASNInfo entity by IDs.
+func (m *ScanJobMutation) RemoveAsninfoIDs(ids ...int) {
+	if m.removedasninfo == nil {
+		m.removedasninfo = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.asninfo, ids[i])
+		m.removedasninfo[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedAsninfo returns the removed IDs of the "asninfo" edge to the ASNInfo entity.
+func (m *ScanJobMutation) RemovedAsninfoIDs() (ids []int) {
+	for id := range m.removedasninfo {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// AsninfoIDs returns the "asninfo" edge IDs in the mutation.
+func (m *ScanJobMutation) AsninfoIDs() (ids []int) {
+	for id := range m.asninfo {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetAsninfo resets all changes to the "asninfo" edge.
+func (m *ScanJobMutation) ResetAsninfo() {
+	m.asninfo = nil
+	m.clearedasninfo = false
+	m.removedasninfo = nil
+}
+
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by ids.
+func (m *ScanJobMutation) AddDnsentryIDs(ids ...int) {
+	if m.dnsentry == nil {
+		m.dnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.dnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDnsentry clears the "dnsentry" edge to the DNSEntry entity.
+func (m *ScanJobMutation) ClearDnsentry() {
+	m.cleareddnsentry = true
+}
+
+// DnsentryCleared reports if the "dnsentry" edge to the DNSEntry entity was cleared.
+func (m *ScanJobMutation) DnsentryCleared() bool {
+	return m.cleareddnsentry
+}
+
+// RemoveDnsentryIDs removes the "dnsentry" edge to the DNSEntry entity by IDs.
+func (m *ScanJobMutation) RemoveDnsentryIDs(ids ...int) {
+	if m.removeddnsentry == nil {
+		m.removeddnsentry = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.dnsentry, ids[i])
+		m.removeddnsentry[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDnsentry returns the removed IDs of the "dnsentry" edge to the DNSEntry entity.
+func (m *ScanJobMutation) RemovedDnsentryIDs() (ids []int) {
+	for id := range m.removeddnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DnsentryIDs returns the "dnsentry" edge IDs in the mutation.
+func (m *ScanJobMutation) DnsentryIDs() (ids []int) {
+	for id := range m.dnsentry {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDnsentry resets all changes to the "dnsentry" edge.
+func (m *ScanJobMutation) ResetDnsentry() {
+	m.dnsentry = nil
+	m.cleareddnsentry = false
+	m.removeddnsentry = nil
+}
+
+// AddDomainIDs adds the "domain" edge to the Domain entity by ids.
+func (m *ScanJobMutation) AddDomainIDs(ids ...int) {
+	if m.domain == nil {
+		m.domain = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.domain[ids[i]] = struct{}{}
+	}
+}
+
+// ClearDomain clears the "domain" edge to the Domain entity.
+func (m *ScanJobMutation) ClearDomain() {
+	m.cleareddomain = true
+}
+
+// DomainCleared reports if the "domain" edge to the Domain entity was cleared.
+func (m *ScanJobMutation) DomainCleared() bool {
+	return m.cleareddomain
+}
+
+// RemoveDomainIDs removes the "domain" edge to the Domain entity by IDs.
+func (m *ScanJobMutation) RemoveDomainIDs(ids ...int) {
+	if m.removeddomain == nil {
+		m.removeddomain = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.domain, ids[i])
+		m.removeddomain[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedDomain returns the removed IDs of the "domain" edge to the Domain entity.
+func (m *ScanJobMutation) RemovedDomainIDs() (ids []int) {
+	for id := range m.removeddomain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// DomainIDs returns the "domain" edge IDs in the mutation.
+func (m *ScanJobMutation) DomainIDs() (ids []int) {
+	for id := range m.domain {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetDomain resets all changes to the "domain" edge.
+func (m *ScanJobMutation) ResetDomain() {
+	m.domain = nil
+	m.cleareddomain = false
+	m.removeddomain = nil
+}
+
+// AddPathIDs adds the "path" edge to the Path entity by ids.
+func (m *ScanJobMutation) AddPathIDs(ids ...int) {
+	if m._path == nil {
+		m._path = make(map[int]struct{})
+	}
+	for i := range ids {
+		m._path[ids[i]] = struct{}{}
+	}
+}
+
+// ClearPath clears the "path" edge to the Path entity.
+func (m *ScanJobMutation) ClearPath() {
+	m.cleared_path = true
+}
+
+// PathCleared reports if the "path" edge to the Path entity was cleared.
+func (m *ScanJobMutation) PathCleared() bool {
+	return m.cleared_path
+}
+
+// RemovePathIDs removes the "path" edge to the Path entity by IDs.
+func (m *ScanJobMutation) RemovePathIDs(ids ...int) {
+	if m.removed_path == nil {
+		m.removed_path = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m._path, ids[i])
+		m.removed_path[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedPath returns the removed IDs of the "path" edge to the Path entity.
+func (m *ScanJobMutation) RemovedPathIDs() (ids []int) {
+	for id := range m.removed_path {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PathIDs returns the "path" edge IDs in the mutation.
+func (m *ScanJobMutation) PathIDs() (ids []int) {
+	for id := range m._path {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetPath resets all changes to the "path" edge.
+func (m *ScanJobMutation) ResetPath() {
+	m._path = nil
+	m.cleared_path = false
+	m.removed_path = nil
+}
+
+// AddNameserverIDs adds the "nameserver" edge to the Nameserver entity by ids.
+func (m *ScanJobMutation) AddNameserverIDs(ids ...int) {
+	if m.nameserver == nil {
+		m.nameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.nameserver[ids[i]] = struct{}{}
+	}
+}
+
+// ClearNameserver clears the "nameserver" edge to the Nameserver entity.
+func (m *ScanJobMutation) ClearNameserver() {
+	m.clearednameserver = true
+}
+
+// NameserverCleared reports if the "nameserver" edge to the Nameserver entity was cleared.
+func (m *ScanJobMutation) NameserverCleared() bool {
+	return m.clearednameserver
+}
+
+// RemoveNameserverIDs removes the "nameserver" edge to the Nameserver entity by IDs.
+func (m *ScanJobMutation) RemoveNameserverIDs(ids ...int) {
+	if m.removednameserver == nil {
+		m.removednameserver = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.nameserver, ids[i])
+		m.removednameserver[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedNameserver returns the removed IDs of the "nameserver" edge to the Nameserver entity.
+func (m *ScanJobMutation) RemovedNameserverIDs() (ids []int) {
+	for id := range m.removednameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// NameserverIDs returns the "nameserver" edge IDs in the mutation.
+func (m *ScanJobMutation) NameserverIDs() (ids []int) {
+	for id := range m.nameserver {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetNameserver resets all changes to the "nameserver" edge.
+func (m *ScanJobMutation) ResetNameserver() {
+	m.nameserver = nil
+	m.clearednameserver = false
+	m.removednameserver = nil
+}
+
+// AddRegistrarIDs adds the "registrar" edge to the Registrar entity by ids.
+func (m *ScanJobMutation) AddRegistrarIDs(ids ...int) {
+	if m.registrar == nil {
+		m.registrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.registrar[ids[i]] = struct{}{}
+	}
+}
+
+// ClearRegistrar clears the "registrar" edge to the Registrar entity.
+func (m *ScanJobMutation) ClearRegistrar() {
+	m.clearedregistrar = true
+}
+
+// RegistrarCleared reports if the "registrar" edge to the Registrar entity was cleared.
+func (m *ScanJobMutation) RegistrarCleared() bool {
+	return m.clearedregistrar
+}
+
+// RemoveRegistrarIDs removes the "registrar" edge to the Registrar entity by IDs.
+func (m *ScanJobMutation) RemoveRegistrarIDs(ids ...int) {
+	if m.removedregistrar == nil {
+		m.removedregistrar = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.registrar, ids[i])
+		m.removedregistrar[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedRegistrar returns the removed IDs of the "registrar" edge to the Registrar entity.
+func (m *ScanJobMutation) RemovedRegistrarIDs() (ids []int) {
+	for id := range m.removedregistrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// RegistrarIDs returns the "registrar" edge IDs in the mutation.
+func (m *ScanJobMutation) RegistrarIDs() (ids []int) {
+	for id := range m.registrar {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetRegistrar resets all changes to the "registrar" edge.
+func (m *ScanJobMutation) ResetRegistrar() {
+	m.registrar = nil
+	m.clearedregistrar = false
+	m.removedregistrar = nil
+}
+
+// AddWhoiIDs adds the "whois" edge to the Whois entity by ids.
+func (m *ScanJobMutation) AddWhoiIDs(ids ...int) {
+	if m.whois == nil {
+		m.whois = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.whois[ids[i]] = struct{}{}
+	}
+}
+
+// ClearWhois clears the "whois" edge to the Whois entity.
+func (m *ScanJobMutation) ClearWhois() {
+	m.clearedwhois = true
+}
+
+// WhoisCleared reports if the "whois" edge to the Whois entity was cleared.
+func (m *ScanJobMutation) WhoisCleared() bool {
+	return m.clearedwhois
+}
+
+// RemoveWhoiIDs removes the "whois" edge to the Whois entity by IDs.
+func (m *ScanJobMutation) RemoveWhoiIDs(ids ...int) {
+	if m.removedwhois == nil {
+		m.removedwhois = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.whois, ids[i])
+		m.removedwhois[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedWhois returns the removed IDs of the "whois" edge to the Whois entity.
+func (m *ScanJobMutation) RemovedWhoisIDs() (ids []int) {
+	for id := range m.removedwhois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// WhoisIDs returns the "whois" edge IDs in the mutation.
+func (m *ScanJobMutation) WhoisIDs() (ids []int) {
+	for id := range m.whois {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetWhois resets all changes to the "whois" edge.
+func (m *ScanJobMutation) ResetWhois() {
+	m.whois = nil
+	m.clearedwhois = false
+	m.removedwhois = nil
+}
+
+// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+func (m *ScanJobMutation) AddScanIDs(ids ...int) {
+	if m.scan == nil {
+		m.scan = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.scan[ids[i]] = struct{}{}
+	}
+}
+
+// ClearScan clears the "scan" edge to the Scan entity.
+func (m *ScanJobMutation) ClearScan() {
+	m.clearedscan = true
+}
+
+// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+func (m *ScanJobMutation) ScanCleared() bool {
+	return m.clearedscan
+}
+
+// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+func (m *ScanJobMutation) RemoveScanIDs(ids ...int) {
+	if m.removedscan == nil {
+		m.removedscan = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.scan, ids[i])
+		m.removedscan[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+func (m *ScanJobMutation) RemovedScanIDs() (ids []int) {
+	for id := range m.removedscan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ScanIDs returns the "scan" edge IDs in the mutation.
+func (m *ScanJobMutation) ScanIDs() (ids []int) {
+	for id := range m.scan {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetScan resets all changes to the "scan" edge.
+func (m *ScanJobMutation) ResetScan() {
+	m.scan = nil
+	m.clearedscan = false
+	m.removedscan = nil
+}
+
+// Where appends a list predicates to the ScanJobMutation builder.
+func (m *ScanJobMutation) Where(ps ...predicate.ScanJob) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the ScanJobMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ScanJobMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.ScanJob, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *ScanJobMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ScanJobMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (ScanJob).
+func (m *ScanJobMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *ScanJobMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.scanid != nil {
+		fields = append(fields, scanjob.FieldScanid)
+	}
+	if m.timeout != nil {
+		fields = append(fields, scanjob.FieldTimeout)
+	}
+	if m.status != nil {
+		fields = append(fields, scanjob.FieldStatus)
+	}
+	if m.input != nil {
+		fields = append(fields, scanjob.FieldInput)
+	}
+	if m.output != nil {
+		fields = append(fields, scanjob.FieldOutput)
+	}
+	if m.command != nil {
+		fields = append(fields, scanjob.FieldCommand)
+	}
+	if m.timestamp != nil {
+		fields = append(fields, scanjob.FieldTimestamp)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *ScanJobMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case scanjob.FieldScanid:
+		return m.Scanid()
+	case scanjob.FieldTimeout:
+		return m.Timeout()
+	case scanjob.FieldStatus:
+		return m.Status()
+	case scanjob.FieldInput:
+		return m.Input()
+	case scanjob.FieldOutput:
+		return m.Output()
+	case scanjob.FieldCommand:
+		return m.Command()
+	case scanjob.FieldTimestamp:
+		return m.Timestamp()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *ScanJobMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case scanjob.FieldScanid:
+		return m.OldScanid(ctx)
+	case scanjob.FieldTimeout:
+		return m.OldTimeout(ctx)
+	case scanjob.FieldStatus:
+		return m.OldStatus(ctx)
+	case scanjob.FieldInput:
+		return m.OldInput(ctx)
+	case scanjob.FieldOutput:
+		return m.OldOutput(ctx)
+	case scanjob.FieldCommand:
+		return m.OldCommand(ctx)
+	case scanjob.FieldTimestamp:
+		return m.OldTimestamp(ctx)
+	}
+	return nil, fmt.Errorf("unknown ScanJob field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScanJobMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case scanjob.FieldScanid:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScanid(v)
+		return nil
+	case scanjob.FieldTimeout:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimeout(v)
+		return nil
+	case scanjob.FieldStatus:
+		v, ok := value.(scanjob.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case scanjob.FieldInput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetInput(v)
+		return nil
+	case scanjob.FieldOutput:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetOutput(v)
+		return nil
+	case scanjob.FieldCommand:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCommand(v)
+		return nil
+	case scanjob.FieldTimestamp:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTimestamp(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ScanJob field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *ScanJobMutation) AddedFields() []string {
+	var fields []string
+	if m.addtimeout != nil {
+		fields = append(fields, scanjob.FieldTimeout)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *ScanJobMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case scanjob.FieldTimeout:
+		return m.AddedTimeout()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *ScanJobMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case scanjob.FieldTimeout:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddTimeout(v)
+		return nil
+	}
+	return fmt.Errorf("unknown ScanJob numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *ScanJobMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *ScanJobMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *ScanJobMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown ScanJob nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *ScanJobMutation) ResetField(name string) error {
+	switch name {
+	case scanjob.FieldScanid:
+		m.ResetScanid()
+		return nil
+	case scanjob.FieldTimeout:
+		m.ResetTimeout()
+		return nil
+	case scanjob.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case scanjob.FieldInput:
+		m.ResetInput()
+		return nil
+	case scanjob.FieldOutput:
+		m.ResetOutput()
+		return nil
+	case scanjob.FieldCommand:
+		m.ResetCommand()
+		return nil
+	case scanjob.FieldTimestamp:
+		m.ResetTimestamp()
+		return nil
+	}
+	return fmt.Errorf("unknown ScanJob field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *ScanJobMutation) AddedEdges() []string {
+	edges := make([]string, 0, 9)
+	if m.ipaddress != nil {
+		edges = append(edges, scanjob.EdgeIpaddress)
+	}
+	if m.asninfo != nil {
+		edges = append(edges, scanjob.EdgeAsninfo)
+	}
+	if m.dnsentry != nil {
+		edges = append(edges, scanjob.EdgeDnsentry)
+	}
+	if m.domain != nil {
+		edges = append(edges, scanjob.EdgeDomain)
+	}
+	if m._path != nil {
+		edges = append(edges, scanjob.EdgePath)
+	}
+	if m.nameserver != nil {
+		edges = append(edges, scanjob.EdgeNameserver)
+	}
+	if m.registrar != nil {
+		edges = append(edges, scanjob.EdgeRegistrar)
+	}
+	if m.whois != nil {
+		edges = append(edges, scanjob.EdgeWhois)
+	}
+	if m.scan != nil {
+		edges = append(edges, scanjob.EdgeScan)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *ScanJobMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case scanjob.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.ipaddress))
+		for id := range m.ipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeAsninfo:
+		ids := make([]ent.Value, 0, len(m.asninfo))
+		for id := range m.asninfo {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.dnsentry))
+		for id := range m.dnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.domain))
+		for id := range m.domain {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgePath:
+		ids := make([]ent.Value, 0, len(m._path))
+		for id := range m._path {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.nameserver))
+		for id := range m.nameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.registrar))
+		for id := range m.registrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.whois))
+		for id := range m.whois {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.scan))
+		for id := range m.scan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *ScanJobMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 9)
+	if m.removedipaddress != nil {
+		edges = append(edges, scanjob.EdgeIpaddress)
+	}
+	if m.removedasninfo != nil {
+		edges = append(edges, scanjob.EdgeAsninfo)
+	}
+	if m.removeddnsentry != nil {
+		edges = append(edges, scanjob.EdgeDnsentry)
+	}
+	if m.removeddomain != nil {
+		edges = append(edges, scanjob.EdgeDomain)
+	}
+	if m.removed_path != nil {
+		edges = append(edges, scanjob.EdgePath)
+	}
+	if m.removednameserver != nil {
+		edges = append(edges, scanjob.EdgeNameserver)
+	}
+	if m.removedregistrar != nil {
+		edges = append(edges, scanjob.EdgeRegistrar)
+	}
+	if m.removedwhois != nil {
+		edges = append(edges, scanjob.EdgeWhois)
+	}
+	if m.removedscan != nil {
+		edges = append(edges, scanjob.EdgeScan)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *ScanJobMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case scanjob.EdgeIpaddress:
+		ids := make([]ent.Value, 0, len(m.removedipaddress))
+		for id := range m.removedipaddress {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeAsninfo:
+		ids := make([]ent.Value, 0, len(m.removedasninfo))
+		for id := range m.removedasninfo {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeDnsentry:
+		ids := make([]ent.Value, 0, len(m.removeddnsentry))
+		for id := range m.removeddnsentry {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeDomain:
+		ids := make([]ent.Value, 0, len(m.removeddomain))
+		for id := range m.removeddomain {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgePath:
+		ids := make([]ent.Value, 0, len(m.removed_path))
+		for id := range m.removed_path {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeNameserver:
+		ids := make([]ent.Value, 0, len(m.removednameserver))
+		for id := range m.removednameserver {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeRegistrar:
+		ids := make([]ent.Value, 0, len(m.removedregistrar))
+		for id := range m.removedregistrar {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeWhois:
+		ids := make([]ent.Value, 0, len(m.removedwhois))
+		for id := range m.removedwhois {
+			ids = append(ids, id)
+		}
+		return ids
+	case scanjob.EdgeScan:
+		ids := make([]ent.Value, 0, len(m.removedscan))
+		for id := range m.removedscan {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *ScanJobMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 9)
+	if m.clearedipaddress {
+		edges = append(edges, scanjob.EdgeIpaddress)
+	}
+	if m.clearedasninfo {
+		edges = append(edges, scanjob.EdgeAsninfo)
+	}
+	if m.cleareddnsentry {
+		edges = append(edges, scanjob.EdgeDnsentry)
+	}
+	if m.cleareddomain {
+		edges = append(edges, scanjob.EdgeDomain)
+	}
+	if m.cleared_path {
+		edges = append(edges, scanjob.EdgePath)
+	}
+	if m.clearednameserver {
+		edges = append(edges, scanjob.EdgeNameserver)
+	}
+	if m.clearedregistrar {
+		edges = append(edges, scanjob.EdgeRegistrar)
+	}
+	if m.clearedwhois {
+		edges = append(edges, scanjob.EdgeWhois)
+	}
+	if m.clearedscan {
+		edges = append(edges, scanjob.EdgeScan)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *ScanJobMutation) EdgeCleared(name string) bool {
+	switch name {
+	case scanjob.EdgeIpaddress:
+		return m.clearedipaddress
+	case scanjob.EdgeAsninfo:
+		return m.clearedasninfo
+	case scanjob.EdgeDnsentry:
+		return m.cleareddnsentry
+	case scanjob.EdgeDomain:
+		return m.cleareddomain
+	case scanjob.EdgePath:
+		return m.cleared_path
+	case scanjob.EdgeNameserver:
+		return m.clearednameserver
+	case scanjob.EdgeRegistrar:
+		return m.clearedregistrar
+	case scanjob.EdgeWhois:
+		return m.clearedwhois
+	case scanjob.EdgeScan:
+		return m.clearedscan
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *ScanJobMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown ScanJob unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *ScanJobMutation) ResetEdge(name string) error {
+	switch name {
+	case scanjob.EdgeIpaddress:
+		m.ResetIpaddress()
+		return nil
+	case scanjob.EdgeAsninfo:
+		m.ResetAsninfo()
+		return nil
+	case scanjob.EdgeDnsentry:
+		m.ResetDnsentry()
+		return nil
+	case scanjob.EdgeDomain:
+		m.ResetDomain()
+		return nil
+	case scanjob.EdgePath:
+		m.ResetPath()
+		return nil
+	case scanjob.EdgeNameserver:
+		m.ResetNameserver()
+		return nil
+	case scanjob.EdgeRegistrar:
+		m.ResetRegistrar()
+		return nil
+	case scanjob.EdgeWhois:
+		m.ResetWhois()
+		return nil
+	case scanjob.EdgeScan:
+		m.ResetScan()
+		return nil
+	}
+	return fmt.Errorf("unknown ScanJob edge %s", name)
 }
 
 // WhoisMutation represents an operation that mutates the Whois nodes in the graph.
@@ -9362,7 +10226,7 @@ func (m *WhoisMutation) ResetNameserver() {
 	m.removednameserver = nil
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by ids.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by ids.
 func (m *WhoisMutation) AddScanIDs(ids ...int) {
 	if m.scan == nil {
 		m.scan = make(map[int]struct{})
@@ -9372,17 +10236,17 @@ func (m *WhoisMutation) AddScanIDs(ids ...int) {
 	}
 }
 
-// ClearScan clears the "scan" edge to the Scan entity.
+// ClearScan clears the "scan" edge to the ScanJob entity.
 func (m *WhoisMutation) ClearScan() {
 	m.clearedscan = true
 }
 
-// ScanCleared reports if the "scan" edge to the Scan entity was cleared.
+// ScanCleared reports if the "scan" edge to the ScanJob entity was cleared.
 func (m *WhoisMutation) ScanCleared() bool {
 	return m.clearedscan
 }
 
-// RemoveScanIDs removes the "scan" edge to the Scan entity by IDs.
+// RemoveScanIDs removes the "scan" edge to the ScanJob entity by IDs.
 func (m *WhoisMutation) RemoveScanIDs(ids ...int) {
 	if m.removedscan == nil {
 		m.removedscan = make(map[int]struct{})
@@ -9393,7 +10257,7 @@ func (m *WhoisMutation) RemoveScanIDs(ids ...int) {
 	}
 }
 
-// RemovedScan returns the removed IDs of the "scan" edge to the Scan entity.
+// RemovedScan returns the removed IDs of the "scan" edge to the ScanJob entity.
 func (m *WhoisMutation) RemovedScanIDs() (ids []int) {
 	for id := range m.removedscan {
 		ids = append(ids, id)

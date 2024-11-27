@@ -15,7 +15,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // PathQuery is the builder for querying Path entities.
@@ -26,7 +26,7 @@ type PathQuery struct {
 	inters     []Interceptor
 	predicates []predicate.Path
 	withDomain *DomainQuery
-	withScan   *ScanQuery
+	withScan   *ScanJobQuery
 	withFKs    bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -87,8 +87,8 @@ func (pq *PathQuery) QueryDomain() *DomainQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (pq *PathQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: pq.config}).Query()
+func (pq *PathQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: pq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -99,7 +99,7 @@ func (pq *PathQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(path.Table, path.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, path.ScanTable, path.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
@@ -321,8 +321,8 @@ func (pq *PathQuery) WithDomain(opts ...func(*DomainQuery)) *PathQuery {
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PathQuery) WithScan(opts ...func(*ScanQuery)) *PathQuery {
-	query := (&ScanClient{config: pq.config}).Query()
+func (pq *PathQuery) WithScan(opts ...func(*ScanJobQuery)) *PathQuery {
+	query := (&ScanJobClient{config: pq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -444,8 +444,8 @@ func (pq *PathQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Path, e
 	}
 	if query := pq.withScan; query != nil {
 		if err := pq.loadScan(ctx, query, nodes,
-			func(n *Path) { n.Edges.Scan = []*Scan{} },
-			func(n *Path, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *Path) { n.Edges.Scan = []*ScanJob{} },
+			func(n *Path, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -513,7 +513,7 @@ func (pq *PathQuery) loadDomain(ctx context.Context, query *DomainQuery, nodes [
 	}
 	return nil
 }
-func (pq *PathQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Path, init func(*Path), assign func(*Path, *Scan)) error {
+func (pq *PathQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*Path, init func(*Path), assign func(*Path, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Path)
 	nids := make(map[int]map[*Path]struct{})
@@ -526,7 +526,7 @@ func (pq *PathQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Pa
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(path.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(path.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(path.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(path.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(path.ScanPrimaryKey[1]))
@@ -559,7 +559,7 @@ func (pq *PathQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Pa
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

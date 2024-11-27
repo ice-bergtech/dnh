@@ -12,13 +12,14 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -149,14 +150,14 @@ func (du *DomainUpdate) AddPath(p ...*Path) *DomainUpdate {
 	return du.AddPathIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (du *DomainUpdate) AddScanIDs(ids ...int) *DomainUpdate {
 	du.mutation.AddScanIDs(ids...)
 	return du
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (du *DomainUpdate) AddScan(s ...*Scan) *DomainUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (du *DomainUpdate) AddScan(s ...*ScanJob) *DomainUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -164,17 +165,17 @@ func (du *DomainUpdate) AddScan(s ...*Scan) *DomainUpdate {
 	return du.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (du *DomainUpdate) AddDnsentryIDs(ids ...int) *DomainUpdate {
 	du.mutation.AddDnsentryIDs(ids...)
 	return du
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (du *DomainUpdate) AddDnsentry(s ...*Scan) *DomainUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (du *DomainUpdate) AddDnsentry(d ...*DNSEntry) *DomainUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return du.AddDnsentryIDs(ids...)
 }
@@ -298,20 +299,20 @@ func (du *DomainUpdate) RemovePath(p ...*Path) *DomainUpdate {
 	return du.RemovePathIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (du *DomainUpdate) ClearScan() *DomainUpdate {
 	du.mutation.ClearScan()
 	return du
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (du *DomainUpdate) RemoveScanIDs(ids ...int) *DomainUpdate {
 	du.mutation.RemoveScanIDs(ids...)
 	return du
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (du *DomainUpdate) RemoveScan(s ...*Scan) *DomainUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (du *DomainUpdate) RemoveScan(s ...*ScanJob) *DomainUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -319,23 +320,23 @@ func (du *DomainUpdate) RemoveScan(s ...*Scan) *DomainUpdate {
 	return du.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (du *DomainUpdate) ClearDnsentry() *DomainUpdate {
 	du.mutation.ClearDnsentry()
 	return du
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (du *DomainUpdate) RemoveDnsentryIDs(ids ...int) *DomainUpdate {
 	du.mutation.RemoveDnsentryIDs(ids...)
 	return du
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (du *DomainUpdate) RemoveDnsentry(s ...*Scan) *DomainUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (du *DomainUpdate) RemoveDnsentry(d ...*DNSEntry) *DomainUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return du.RemoveDnsentryIDs(ids...)
 }
@@ -623,7 +624,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -636,7 +637,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -652,7 +653,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -668,7 +669,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -681,7 +682,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -697,7 +698,7 @@ func (du *DomainUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -929,14 +930,14 @@ func (duo *DomainUpdateOne) AddPath(p ...*Path) *DomainUpdateOne {
 	return duo.AddPathIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (duo *DomainUpdateOne) AddScanIDs(ids ...int) *DomainUpdateOne {
 	duo.mutation.AddScanIDs(ids...)
 	return duo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (duo *DomainUpdateOne) AddScan(s ...*Scan) *DomainUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (duo *DomainUpdateOne) AddScan(s ...*ScanJob) *DomainUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -944,17 +945,17 @@ func (duo *DomainUpdateOne) AddScan(s ...*Scan) *DomainUpdateOne {
 	return duo.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (duo *DomainUpdateOne) AddDnsentryIDs(ids ...int) *DomainUpdateOne {
 	duo.mutation.AddDnsentryIDs(ids...)
 	return duo
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (duo *DomainUpdateOne) AddDnsentry(s ...*Scan) *DomainUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (duo *DomainUpdateOne) AddDnsentry(d ...*DNSEntry) *DomainUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return duo.AddDnsentryIDs(ids...)
 }
@@ -1078,20 +1079,20 @@ func (duo *DomainUpdateOne) RemovePath(p ...*Path) *DomainUpdateOne {
 	return duo.RemovePathIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (duo *DomainUpdateOne) ClearScan() *DomainUpdateOne {
 	duo.mutation.ClearScan()
 	return duo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (duo *DomainUpdateOne) RemoveScanIDs(ids ...int) *DomainUpdateOne {
 	duo.mutation.RemoveScanIDs(ids...)
 	return duo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (duo *DomainUpdateOne) RemoveScan(s ...*Scan) *DomainUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (duo *DomainUpdateOne) RemoveScan(s ...*ScanJob) *DomainUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -1099,23 +1100,23 @@ func (duo *DomainUpdateOne) RemoveScan(s ...*Scan) *DomainUpdateOne {
 	return duo.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (duo *DomainUpdateOne) ClearDnsentry() *DomainUpdateOne {
 	duo.mutation.ClearDnsentry()
 	return duo
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (duo *DomainUpdateOne) RemoveDnsentryIDs(ids ...int) *DomainUpdateOne {
 	duo.mutation.RemoveDnsentryIDs(ids...)
 	return duo
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (duo *DomainUpdateOne) RemoveDnsentry(s ...*Scan) *DomainUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (duo *DomainUpdateOne) RemoveDnsentry(d ...*DNSEntry) *DomainUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return duo.RemoveDnsentryIDs(ids...)
 }
@@ -1433,7 +1434,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1446,7 +1447,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1462,7 +1463,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1478,7 +1479,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1491,7 +1492,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -1507,7 +1508,7 @@ func (duo *DomainUpdateOne) sqlSave(ctx context.Context) (_node *Domain, err err
 			Columns: domain.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

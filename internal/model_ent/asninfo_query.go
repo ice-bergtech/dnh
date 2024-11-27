@@ -16,7 +16,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -27,7 +27,7 @@ type ASNInfoQuery struct {
 	order         []asninfo.OrderOption
 	inters        []Interceptor
 	predicates    []predicate.ASNInfo
-	withScan      *ScanQuery
+	withScan      *ScanJobQuery
 	withIpaddress *IPAddressQuery
 	withRegistrar *RegistrarQuery
 	withWhois     *WhoisQuery
@@ -69,8 +69,8 @@ func (aiq *ASNInfoQuery) Order(o ...asninfo.OrderOption) *ASNInfoQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (aiq *ASNInfoQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: aiq.config}).Query()
+func (aiq *ASNInfoQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: aiq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aiq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -81,7 +81,7 @@ func (aiq *ASNInfoQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(asninfo.Table, asninfo.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, asninfo.ScanTable, asninfo.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(aiq.driver.Dialect(), step)
@@ -360,8 +360,8 @@ func (aiq *ASNInfoQuery) Clone() *ASNInfoQuery {
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (aiq *ASNInfoQuery) WithScan(opts ...func(*ScanQuery)) *ASNInfoQuery {
-	query := (&ScanClient{config: aiq.config}).Query()
+func (aiq *ASNInfoQuery) WithScan(opts ...func(*ScanJobQuery)) *ASNInfoQuery {
+	query := (&ScanJobClient{config: aiq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -511,8 +511,8 @@ func (aiq *ASNInfoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ASN
 	}
 	if query := aiq.withScan; query != nil {
 		if err := aiq.loadScan(ctx, query, nodes,
-			func(n *ASNInfo) { n.Edges.Scan = []*Scan{} },
-			func(n *ASNInfo, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *ASNInfo) { n.Edges.Scan = []*ScanJob{} },
+			func(n *ASNInfo, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -540,7 +540,7 @@ func (aiq *ASNInfoQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ASN
 	return nodes, nil
 }
 
-func (aiq *ASNInfoQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *Scan)) error {
+func (aiq *ASNInfoQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*ASNInfo, init func(*ASNInfo), assign func(*ASNInfo, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*ASNInfo)
 	nids := make(map[int]map[*ASNInfo]struct{})
@@ -553,7 +553,7 @@ func (aiq *ASNInfoQuery) loadScan(ctx context.Context, query *ScanQuery, nodes [
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(asninfo.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(asninfo.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(asninfo.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(asninfo.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(asninfo.ScanPrimaryKey[1]))
@@ -586,7 +586,7 @@ func (aiq *ASNInfoQuery) loadScan(ctx context.Context, query *ScanQuery, nodes [
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

@@ -58,10 +58,10 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "asninfo" package.
 	AsninfoInverseTable = "asn_infos"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_registrar"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_registrar"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 	// WhoisTable is the table that holds the whois relation/edge. The primary key declared below.
 	WhoisTable = "whois_registrar"
 	// WhoisInverseTable is the table name for the Whois entity.
@@ -101,7 +101,7 @@ var (
 	AsninfoPrimaryKey = []string{"registrar_id", "asn_info_id"}
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "registrar_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "registrar_id"}
 	// WhoisPrimaryKey and WhoisColumn2 are the table columns denoting the
 	// primary key for the whois relation (M2M).
 	WhoisPrimaryKey = []string{"whois_id", "registrar_id"}

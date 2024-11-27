@@ -33,5 +33,8 @@ type Registrar func(*sql.Selector)
 // Scan is the predicate function for scan builders.
 type Scan func(*sql.Selector)
 
+// ScanJob is the predicate function for scanjob builders.
+type ScanJob func(*sql.Selector)
+
 // Whois is the predicate function for whois builders.
 type Whois func(*sql.Selector)

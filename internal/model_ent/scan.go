@@ -33,97 +33,20 @@ type Scan struct {
 
 // ScanEdges holds the relations/edges for other nodes in the graph.
 type ScanEdges struct {
-	// Ipaddress holds the value of the ipaddress edge.
-	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
-	// Asninfo holds the value of the asninfo edge.
-	Asninfo []*ASNInfo `json:"asninfo,omitempty"`
-	// Dnsentry holds the value of the dnsentry edge.
-	Dnsentry []*DNSEntry `json:"dnsentry,omitempty"`
-	// Domain holds the value of the domain edge.
-	Domain []*Domain `json:"domain,omitempty"`
-	// Path holds the value of the path edge.
-	Path []*Path `json:"path,omitempty"`
-	// Nameserver holds the value of the nameserver edge.
-	Nameserver []*Nameserver `json:"nameserver,omitempty"`
-	// Registrar holds the value of the registrar edge.
-	Registrar []*Registrar `json:"registrar,omitempty"`
-	// Whois holds the value of the whois edge.
-	Whois []*Whois `json:"whois,omitempty"`
+	// Scanjob holds the value of the scanjob edge.
+	Scanjob []*ScanJob `json:"scanjob,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [1]bool
 }
 
-// IpaddressOrErr returns the Ipaddress value or an error if the edge
+// ScanjobOrErr returns the Scanjob value or an error if the edge
 // was not loaded in eager-loading.
-func (e ScanEdges) IpaddressOrErr() ([]*IPAddress, error) {
+func (e ScanEdges) ScanjobOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[0] {
-		return e.Ipaddress, nil
+		return e.Scanjob, nil
 	}
-	return nil, &NotLoadedError{edge: "ipaddress"}
-}
-
-// AsninfoOrErr returns the Asninfo value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) AsninfoOrErr() ([]*ASNInfo, error) {
-	if e.loadedTypes[1] {
-		return e.Asninfo, nil
-	}
-	return nil, &NotLoadedError{edge: "asninfo"}
-}
-
-// DnsentryOrErr returns the Dnsentry value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) DnsentryOrErr() ([]*DNSEntry, error) {
-	if e.loadedTypes[2] {
-		return e.Dnsentry, nil
-	}
-	return nil, &NotLoadedError{edge: "dnsentry"}
-}
-
-// DomainOrErr returns the Domain value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) DomainOrErr() ([]*Domain, error) {
-	if e.loadedTypes[3] {
-		return e.Domain, nil
-	}
-	return nil, &NotLoadedError{edge: "domain"}
-}
-
-// PathOrErr returns the Path value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) PathOrErr() ([]*Path, error) {
-	if e.loadedTypes[4] {
-		return e.Path, nil
-	}
-	return nil, &NotLoadedError{edge: "path"}
-}
-
-// NameserverOrErr returns the Nameserver value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) NameserverOrErr() ([]*Nameserver, error) {
-	if e.loadedTypes[5] {
-		return e.Nameserver, nil
-	}
-	return nil, &NotLoadedError{edge: "nameserver"}
-}
-
-// RegistrarOrErr returns the Registrar value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) RegistrarOrErr() ([]*Registrar, error) {
-	if e.loadedTypes[6] {
-		return e.Registrar, nil
-	}
-	return nil, &NotLoadedError{edge: "registrar"}
-}
-
-// WhoisOrErr returns the Whois value or an error if the edge
-// was not loaded in eager-loading.
-func (e ScanEdges) WhoisOrErr() ([]*Whois, error) {
-	if e.loadedTypes[7] {
-		return e.Whois, nil
-	}
-	return nil, &NotLoadedError{edge: "whois"}
+	return nil, &NotLoadedError{edge: "scanjob"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -195,44 +118,9 @@ func (s *Scan) Value(name string) (ent.Value, error) {
 	return s.selectValues.Get(name)
 }
 
-// QueryIpaddress queries the "ipaddress" edge of the Scan entity.
-func (s *Scan) QueryIpaddress() *IPAddressQuery {
-	return NewScanClient(s.config).QueryIpaddress(s)
-}
-
-// QueryAsninfo queries the "asninfo" edge of the Scan entity.
-func (s *Scan) QueryAsninfo() *ASNInfoQuery {
-	return NewScanClient(s.config).QueryAsninfo(s)
-}
-
-// QueryDnsentry queries the "dnsentry" edge of the Scan entity.
-func (s *Scan) QueryDnsentry() *DNSEntryQuery {
-	return NewScanClient(s.config).QueryDnsentry(s)
-}
-
-// QueryDomain queries the "domain" edge of the Scan entity.
-func (s *Scan) QueryDomain() *DomainQuery {
-	return NewScanClient(s.config).QueryDomain(s)
-}
-
-// QueryPath queries the "path" edge of the Scan entity.
-func (s *Scan) QueryPath() *PathQuery {
-	return NewScanClient(s.config).QueryPath(s)
-}
-
-// QueryNameserver queries the "nameserver" edge of the Scan entity.
-func (s *Scan) QueryNameserver() *NameserverQuery {
-	return NewScanClient(s.config).QueryNameserver(s)
-}
-
-// QueryRegistrar queries the "registrar" edge of the Scan entity.
-func (s *Scan) QueryRegistrar() *RegistrarQuery {
-	return NewScanClient(s.config).QueryRegistrar(s)
-}
-
-// QueryWhois queries the "whois" edge of the Scan entity.
-func (s *Scan) QueryWhois() *WhoisQuery {
-	return NewScanClient(s.config).QueryWhois(s)
+// QueryScanjob queries the "scanjob" edge of the Scan entity.
+func (s *Scan) QueryScanjob() *ScanJobQuery {
+	return NewScanClient(s.config).QueryScanjob(s)
 }
 
 // Update returns a builder for updating this Scan.

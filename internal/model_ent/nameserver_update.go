@@ -11,11 +11,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/nameserver"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -89,14 +90,14 @@ func (nu *NameserverUpdate) AddIpaddress(i ...*IPAddress) *NameserverUpdate {
 	return nu.AddIpaddresIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (nu *NameserverUpdate) AddScanIDs(ids ...int) *NameserverUpdate {
 	nu.mutation.AddScanIDs(ids...)
 	return nu
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (nu *NameserverUpdate) AddScan(s ...*Scan) *NameserverUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (nu *NameserverUpdate) AddScan(s ...*ScanJob) *NameserverUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -104,17 +105,17 @@ func (nu *NameserverUpdate) AddScan(s ...*Scan) *NameserverUpdate {
 	return nu.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (nu *NameserverUpdate) AddDnsentryIDs(ids ...int) *NameserverUpdate {
 	nu.mutation.AddDnsentryIDs(ids...)
 	return nu
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (nu *NameserverUpdate) AddDnsentry(s ...*Scan) *NameserverUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (nu *NameserverUpdate) AddDnsentry(d ...*DNSEntry) *NameserverUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return nu.AddDnsentryIDs(ids...)
 }
@@ -175,20 +176,20 @@ func (nu *NameserverUpdate) RemoveIpaddress(i ...*IPAddress) *NameserverUpdate {
 	return nu.RemoveIpaddresIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (nu *NameserverUpdate) ClearScan() *NameserverUpdate {
 	nu.mutation.ClearScan()
 	return nu
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (nu *NameserverUpdate) RemoveScanIDs(ids ...int) *NameserverUpdate {
 	nu.mutation.RemoveScanIDs(ids...)
 	return nu
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (nu *NameserverUpdate) RemoveScan(s ...*Scan) *NameserverUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (nu *NameserverUpdate) RemoveScan(s ...*ScanJob) *NameserverUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -196,23 +197,23 @@ func (nu *NameserverUpdate) RemoveScan(s ...*Scan) *NameserverUpdate {
 	return nu.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (nu *NameserverUpdate) ClearDnsentry() *NameserverUpdate {
 	nu.mutation.ClearDnsentry()
 	return nu
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (nu *NameserverUpdate) RemoveDnsentryIDs(ids ...int) *NameserverUpdate {
 	nu.mutation.RemoveDnsentryIDs(ids...)
 	return nu
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (nu *NameserverUpdate) RemoveDnsentry(s ...*Scan) *NameserverUpdate {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (nu *NameserverUpdate) RemoveDnsentry(d ...*DNSEntry) *NameserverUpdate {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return nu.RemoveDnsentryIDs(ids...)
 }
@@ -357,7 +358,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -370,7 +371,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -386,7 +387,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -402,7 +403,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -415,7 +416,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -431,7 +432,7 @@ func (nu *NameserverUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -606,14 +607,14 @@ func (nuo *NameserverUpdateOne) AddIpaddress(i ...*IPAddress) *NameserverUpdateO
 	return nuo.AddIpaddresIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (nuo *NameserverUpdateOne) AddScanIDs(ids ...int) *NameserverUpdateOne {
 	nuo.mutation.AddScanIDs(ids...)
 	return nuo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (nuo *NameserverUpdateOne) AddScan(s ...*Scan) *NameserverUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (nuo *NameserverUpdateOne) AddScan(s ...*ScanJob) *NameserverUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -621,17 +622,17 @@ func (nuo *NameserverUpdateOne) AddScan(s ...*Scan) *NameserverUpdateOne {
 	return nuo.AddScanIDs(ids...)
 }
 
-// AddDnsentryIDs adds the "dnsentry" edge to the Scan entity by IDs.
+// AddDnsentryIDs adds the "dnsentry" edge to the DNSEntry entity by IDs.
 func (nuo *NameserverUpdateOne) AddDnsentryIDs(ids ...int) *NameserverUpdateOne {
 	nuo.mutation.AddDnsentryIDs(ids...)
 	return nuo
 }
 
-// AddDnsentry adds the "dnsentry" edges to the Scan entity.
-func (nuo *NameserverUpdateOne) AddDnsentry(s ...*Scan) *NameserverUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// AddDnsentry adds the "dnsentry" edges to the DNSEntry entity.
+func (nuo *NameserverUpdateOne) AddDnsentry(d ...*DNSEntry) *NameserverUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return nuo.AddDnsentryIDs(ids...)
 }
@@ -692,20 +693,20 @@ func (nuo *NameserverUpdateOne) RemoveIpaddress(i ...*IPAddress) *NameserverUpda
 	return nuo.RemoveIpaddresIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (nuo *NameserverUpdateOne) ClearScan() *NameserverUpdateOne {
 	nuo.mutation.ClearScan()
 	return nuo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (nuo *NameserverUpdateOne) RemoveScanIDs(ids ...int) *NameserverUpdateOne {
 	nuo.mutation.RemoveScanIDs(ids...)
 	return nuo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (nuo *NameserverUpdateOne) RemoveScan(s ...*Scan) *NameserverUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (nuo *NameserverUpdateOne) RemoveScan(s ...*ScanJob) *NameserverUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -713,23 +714,23 @@ func (nuo *NameserverUpdateOne) RemoveScan(s ...*Scan) *NameserverUpdateOne {
 	return nuo.RemoveScanIDs(ids...)
 }
 
-// ClearDnsentry clears all "dnsentry" edges to the Scan entity.
+// ClearDnsentry clears all "dnsentry" edges to the DNSEntry entity.
 func (nuo *NameserverUpdateOne) ClearDnsentry() *NameserverUpdateOne {
 	nuo.mutation.ClearDnsentry()
 	return nuo
 }
 
-// RemoveDnsentryIDs removes the "dnsentry" edge to Scan entities by IDs.
+// RemoveDnsentryIDs removes the "dnsentry" edge to DNSEntry entities by IDs.
 func (nuo *NameserverUpdateOne) RemoveDnsentryIDs(ids ...int) *NameserverUpdateOne {
 	nuo.mutation.RemoveDnsentryIDs(ids...)
 	return nuo
 }
 
-// RemoveDnsentry removes "dnsentry" edges to Scan entities.
-func (nuo *NameserverUpdateOne) RemoveDnsentry(s ...*Scan) *NameserverUpdateOne {
-	ids := make([]int, len(s))
-	for i := range s {
-		ids[i] = s[i].ID
+// RemoveDnsentry removes "dnsentry" edges to DNSEntry entities.
+func (nuo *NameserverUpdateOne) RemoveDnsentry(d ...*DNSEntry) *NameserverUpdateOne {
+	ids := make([]int, len(d))
+	for i := range d {
+		ids[i] = d[i].ID
 	}
 	return nuo.RemoveDnsentryIDs(ids...)
 }
@@ -904,7 +905,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -917,7 +918,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -933,7 +934,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -949,7 +950,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -962,7 +963,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -978,7 +979,7 @@ func (nuo *NameserverUpdateOne) sqlSave(ctx context.Context) (_node *Nameserver,
 			Columns: nameserver.DnsentryPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(dnsentry.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

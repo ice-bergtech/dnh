@@ -13,7 +13,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 )
 
 // PathUpdate is the builder for updating Path entities.
@@ -58,14 +58,14 @@ func (pu *PathUpdate) AddDomain(d ...*Domain) *PathUpdate {
 	return pu.AddDomainIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (pu *PathUpdate) AddScanIDs(ids ...int) *PathUpdate {
 	pu.mutation.AddScanIDs(ids...)
 	return pu
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (pu *PathUpdate) AddScan(s ...*Scan) *PathUpdate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (pu *PathUpdate) AddScan(s ...*ScanJob) *PathUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -99,20 +99,20 @@ func (pu *PathUpdate) RemoveDomain(d ...*Domain) *PathUpdate {
 	return pu.RemoveDomainIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (pu *PathUpdate) ClearScan() *PathUpdate {
 	pu.mutation.ClearScan()
 	return pu
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (pu *PathUpdate) RemoveScanIDs(ids ...int) *PathUpdate {
 	pu.mutation.RemoveScanIDs(ids...)
 	return pu
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (pu *PathUpdate) RemoveScan(s ...*Scan) *PathUpdate {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (pu *PathUpdate) RemoveScan(s ...*ScanJob) *PathUpdate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -212,7 +212,7 @@ func (pu *PathUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -225,7 +225,7 @@ func (pu *PathUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -241,7 +241,7 @@ func (pu *PathUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -298,14 +298,14 @@ func (puo *PathUpdateOne) AddDomain(d ...*Domain) *PathUpdateOne {
 	return puo.AddDomainIDs(ids...)
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (puo *PathUpdateOne) AddScanIDs(ids ...int) *PathUpdateOne {
 	puo.mutation.AddScanIDs(ids...)
 	return puo
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (puo *PathUpdateOne) AddScan(s ...*Scan) *PathUpdateOne {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (puo *PathUpdateOne) AddScan(s ...*ScanJob) *PathUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -339,20 +339,20 @@ func (puo *PathUpdateOne) RemoveDomain(d ...*Domain) *PathUpdateOne {
 	return puo.RemoveDomainIDs(ids...)
 }
 
-// ClearScan clears all "scan" edges to the Scan entity.
+// ClearScan clears all "scan" edges to the ScanJob entity.
 func (puo *PathUpdateOne) ClearScan() *PathUpdateOne {
 	puo.mutation.ClearScan()
 	return puo
 }
 
-// RemoveScanIDs removes the "scan" edge to Scan entities by IDs.
+// RemoveScanIDs removes the "scan" edge to ScanJob entities by IDs.
 func (puo *PathUpdateOne) RemoveScanIDs(ids ...int) *PathUpdateOne {
 	puo.mutation.RemoveScanIDs(ids...)
 	return puo
 }
 
-// RemoveScan removes "scan" edges to Scan entities.
-func (puo *PathUpdateOne) RemoveScan(s ...*Scan) *PathUpdateOne {
+// RemoveScan removes "scan" edges to ScanJob entities.
+func (puo *PathUpdateOne) RemoveScan(s ...*ScanJob) *PathUpdateOne {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -482,7 +482,7 @@ func (puo *PathUpdateOne) sqlSave(ctx context.Context) (_node *Path, err error) 
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -495,7 +495,7 @@ func (puo *PathUpdateOne) sqlSave(ctx context.Context) (_node *Path, err error) 
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -511,7 +511,7 @@ func (puo *PathUpdateOne) sqlSave(ctx context.Context) (_node *Path, err error) 
 			Columns: path.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

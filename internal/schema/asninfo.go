@@ -25,7 +25,7 @@ func (ASNInfo) Fields() []ent.Field {
 func (ASNInfo) Edges() []ent.Edge {
 	return []ent.Edge{
 		//
-		edge.From("scan", Scan.Type).Ref("asninfo"),
+		edge.From("scan", ScanJob.Type).Ref("asninfo"),
 		edge.From("ipaddress", IPAddress.Type).Ref("asninfo"),
 		edge.From("registrar", Registrar.Type).Ref("asninfo"),
 		edge.From("whois", Whois.Type).Ref("asn"),

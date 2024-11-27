@@ -32,7 +32,7 @@ type ASNInfo struct {
 // ASNInfoEdges holds the relations/edges for other nodes in the graph.
 type ASNInfoEdges struct {
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// Ipaddress holds the value of the ipaddress edge.
 	Ipaddress []*IPAddress `json:"ipaddress,omitempty"`
 	// Registrar holds the value of the registrar edge.
@@ -46,7 +46,7 @@ type ASNInfoEdges struct {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e ASNInfoEdges) ScanOrErr() ([]*Scan, error) {
+func (e ASNInfoEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[0] {
 		return e.Scan, nil
 	}
@@ -151,7 +151,7 @@ func (ai *ASNInfo) Value(name string) (ent.Value, error) {
 }
 
 // QueryScan queries the "scan" edge of the ASNInfo entity.
-func (ai *ASNInfo) QueryScan() *ScanQuery {
+func (ai *ASNInfo) QueryScan() *ScanJobQuery {
 	return NewASNInfoClient(ai.config).QueryScan(ai)
 }
 

@@ -45,7 +45,7 @@ type DNSEntryEdges struct {
 	// Nameserver holds the value of the nameserver edge.
 	Nameserver []*Nameserver `json:"nameserver,omitempty"`
 	// Scan holds the value of the scan edge.
-	Scan []*Scan `json:"scan,omitempty"`
+	Scan []*ScanJob `json:"scan,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -80,7 +80,7 @@ func (e DNSEntryEdges) NameserverOrErr() ([]*Nameserver, error) {
 
 // ScanOrErr returns the Scan value or an error if the edge
 // was not loaded in eager-loading.
-func (e DNSEntryEdges) ScanOrErr() ([]*Scan, error) {
+func (e DNSEntryEdges) ScanOrErr() ([]*ScanJob, error) {
 	if e.loadedTypes[3] {
 		return e.Scan, nil
 	}
@@ -193,7 +193,7 @@ func (de *DNSEntry) QueryNameserver() *NameserverQuery {
 }
 
 // QueryScan queries the "scan" edge of the DNSEntry entity.
-func (de *DNSEntry) QueryScan() *ScanQuery {
+func (de *DNSEntry) QueryScan() *ScanJobQuery {
 	return NewDNSEntryClient(de.config).QueryScan(de)
 }
 

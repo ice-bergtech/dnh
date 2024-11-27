@@ -21,6 +21,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/path"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -91,6 +92,7 @@ func checkColumn(table, column string) error {
 			path.Table:       path.ValidColumn,
 			registrar.Table:  registrar.ValidColumn,
 			scan.Table:       scan.ValidColumn,
+			scanjob.Table:    scanjob.ValidColumn,
 			whois.Table:      whois.ValidColumn,
 		})
 	})

@@ -36,15 +36,15 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "ipaddress" package.
 	IpaddressInverseTable = "ip_addresses"
 	// ScanTable is the table that holds the scan relation/edge. The primary key declared below.
-	ScanTable = "scan_nameserver"
-	// ScanInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	ScanInverseTable = "scans"
+	ScanTable = "scan_job_nameserver"
+	// ScanInverseTable is the table name for the ScanJob entity.
+	// It exists in this package in order to avoid circular dependency with the "scanjob" package.
+	ScanInverseTable = "scan_jobs"
 	// DnsentryTable is the table that holds the dnsentry relation/edge. The primary key declared below.
-	DnsentryTable = "scan_nameserver"
-	// DnsentryInverseTable is the table name for the Scan entity.
-	// It exists in this package in order to avoid circular dependency with the "scan" package.
-	DnsentryInverseTable = "scans"
+	DnsentryTable = "dns_entry_nameserver"
+	// DnsentryInverseTable is the table name for the DNSEntry entity.
+	// It exists in this package in order to avoid circular dependency with the "dnsentry" package.
+	DnsentryInverseTable = "dns_entries"
 	// DomainTable is the table that holds the domain relation/edge. The primary key declared below.
 	DomainTable = "domain_nameserver"
 	// DomainInverseTable is the table name for the Domain entity.
@@ -68,7 +68,6 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "nameservers"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"dns_entry_nameserver",
 	"example_nameserver",
 }
 
@@ -78,10 +77,10 @@ var (
 	IpaddressPrimaryKey = []string{"nameserver_id", "ip_address_id"}
 	// ScanPrimaryKey and ScanColumn2 are the table columns denoting the
 	// primary key for the scan relation (M2M).
-	ScanPrimaryKey = []string{"scan_id", "nameserver_id"}
+	ScanPrimaryKey = []string{"scan_job_id", "nameserver_id"}
 	// DnsentryPrimaryKey and DnsentryColumn2 are the table columns denoting the
 	// primary key for the dnsentry relation (M2M).
-	DnsentryPrimaryKey = []string{"scan_id", "nameserver_id"}
+	DnsentryPrimaryKey = []string{"dns_entry_id", "nameserver_id"}
 	// DomainPrimaryKey and DomainColumn2 are the table columns denoting the
 	// primary key for the domain relation (M2M).
 	DomainPrimaryKey = []string{"domain_id", "nameserver_id"}

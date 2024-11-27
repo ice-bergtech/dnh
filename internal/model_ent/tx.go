@@ -30,6 +30,8 @@ type Tx struct {
 	Registrar *RegistrarClient
 	// Scan is the client for interacting with the Scan builders.
 	Scan *ScanClient
+	// ScanJob is the client for interacting with the ScanJob builders.
+	ScanJob *ScanJobClient
 	// Whois is the client for interacting with the Whois builders.
 	Whois *WhoisClient
 
@@ -172,6 +174,7 @@ func (tx *Tx) init() {
 	tx.Path = NewPathClient(tx.config)
 	tx.Registrar = NewRegistrarClient(tx.config)
 	tx.Scan = NewScanClient(tx.config)
+	tx.ScanJob = NewScanJobClient(tx.config)
 	tx.Whois = NewWhoisClient(tx.config)
 }
 

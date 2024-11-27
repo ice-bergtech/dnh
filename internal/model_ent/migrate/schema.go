@@ -62,7 +62,6 @@ var (
 		{Name: "ports", Type: field.TypeJSON},
 		{Name: "time_first", Type: field.TypeTime},
 		{Name: "time_last", Type: field.TypeTime},
-		{Name: "dns_entry_domain", Type: field.TypeInt, Nullable: true},
 		{Name: "example_domain", Type: field.TypeString, Nullable: true},
 	}
 	// DomainsTable holds the schema information for the "domains" table.
@@ -72,14 +71,8 @@ var (
 		PrimaryKey: []*schema.Column{DomainsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "domains_dns_entries_domain",
-				Columns:    []*schema.Column{DomainsColumns[5]},
-				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "domains_examples_domain",
-				Columns:    []*schema.Column{DomainsColumns[6]},
+				Columns:    []*schema.Column{DomainsColumns[5]},
 				RefColumns: []*schema.Column{ExamplesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -110,21 +103,12 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "ip", Type: field.TypeString},
 		{Name: "mask", Type: field.TypeString},
-		{Name: "dns_entry_ipaddress", Type: field.TypeInt, Nullable: true},
 	}
 	// IPAddressesTable holds the schema information for the "ip_addresses" table.
 	IPAddressesTable = &schema.Table{
 		Name:       "ip_addresses",
 		Columns:    IPAddressesColumns,
 		PrimaryKey: []*schema.Column{IPAddressesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "ip_addresses_dns_entries_ipaddress",
-				Columns:    []*schema.Column{IPAddressesColumns[3]},
-				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// NameserversColumns holds the columns for the "nameservers" table.
 	NameserversColumns = []*schema.Column{
@@ -132,7 +116,6 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "time_first", Type: field.TypeTime},
 		{Name: "time_last", Type: field.TypeTime},
-		{Name: "dns_entry_nameserver", Type: field.TypeInt, Nullable: true},
 		{Name: "example_nameserver", Type: field.TypeString, Nullable: true},
 	}
 	// NameserversTable holds the schema information for the "nameservers" table.
@@ -142,14 +125,8 @@ var (
 		PrimaryKey: []*schema.Column{NameserversColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "nameservers_dns_entries_nameserver",
-				Columns:    []*schema.Column{NameserversColumns[4]},
-				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
 				Symbol:     "nameservers_examples_nameserver",
-				Columns:    []*schema.Column{NameserversColumns[5]},
+				Columns:    []*schema.Column{NameserversColumns[4]},
 				RefColumns: []*schema.Column{ExamplesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -217,6 +194,23 @@ var (
 		Columns:    ScansColumns,
 		PrimaryKey: []*schema.Column{ScansColumns[0]},
 	}
+	// ScanJobsColumns holds the columns for the "scan_jobs" table.
+	ScanJobsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "scanid", Type: field.TypeString},
+		{Name: "timeout", Type: field.TypeInt},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"Pending", "Running", "Completed", "Failed"}},
+		{Name: "input", Type: field.TypeString},
+		{Name: "output", Type: field.TypeString},
+		{Name: "command", Type: field.TypeString},
+		{Name: "timestamp", Type: field.TypeTime},
+	}
+	// ScanJobsTable holds the schema information for the "scan_jobs" table.
+	ScanJobsTable = &schema.Table{
+		Name:       "scan_jobs",
+		Columns:    ScanJobsColumns,
+		PrimaryKey: []*schema.Column{ScanJobsColumns[0]},
+	}
 	// WhoisColumns holds the columns for the "whois" table.
 	WhoisColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -241,6 +235,81 @@ var (
 				Columns:    []*schema.Column{WhoisColumns[9]},
 				RefColumns: []*schema.Column{ExamplesColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+	}
+	// DNSEntryDomainColumns holds the columns for the "dns_entry_domain" table.
+	DNSEntryDomainColumns = []*schema.Column{
+		{Name: "dns_entry_id", Type: field.TypeInt},
+		{Name: "domain_id", Type: field.TypeInt},
+	}
+	// DNSEntryDomainTable holds the schema information for the "dns_entry_domain" table.
+	DNSEntryDomainTable = &schema.Table{
+		Name:       "dns_entry_domain",
+		Columns:    DNSEntryDomainColumns,
+		PrimaryKey: []*schema.Column{DNSEntryDomainColumns[0], DNSEntryDomainColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dns_entry_domain_dns_entry_id",
+				Columns:    []*schema.Column{DNSEntryDomainColumns[0]},
+				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "dns_entry_domain_domain_id",
+				Columns:    []*schema.Column{DNSEntryDomainColumns[1]},
+				RefColumns: []*schema.Column{DomainsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// DNSEntryIpaddressColumns holds the columns for the "dns_entry_ipaddress" table.
+	DNSEntryIpaddressColumns = []*schema.Column{
+		{Name: "dns_entry_id", Type: field.TypeInt},
+		{Name: "ip_address_id", Type: field.TypeInt},
+	}
+	// DNSEntryIpaddressTable holds the schema information for the "dns_entry_ipaddress" table.
+	DNSEntryIpaddressTable = &schema.Table{
+		Name:       "dns_entry_ipaddress",
+		Columns:    DNSEntryIpaddressColumns,
+		PrimaryKey: []*schema.Column{DNSEntryIpaddressColumns[0], DNSEntryIpaddressColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dns_entry_ipaddress_dns_entry_id",
+				Columns:    []*schema.Column{DNSEntryIpaddressColumns[0]},
+				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "dns_entry_ipaddress_ip_address_id",
+				Columns:    []*schema.Column{DNSEntryIpaddressColumns[1]},
+				RefColumns: []*schema.Column{IPAddressesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// DNSEntryNameserverColumns holds the columns for the "dns_entry_nameserver" table.
+	DNSEntryNameserverColumns = []*schema.Column{
+		{Name: "dns_entry_id", Type: field.TypeInt},
+		{Name: "nameserver_id", Type: field.TypeInt},
+	}
+	// DNSEntryNameserverTable holds the schema information for the "dns_entry_nameserver" table.
+	DNSEntryNameserverTable = &schema.Table{
+		Name:       "dns_entry_nameserver",
+		Columns:    DNSEntryNameserverColumns,
+		PrimaryKey: []*schema.Column{DNSEntryNameserverColumns[0], DNSEntryNameserverColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "dns_entry_nameserver_dns_entry_id",
+				Columns:    []*schema.Column{DNSEntryNameserverColumns[0]},
+				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "dns_entry_nameserver_nameserver_id",
+				Columns:    []*schema.Column{DNSEntryNameserverColumns[1]},
+				RefColumns: []*schema.Column{NameserversColumns[0]},
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}
@@ -469,201 +538,226 @@ var (
 			},
 		},
 	}
-	// ScanIpaddressColumns holds the columns for the "scan_ipaddress" table.
-	ScanIpaddressColumns = []*schema.Column{
+	// ScanScanjobColumns holds the columns for the "scan_scanjob" table.
+	ScanScanjobColumns = []*schema.Column{
 		{Name: "scan_id", Type: field.TypeInt},
-		{Name: "ip_address_id", Type: field.TypeInt},
+		{Name: "scan_job_id", Type: field.TypeInt},
 	}
-	// ScanIpaddressTable holds the schema information for the "scan_ipaddress" table.
-	ScanIpaddressTable = &schema.Table{
-		Name:       "scan_ipaddress",
-		Columns:    ScanIpaddressColumns,
-		PrimaryKey: []*schema.Column{ScanIpaddressColumns[0], ScanIpaddressColumns[1]},
+	// ScanScanjobTable holds the schema information for the "scan_scanjob" table.
+	ScanScanjobTable = &schema.Table{
+		Name:       "scan_scanjob",
+		Columns:    ScanScanjobColumns,
+		PrimaryKey: []*schema.Column{ScanScanjobColumns[0], ScanScanjobColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_ipaddress_scan_id",
-				Columns:    []*schema.Column{ScanIpaddressColumns[0]},
+				Symbol:     "scan_scanjob_scan_id",
+				Columns:    []*schema.Column{ScanScanjobColumns[0]},
 				RefColumns: []*schema.Column{ScansColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_ipaddress_ip_address_id",
-				Columns:    []*schema.Column{ScanIpaddressColumns[1]},
+				Symbol:     "scan_scanjob_scan_job_id",
+				Columns:    []*schema.Column{ScanScanjobColumns[1]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// ScanJobIpaddressColumns holds the columns for the "scan_job_ipaddress" table.
+	ScanJobIpaddressColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
+		{Name: "ip_address_id", Type: field.TypeInt},
+	}
+	// ScanJobIpaddressTable holds the schema information for the "scan_job_ipaddress" table.
+	ScanJobIpaddressTable = &schema.Table{
+		Name:       "scan_job_ipaddress",
+		Columns:    ScanJobIpaddressColumns,
+		PrimaryKey: []*schema.Column{ScanJobIpaddressColumns[0], ScanJobIpaddressColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "scan_job_ipaddress_scan_job_id",
+				Columns:    []*schema.Column{ScanJobIpaddressColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "scan_job_ipaddress_ip_address_id",
+				Columns:    []*schema.Column{ScanJobIpaddressColumns[1]},
 				RefColumns: []*schema.Column{IPAddressesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanAsninfoColumns holds the columns for the "scan_asninfo" table.
-	ScanAsninfoColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobAsninfoColumns holds the columns for the "scan_job_asninfo" table.
+	ScanJobAsninfoColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "asn_info_id", Type: field.TypeInt},
 	}
-	// ScanAsninfoTable holds the schema information for the "scan_asninfo" table.
-	ScanAsninfoTable = &schema.Table{
-		Name:       "scan_asninfo",
-		Columns:    ScanAsninfoColumns,
-		PrimaryKey: []*schema.Column{ScanAsninfoColumns[0], ScanAsninfoColumns[1]},
+	// ScanJobAsninfoTable holds the schema information for the "scan_job_asninfo" table.
+	ScanJobAsninfoTable = &schema.Table{
+		Name:       "scan_job_asninfo",
+		Columns:    ScanJobAsninfoColumns,
+		PrimaryKey: []*schema.Column{ScanJobAsninfoColumns[0], ScanJobAsninfoColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_asninfo_scan_id",
-				Columns:    []*schema.Column{ScanAsninfoColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_asninfo_scan_job_id",
+				Columns:    []*schema.Column{ScanJobAsninfoColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_asninfo_asn_info_id",
-				Columns:    []*schema.Column{ScanAsninfoColumns[1]},
+				Symbol:     "scan_job_asninfo_asn_info_id",
+				Columns:    []*schema.Column{ScanJobAsninfoColumns[1]},
 				RefColumns: []*schema.Column{AsnInfosColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanDnsentryColumns holds the columns for the "scan_dnsentry" table.
-	ScanDnsentryColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobDnsentryColumns holds the columns for the "scan_job_dnsentry" table.
+	ScanJobDnsentryColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "dns_entry_id", Type: field.TypeInt},
 	}
-	// ScanDnsentryTable holds the schema information for the "scan_dnsentry" table.
-	ScanDnsentryTable = &schema.Table{
-		Name:       "scan_dnsentry",
-		Columns:    ScanDnsentryColumns,
-		PrimaryKey: []*schema.Column{ScanDnsentryColumns[0], ScanDnsentryColumns[1]},
+	// ScanJobDnsentryTable holds the schema information for the "scan_job_dnsentry" table.
+	ScanJobDnsentryTable = &schema.Table{
+		Name:       "scan_job_dnsentry",
+		Columns:    ScanJobDnsentryColumns,
+		PrimaryKey: []*schema.Column{ScanJobDnsentryColumns[0], ScanJobDnsentryColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_dnsentry_scan_id",
-				Columns:    []*schema.Column{ScanDnsentryColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_dnsentry_scan_job_id",
+				Columns:    []*schema.Column{ScanJobDnsentryColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_dnsentry_dns_entry_id",
-				Columns:    []*schema.Column{ScanDnsentryColumns[1]},
+				Symbol:     "scan_job_dnsentry_dns_entry_id",
+				Columns:    []*schema.Column{ScanJobDnsentryColumns[1]},
 				RefColumns: []*schema.Column{DNSEntriesColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanDomainColumns holds the columns for the "scan_domain" table.
-	ScanDomainColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobDomainColumns holds the columns for the "scan_job_domain" table.
+	ScanJobDomainColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "domain_id", Type: field.TypeInt},
 	}
-	// ScanDomainTable holds the schema information for the "scan_domain" table.
-	ScanDomainTable = &schema.Table{
-		Name:       "scan_domain",
-		Columns:    ScanDomainColumns,
-		PrimaryKey: []*schema.Column{ScanDomainColumns[0], ScanDomainColumns[1]},
+	// ScanJobDomainTable holds the schema information for the "scan_job_domain" table.
+	ScanJobDomainTable = &schema.Table{
+		Name:       "scan_job_domain",
+		Columns:    ScanJobDomainColumns,
+		PrimaryKey: []*schema.Column{ScanJobDomainColumns[0], ScanJobDomainColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_domain_scan_id",
-				Columns:    []*schema.Column{ScanDomainColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_domain_scan_job_id",
+				Columns:    []*schema.Column{ScanJobDomainColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_domain_domain_id",
-				Columns:    []*schema.Column{ScanDomainColumns[1]},
+				Symbol:     "scan_job_domain_domain_id",
+				Columns:    []*schema.Column{ScanJobDomainColumns[1]},
 				RefColumns: []*schema.Column{DomainsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanPathColumns holds the columns for the "scan_path" table.
-	ScanPathColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobPathColumns holds the columns for the "scan_job_path" table.
+	ScanJobPathColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "path_id", Type: field.TypeInt},
 	}
-	// ScanPathTable holds the schema information for the "scan_path" table.
-	ScanPathTable = &schema.Table{
-		Name:       "scan_path",
-		Columns:    ScanPathColumns,
-		PrimaryKey: []*schema.Column{ScanPathColumns[0], ScanPathColumns[1]},
+	// ScanJobPathTable holds the schema information for the "scan_job_path" table.
+	ScanJobPathTable = &schema.Table{
+		Name:       "scan_job_path",
+		Columns:    ScanJobPathColumns,
+		PrimaryKey: []*schema.Column{ScanJobPathColumns[0], ScanJobPathColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_path_scan_id",
-				Columns:    []*schema.Column{ScanPathColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_path_scan_job_id",
+				Columns:    []*schema.Column{ScanJobPathColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_path_path_id",
-				Columns:    []*schema.Column{ScanPathColumns[1]},
+				Symbol:     "scan_job_path_path_id",
+				Columns:    []*schema.Column{ScanJobPathColumns[1]},
 				RefColumns: []*schema.Column{PathsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanNameserverColumns holds the columns for the "scan_nameserver" table.
-	ScanNameserverColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobNameserverColumns holds the columns for the "scan_job_nameserver" table.
+	ScanJobNameserverColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "nameserver_id", Type: field.TypeInt},
 	}
-	// ScanNameserverTable holds the schema information for the "scan_nameserver" table.
-	ScanNameserverTable = &schema.Table{
-		Name:       "scan_nameserver",
-		Columns:    ScanNameserverColumns,
-		PrimaryKey: []*schema.Column{ScanNameserverColumns[0], ScanNameserverColumns[1]},
+	// ScanJobNameserverTable holds the schema information for the "scan_job_nameserver" table.
+	ScanJobNameserverTable = &schema.Table{
+		Name:       "scan_job_nameserver",
+		Columns:    ScanJobNameserverColumns,
+		PrimaryKey: []*schema.Column{ScanJobNameserverColumns[0], ScanJobNameserverColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_nameserver_scan_id",
-				Columns:    []*schema.Column{ScanNameserverColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_nameserver_scan_job_id",
+				Columns:    []*schema.Column{ScanJobNameserverColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_nameserver_nameserver_id",
-				Columns:    []*schema.Column{ScanNameserverColumns[1]},
+				Symbol:     "scan_job_nameserver_nameserver_id",
+				Columns:    []*schema.Column{ScanJobNameserverColumns[1]},
 				RefColumns: []*schema.Column{NameserversColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanRegistrarColumns holds the columns for the "scan_registrar" table.
-	ScanRegistrarColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobRegistrarColumns holds the columns for the "scan_job_registrar" table.
+	ScanJobRegistrarColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "registrar_id", Type: field.TypeInt},
 	}
-	// ScanRegistrarTable holds the schema information for the "scan_registrar" table.
-	ScanRegistrarTable = &schema.Table{
-		Name:       "scan_registrar",
-		Columns:    ScanRegistrarColumns,
-		PrimaryKey: []*schema.Column{ScanRegistrarColumns[0], ScanRegistrarColumns[1]},
+	// ScanJobRegistrarTable holds the schema information for the "scan_job_registrar" table.
+	ScanJobRegistrarTable = &schema.Table{
+		Name:       "scan_job_registrar",
+		Columns:    ScanJobRegistrarColumns,
+		PrimaryKey: []*schema.Column{ScanJobRegistrarColumns[0], ScanJobRegistrarColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_registrar_scan_id",
-				Columns:    []*schema.Column{ScanRegistrarColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_registrar_scan_job_id",
+				Columns:    []*schema.Column{ScanJobRegistrarColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_registrar_registrar_id",
-				Columns:    []*schema.Column{ScanRegistrarColumns[1]},
+				Symbol:     "scan_job_registrar_registrar_id",
+				Columns:    []*schema.Column{ScanJobRegistrarColumns[1]},
 				RefColumns: []*schema.Column{RegistrarsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
-	// ScanWhoisColumns holds the columns for the "scan_whois" table.
-	ScanWhoisColumns = []*schema.Column{
-		{Name: "scan_id", Type: field.TypeInt},
+	// ScanJobWhoisColumns holds the columns for the "scan_job_whois" table.
+	ScanJobWhoisColumns = []*schema.Column{
+		{Name: "scan_job_id", Type: field.TypeInt},
 		{Name: "whois_id", Type: field.TypeInt},
 	}
-	// ScanWhoisTable holds the schema information for the "scan_whois" table.
-	ScanWhoisTable = &schema.Table{
-		Name:       "scan_whois",
-		Columns:    ScanWhoisColumns,
-		PrimaryKey: []*schema.Column{ScanWhoisColumns[0], ScanWhoisColumns[1]},
+	// ScanJobWhoisTable holds the schema information for the "scan_job_whois" table.
+	ScanJobWhoisTable = &schema.Table{
+		Name:       "scan_job_whois",
+		Columns:    ScanJobWhoisColumns,
+		PrimaryKey: []*schema.Column{ScanJobWhoisColumns[0], ScanJobWhoisColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "scan_whois_scan_id",
-				Columns:    []*schema.Column{ScanWhoisColumns[0]},
-				RefColumns: []*schema.Column{ScansColumns[0]},
+				Symbol:     "scan_job_whois_scan_job_id",
+				Columns:    []*schema.Column{ScanJobWhoisColumns[0]},
+				RefColumns: []*schema.Column{ScanJobsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "scan_whois_whois_id",
-				Columns:    []*schema.Column{ScanWhoisColumns[1]},
+				Symbol:     "scan_job_whois_whois_id",
+				Columns:    []*schema.Column{ScanJobWhoisColumns[1]},
 				RefColumns: []*schema.Column{WhoisColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -805,7 +899,11 @@ var (
 		PathsTable,
 		RegistrarsTable,
 		ScansTable,
+		ScanJobsTable,
 		WhoisTable,
+		DNSEntryDomainTable,
+		DNSEntryIpaddressTable,
+		DNSEntryNameserverTable,
 		DomainNameserverTable,
 		DomainSubdomainTable,
 		DomainIpaddressTable,
@@ -815,14 +913,15 @@ var (
 		RegistrarIpaddressTable,
 		RegistrarDomainTable,
 		RegistrarAsninfoTable,
-		ScanIpaddressTable,
-		ScanAsninfoTable,
-		ScanDnsentryTable,
-		ScanDomainTable,
-		ScanPathTable,
-		ScanNameserverTable,
-		ScanRegistrarTable,
-		ScanWhoisTable,
+		ScanScanjobTable,
+		ScanJobIpaddressTable,
+		ScanJobAsninfoTable,
+		ScanJobDnsentryTable,
+		ScanJobDomainTable,
+		ScanJobPathTable,
+		ScanJobNameserverTable,
+		ScanJobRegistrarTable,
+		ScanJobWhoisTable,
 		WhoisIprangeTable,
 		WhoisDomainTable,
 		WhoisAsnTable,
@@ -834,15 +933,18 @@ var (
 func init() {
 	AsnInfosTable.ForeignKeys[0].RefTable = ExamplesTable
 	DNSEntriesTable.ForeignKeys[0].RefTable = ExamplesTable
-	DomainsTable.ForeignKeys[0].RefTable = DNSEntriesTable
-	DomainsTable.ForeignKeys[1].RefTable = ExamplesTable
+	DomainsTable.ForeignKeys[0].RefTable = ExamplesTable
 	ExamplesTable.ForeignKeys[0].RefTable = IPAddressesTable
-	IPAddressesTable.ForeignKeys[0].RefTable = DNSEntriesTable
-	NameserversTable.ForeignKeys[0].RefTable = DNSEntriesTable
-	NameserversTable.ForeignKeys[1].RefTable = ExamplesTable
+	NameserversTable.ForeignKeys[0].RefTable = ExamplesTable
 	PathsTable.ForeignKeys[0].RefTable = ExamplesTable
 	RegistrarsTable.ForeignKeys[0].RefTable = ExamplesTable
 	WhoisTable.ForeignKeys[0].RefTable = ExamplesTable
+	DNSEntryDomainTable.ForeignKeys[0].RefTable = DNSEntriesTable
+	DNSEntryDomainTable.ForeignKeys[1].RefTable = DomainsTable
+	DNSEntryIpaddressTable.ForeignKeys[0].RefTable = DNSEntriesTable
+	DNSEntryIpaddressTable.ForeignKeys[1].RefTable = IPAddressesTable
+	DNSEntryNameserverTable.ForeignKeys[0].RefTable = DNSEntriesTable
+	DNSEntryNameserverTable.ForeignKeys[1].RefTable = NameserversTable
 	DomainNameserverTable.ForeignKeys[0].RefTable = DomainsTable
 	DomainNameserverTable.ForeignKeys[1].RefTable = NameserversTable
 	DomainSubdomainTable.ForeignKeys[0].RefTable = DomainsTable
@@ -861,22 +963,24 @@ func init() {
 	RegistrarDomainTable.ForeignKeys[1].RefTable = DomainsTable
 	RegistrarAsninfoTable.ForeignKeys[0].RefTable = RegistrarsTable
 	RegistrarAsninfoTable.ForeignKeys[1].RefTable = AsnInfosTable
-	ScanIpaddressTable.ForeignKeys[0].RefTable = ScansTable
-	ScanIpaddressTable.ForeignKeys[1].RefTable = IPAddressesTable
-	ScanAsninfoTable.ForeignKeys[0].RefTable = ScansTable
-	ScanAsninfoTable.ForeignKeys[1].RefTable = AsnInfosTable
-	ScanDnsentryTable.ForeignKeys[0].RefTable = ScansTable
-	ScanDnsentryTable.ForeignKeys[1].RefTable = DNSEntriesTable
-	ScanDomainTable.ForeignKeys[0].RefTable = ScansTable
-	ScanDomainTable.ForeignKeys[1].RefTable = DomainsTable
-	ScanPathTable.ForeignKeys[0].RefTable = ScansTable
-	ScanPathTable.ForeignKeys[1].RefTable = PathsTable
-	ScanNameserverTable.ForeignKeys[0].RefTable = ScansTable
-	ScanNameserverTable.ForeignKeys[1].RefTable = NameserversTable
-	ScanRegistrarTable.ForeignKeys[0].RefTable = ScansTable
-	ScanRegistrarTable.ForeignKeys[1].RefTable = RegistrarsTable
-	ScanWhoisTable.ForeignKeys[0].RefTable = ScansTable
-	ScanWhoisTable.ForeignKeys[1].RefTable = WhoisTable
+	ScanScanjobTable.ForeignKeys[0].RefTable = ScansTable
+	ScanScanjobTable.ForeignKeys[1].RefTable = ScanJobsTable
+	ScanJobIpaddressTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobIpaddressTable.ForeignKeys[1].RefTable = IPAddressesTable
+	ScanJobAsninfoTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobAsninfoTable.ForeignKeys[1].RefTable = AsnInfosTable
+	ScanJobDnsentryTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobDnsentryTable.ForeignKeys[1].RefTable = DNSEntriesTable
+	ScanJobDomainTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobDomainTable.ForeignKeys[1].RefTable = DomainsTable
+	ScanJobPathTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobPathTable.ForeignKeys[1].RefTable = PathsTable
+	ScanJobNameserverTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobNameserverTable.ForeignKeys[1].RefTable = NameserversTable
+	ScanJobRegistrarTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobRegistrarTable.ForeignKeys[1].RefTable = RegistrarsTable
+	ScanJobWhoisTable.ForeignKeys[0].RefTable = ScanJobsTable
+	ScanJobWhoisTable.ForeignKeys[1].RefTable = WhoisTable
 	WhoisIprangeTable.ForeignKeys[0].RefTable = WhoisTable
 	WhoisIprangeTable.ForeignKeys[1].RefTable = IPAddressesTable
 	WhoisDomainTable.ForeignKeys[0].RefTable = WhoisTable

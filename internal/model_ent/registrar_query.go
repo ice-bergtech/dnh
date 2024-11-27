@@ -17,7 +17,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/predicate"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -31,7 +31,7 @@ type RegistrarQuery struct {
 	withIpaddress *IPAddressQuery
 	withDomain    *DomainQuery
 	withAsninfo   *ASNInfoQuery
-	withScan      *ScanQuery
+	withScan      *ScanJobQuery
 	withWhois     *WhoisQuery
 	withFKs       bool
 	// intermediate query (i.e. traversal path).
@@ -137,8 +137,8 @@ func (rq *RegistrarQuery) QueryAsninfo() *ASNInfoQuery {
 }
 
 // QueryScan chains the current query on the "scan" edge.
-func (rq *RegistrarQuery) QueryScan() *ScanQuery {
-	query := (&ScanClient{config: rq.config}).Query()
+func (rq *RegistrarQuery) QueryScan() *ScanJobQuery {
+	query := (&ScanJobClient{config: rq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -149,7 +149,7 @@ func (rq *RegistrarQuery) QueryScan() *ScanQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(registrar.Table, registrar.FieldID, selector),
-			sqlgraph.To(scan.Table, scan.FieldID),
+			sqlgraph.To(scanjob.Table, scanjob.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, registrar.ScanTable, registrar.ScanPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
@@ -418,8 +418,8 @@ func (rq *RegistrarQuery) WithAsninfo(opts ...func(*ASNInfoQuery)) *RegistrarQue
 
 // WithScan tells the query-builder to eager-load the nodes that are connected to
 // the "scan" edge. The optional arguments are used to configure the query builder of the edge.
-func (rq *RegistrarQuery) WithScan(opts ...func(*ScanQuery)) *RegistrarQuery {
-	query := (&ScanClient{config: rq.config}).Query()
+func (rq *RegistrarQuery) WithScan(opts ...func(*ScanJobQuery)) *RegistrarQuery {
+	query := (&ScanJobClient{config: rq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -569,8 +569,8 @@ func (rq *RegistrarQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Re
 	}
 	if query := rq.withScan; query != nil {
 		if err := rq.loadScan(ctx, query, nodes,
-			func(n *Registrar) { n.Edges.Scan = []*Scan{} },
-			func(n *Registrar, e *Scan) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
+			func(n *Registrar) { n.Edges.Scan = []*ScanJob{} },
+			func(n *Registrar, e *ScanJob) { n.Edges.Scan = append(n.Edges.Scan, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -767,7 +767,7 @@ func (rq *RegistrarQuery) loadAsninfo(ctx context.Context, query *ASNInfoQuery, 
 	}
 	return nil
 }
-func (rq *RegistrarQuery) loadScan(ctx context.Context, query *ScanQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *Scan)) error {
+func (rq *RegistrarQuery) loadScan(ctx context.Context, query *ScanJobQuery, nodes []*Registrar, init func(*Registrar), assign func(*Registrar, *ScanJob)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[int]*Registrar)
 	nids := make(map[int]map[*Registrar]struct{})
@@ -780,7 +780,7 @@ func (rq *RegistrarQuery) loadScan(ctx context.Context, query *ScanQuery, nodes 
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(registrar.ScanTable)
-		s.Join(joinT).On(s.C(scan.FieldID), joinT.C(registrar.ScanPrimaryKey[0]))
+		s.Join(joinT).On(s.C(scanjob.FieldID), joinT.C(registrar.ScanPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(registrar.ScanPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
 		s.Select(joinT.C(registrar.ScanPrimaryKey[1]))
@@ -813,7 +813,7 @@ func (rq *RegistrarQuery) loadScan(ctx context.Context, query *ScanQuery, nodes 
 			}
 		})
 	})
-	neighbors, err := withInterceptors[[]*Scan](ctx, query, qr, query.inters)
+	neighbors, err := withInterceptors[[]*ScanJob](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}

@@ -319,7 +319,7 @@ func HasScan() predicate.Domain {
 }
 
 // HasScanWith applies the HasEdge predicate on the "scan" edge with a given conditions (other predicates).
-func HasScanWith(preds ...predicate.Scan) predicate.Domain {
+func HasScanWith(preds ...predicate.ScanJob) predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := newScanStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
@@ -342,7 +342,7 @@ func HasDnsentry() predicate.Domain {
 }
 
 // HasDnsentryWith applies the HasEdge predicate on the "dnsentry" edge with a given conditions (other predicates).
-func HasDnsentryWith(preds ...predicate.Scan) predicate.Domain {
+func HasDnsentryWith(preds ...predicate.DNSEntry) predicate.Domain {
 	return predicate.Domain(func(s *sql.Selector) {
 		step := newDnsentryStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

@@ -12,7 +12,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/ipaddress"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/registrar"
-	"github.com/ice-bergtech/dnh/src/internal/model_ent/scan"
+	"github.com/ice-bergtech/dnh/src/internal/model_ent/scanjob"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/whois"
 )
 
@@ -41,14 +41,14 @@ func (aic *ASNInfoCreate) SetRegistry(s string) *ASNInfoCreate {
 	return aic
 }
 
-// AddScanIDs adds the "scan" edge to the Scan entity by IDs.
+// AddScanIDs adds the "scan" edge to the ScanJob entity by IDs.
 func (aic *ASNInfoCreate) AddScanIDs(ids ...int) *ASNInfoCreate {
 	aic.mutation.AddScanIDs(ids...)
 	return aic
 }
 
-// AddScan adds the "scan" edges to the Scan entity.
-func (aic *ASNInfoCreate) AddScan(s ...*Scan) *ASNInfoCreate {
+// AddScan adds the "scan" edges to the ScanJob entity.
+func (aic *ASNInfoCreate) AddScan(s ...*ScanJob) *ASNInfoCreate {
 	ids := make([]int, len(s))
 	for i := range s {
 		ids[i] = s[i].ID
@@ -190,7 +190,7 @@ func (aic *ASNInfoCreate) createSpec() (*ASNInfo, *sqlgraph.CreateSpec) {
 			Columns: asninfo.ScanPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(scan.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(scanjob.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
