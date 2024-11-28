@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/domain"
@@ -19,6 +20,7 @@ type PathCreate struct {
 	config
 	mutation *PathMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetPath sets the "path" field.
@@ -120,6 +122,7 @@ func (pc *PathCreate) createSpec() (*Path, *sqlgraph.CreateSpec) {
 		_node = &Path{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(path.Table, sqlgraph.NewFieldSpec(path.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = pc.conflict
 	if value, ok := pc.mutation.Path(); ok {
 		_spec.SetField(path.FieldPath, field.TypeString, value)
 		_node.Path = value
@@ -159,11 +162,160 @@ func (pc *PathCreate) createSpec() (*Path, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Path.Create().
+//		SetPath(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PathUpsert) {
+//			SetPath(v+v).
+//		}).
+//		Exec(ctx)
+func (pc *PathCreate) OnConflict(opts ...sql.ConflictOption) *PathUpsertOne {
+	pc.conflict = opts
+	return &PathUpsertOne{
+		create: pc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (pc *PathCreate) OnConflictColumns(columns ...string) *PathUpsertOne {
+	pc.conflict = append(pc.conflict, sql.ConflictColumns(columns...))
+	return &PathUpsertOne{
+		create: pc,
+	}
+}
+
+type (
+	// PathUpsertOne is the builder for "upsert"-ing
+	//  one Path node.
+	PathUpsertOne struct {
+		create *PathCreate
+	}
+
+	// PathUpsert is the "OnConflict" setter.
+	PathUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetPath sets the "path" field.
+func (u *PathUpsert) SetPath(v string) *PathUpsert {
+	u.Set(path.FieldPath, v)
+	return u
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *PathUpsert) UpdatePath() *PathUpsert {
+	u.SetExcluded(path.FieldPath)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PathUpsertOne) UpdateNewValues() *PathUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *PathUpsertOne) Ignore() *PathUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PathUpsertOne) DoNothing() *PathUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PathCreate.OnConflict
+// documentation for more info.
+func (u *PathUpsertOne) Update(set func(*PathUpsert)) *PathUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PathUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPath sets the "path" field.
+func (u *PathUpsertOne) SetPath(v string) *PathUpsertOne {
+	return u.Update(func(s *PathUpsert) {
+		s.SetPath(v)
+	})
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *PathUpsertOne) UpdatePath() *PathUpsertOne {
+	return u.Update(func(s *PathUpsert) {
+		s.UpdatePath()
+	})
+}
+
+// Exec executes the query.
+func (u *PathUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for PathCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PathUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *PathUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *PathUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // PathCreateBulk is the builder for creating many Path entities in bulk.
 type PathCreateBulk struct {
 	config
 	err      error
 	builders []*PathCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Path entities in the database.
@@ -192,6 +344,7 @@ func (pcb *PathCreateBulk) Save(ctx context.Context) ([]*Path, error) {
 					_, err = mutators[i+1].Mutate(root, pcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = pcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, pcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -242,6 +395,124 @@ func (pcb *PathCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (pcb *PathCreateBulk) ExecX(ctx context.Context) {
 	if err := pcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Path.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.PathUpsert) {
+//			SetPath(v+v).
+//		}).
+//		Exec(ctx)
+func (pcb *PathCreateBulk) OnConflict(opts ...sql.ConflictOption) *PathUpsertBulk {
+	pcb.conflict = opts
+	return &PathUpsertBulk{
+		create: pcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (pcb *PathCreateBulk) OnConflictColumns(columns ...string) *PathUpsertBulk {
+	pcb.conflict = append(pcb.conflict, sql.ConflictColumns(columns...))
+	return &PathUpsertBulk{
+		create: pcb,
+	}
+}
+
+// PathUpsertBulk is the builder for "upsert"-ing
+// a bulk of Path nodes.
+type PathUpsertBulk struct {
+	create *PathCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *PathUpsertBulk) UpdateNewValues() *PathUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Path.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *PathUpsertBulk) Ignore() *PathUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *PathUpsertBulk) DoNothing() *PathUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the PathCreateBulk.OnConflict
+// documentation for more info.
+func (u *PathUpsertBulk) Update(set func(*PathUpsert)) *PathUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&PathUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetPath sets the "path" field.
+func (u *PathUpsertBulk) SetPath(v string) *PathUpsertBulk {
+	return u.Update(func(s *PathUpsert) {
+		s.SetPath(v)
+	})
+}
+
+// UpdatePath sets the "path" field to the value that was provided on create.
+func (u *PathUpsertBulk) UpdatePath() *PathUpsertBulk {
+	return u.Update(func(s *PathUpsert) {
+		s.UpdatePath()
+	})
+}
+
+// Exec executes the query.
+func (u *PathUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the PathCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for PathCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *PathUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

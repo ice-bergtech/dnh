@@ -11,6 +11,12 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// DataRequest defines model for DataRequest.
+type DataRequest struct {
+	Data *string                 `json:"data,omitempty"`
+	Meta *map[string]interface{} `json:"meta,omitempty"`
+}
+
 // DataResponse defines model for DataResponse.
 type DataResponse struct {
 	Data *map[string]interface{} `json:"data,omitempty"`
@@ -41,6 +47,9 @@ type GetDataDetailsParams struct {
 	Limit  *int    `form:"limit,omitempty" json:"limit,omitempty"`
 	Offset *int    `form:"offset,omitempty" json:"offset,omitempty"`
 }
+
+// StartScanJSONRequestBody defines body for StartScan for application/json ContentType.
+type StartScanJSONRequestBody = DataRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {

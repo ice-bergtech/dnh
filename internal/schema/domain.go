@@ -14,7 +14,7 @@ type Domain struct {
 // Fields of the Domain.
 func (Domain) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("name"),
+		field.String("name").Unique(),
 		field.Ints("ports"),
 		field.Time("time_first"),
 		field.Time("time_last"),

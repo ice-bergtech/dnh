@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
@@ -24,6 +25,7 @@ type IPAddressCreate struct {
 	config
 	mutation *IPAddressMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetIP sets the "ip" field.
@@ -209,6 +211,7 @@ func (iac *IPAddressCreate) createSpec() (*IPAddress, *sqlgraph.CreateSpec) {
 		_node = &IPAddress{config: iac.config}
 		_spec = sqlgraph.NewCreateSpec(ipaddress.Table, sqlgraph.NewFieldSpec(ipaddress.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = iac.conflict
 	if value, ok := iac.mutation.IP(); ok {
 		_spec.SetField(ipaddress.FieldIP, field.TypeString, value)
 		_node.IP = value
@@ -332,11 +335,186 @@ func (iac *IPAddressCreate) createSpec() (*IPAddress, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.IPAddress.Create().
+//		SetIP(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.IPAddressUpsert) {
+//			SetIP(v+v).
+//		}).
+//		Exec(ctx)
+func (iac *IPAddressCreate) OnConflict(opts ...sql.ConflictOption) *IPAddressUpsertOne {
+	iac.conflict = opts
+	return &IPAddressUpsertOne{
+		create: iac,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (iac *IPAddressCreate) OnConflictColumns(columns ...string) *IPAddressUpsertOne {
+	iac.conflict = append(iac.conflict, sql.ConflictColumns(columns...))
+	return &IPAddressUpsertOne{
+		create: iac,
+	}
+}
+
+type (
+	// IPAddressUpsertOne is the builder for "upsert"-ing
+	//  one IPAddress node.
+	IPAddressUpsertOne struct {
+		create *IPAddressCreate
+	}
+
+	// IPAddressUpsert is the "OnConflict" setter.
+	IPAddressUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetIP sets the "ip" field.
+func (u *IPAddressUpsert) SetIP(v string) *IPAddressUpsert {
+	u.Set(ipaddress.FieldIP, v)
+	return u
+}
+
+// UpdateIP sets the "ip" field to the value that was provided on create.
+func (u *IPAddressUpsert) UpdateIP() *IPAddressUpsert {
+	u.SetExcluded(ipaddress.FieldIP)
+	return u
+}
+
+// SetMask sets the "mask" field.
+func (u *IPAddressUpsert) SetMask(v string) *IPAddressUpsert {
+	u.Set(ipaddress.FieldMask, v)
+	return u
+}
+
+// UpdateMask sets the "mask" field to the value that was provided on create.
+func (u *IPAddressUpsert) UpdateMask() *IPAddressUpsert {
+	u.SetExcluded(ipaddress.FieldMask)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *IPAddressUpsertOne) UpdateNewValues() *IPAddressUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *IPAddressUpsertOne) Ignore() *IPAddressUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *IPAddressUpsertOne) DoNothing() *IPAddressUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the IPAddressCreate.OnConflict
+// documentation for more info.
+func (u *IPAddressUpsertOne) Update(set func(*IPAddressUpsert)) *IPAddressUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&IPAddressUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetIP sets the "ip" field.
+func (u *IPAddressUpsertOne) SetIP(v string) *IPAddressUpsertOne {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.SetIP(v)
+	})
+}
+
+// UpdateIP sets the "ip" field to the value that was provided on create.
+func (u *IPAddressUpsertOne) UpdateIP() *IPAddressUpsertOne {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.UpdateIP()
+	})
+}
+
+// SetMask sets the "mask" field.
+func (u *IPAddressUpsertOne) SetMask(v string) *IPAddressUpsertOne {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.SetMask(v)
+	})
+}
+
+// UpdateMask sets the "mask" field to the value that was provided on create.
+func (u *IPAddressUpsertOne) UpdateMask() *IPAddressUpsertOne {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.UpdateMask()
+	})
+}
+
+// Exec executes the query.
+func (u *IPAddressUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for IPAddressCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *IPAddressUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *IPAddressUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *IPAddressUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // IPAddressCreateBulk is the builder for creating many IPAddress entities in bulk.
 type IPAddressCreateBulk struct {
 	config
 	err      error
 	builders []*IPAddressCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the IPAddress entities in the database.
@@ -365,6 +543,7 @@ func (iacb *IPAddressCreateBulk) Save(ctx context.Context) ([]*IPAddress, error)
 					_, err = mutators[i+1].Mutate(root, iacb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = iacb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, iacb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -415,6 +594,138 @@ func (iacb *IPAddressCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (iacb *IPAddressCreateBulk) ExecX(ctx context.Context) {
 	if err := iacb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.IPAddress.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.IPAddressUpsert) {
+//			SetIP(v+v).
+//		}).
+//		Exec(ctx)
+func (iacb *IPAddressCreateBulk) OnConflict(opts ...sql.ConflictOption) *IPAddressUpsertBulk {
+	iacb.conflict = opts
+	return &IPAddressUpsertBulk{
+		create: iacb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (iacb *IPAddressCreateBulk) OnConflictColumns(columns ...string) *IPAddressUpsertBulk {
+	iacb.conflict = append(iacb.conflict, sql.ConflictColumns(columns...))
+	return &IPAddressUpsertBulk{
+		create: iacb,
+	}
+}
+
+// IPAddressUpsertBulk is the builder for "upsert"-ing
+// a bulk of IPAddress nodes.
+type IPAddressUpsertBulk struct {
+	create *IPAddressCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *IPAddressUpsertBulk) UpdateNewValues() *IPAddressUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.IPAddress.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *IPAddressUpsertBulk) Ignore() *IPAddressUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *IPAddressUpsertBulk) DoNothing() *IPAddressUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the IPAddressCreateBulk.OnConflict
+// documentation for more info.
+func (u *IPAddressUpsertBulk) Update(set func(*IPAddressUpsert)) *IPAddressUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&IPAddressUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetIP sets the "ip" field.
+func (u *IPAddressUpsertBulk) SetIP(v string) *IPAddressUpsertBulk {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.SetIP(v)
+	})
+}
+
+// UpdateIP sets the "ip" field to the value that was provided on create.
+func (u *IPAddressUpsertBulk) UpdateIP() *IPAddressUpsertBulk {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.UpdateIP()
+	})
+}
+
+// SetMask sets the "mask" field.
+func (u *IPAddressUpsertBulk) SetMask(v string) *IPAddressUpsertBulk {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.SetMask(v)
+	})
+}
+
+// UpdateMask sets the "mask" field to the value that was provided on create.
+func (u *IPAddressUpsertBulk) UpdateMask() *IPAddressUpsertBulk {
+	return u.Update(func(s *IPAddressUpsert) {
+		s.UpdateMask()
+	})
+}
+
+// Exec executes the query.
+func (u *IPAddressUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the IPAddressCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for IPAddressCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *IPAddressUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

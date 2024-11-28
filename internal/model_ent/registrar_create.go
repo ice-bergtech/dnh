@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
@@ -23,6 +24,7 @@ type RegistrarCreate struct {
 	config
 	mutation *RegistrarMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -241,6 +243,7 @@ func (rc *RegistrarCreate) createSpec() (*Registrar, *sqlgraph.CreateSpec) {
 		_node = &Registrar{config: rc.config}
 		_spec = sqlgraph.NewCreateSpec(registrar.Table, sqlgraph.NewFieldSpec(registrar.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = rc.conflict
 	if value, ok := rc.mutation.Name(); ok {
 		_spec.SetField(registrar.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -360,11 +363,368 @@ func (rc *RegistrarCreate) createSpec() (*Registrar, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Registrar.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RegistrarUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (rc *RegistrarCreate) OnConflict(opts ...sql.ConflictOption) *RegistrarUpsertOne {
+	rc.conflict = opts
+	return &RegistrarUpsertOne{
+		create: rc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (rc *RegistrarCreate) OnConflictColumns(columns ...string) *RegistrarUpsertOne {
+	rc.conflict = append(rc.conflict, sql.ConflictColumns(columns...))
+	return &RegistrarUpsertOne{
+		create: rc,
+	}
+}
+
+type (
+	// RegistrarUpsertOne is the builder for "upsert"-ing
+	//  one Registrar node.
+	RegistrarUpsertOne struct {
+		create *RegistrarCreate
+	}
+
+	// RegistrarUpsert is the "OnConflict" setter.
+	RegistrarUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *RegistrarUpsert) SetName(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateName() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldName)
+	return u
+}
+
+// SetURL sets the "url" field.
+func (u *RegistrarUpsert) SetURL(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldURL, v)
+	return u
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateURL() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldURL)
+	return u
+}
+
+// SetCountryCode sets the "country_code" field.
+func (u *RegistrarUpsert) SetCountryCode(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldCountryCode, v)
+	return u
+}
+
+// UpdateCountryCode sets the "country_code" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateCountryCode() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldCountryCode)
+	return u
+}
+
+// SetPhone sets the "phone" field.
+func (u *RegistrarUpsert) SetPhone(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldPhone, v)
+	return u
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdatePhone() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldPhone)
+	return u
+}
+
+// SetFax sets the "fax" field.
+func (u *RegistrarUpsert) SetFax(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldFax, v)
+	return u
+}
+
+// UpdateFax sets the "fax" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateFax() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldFax)
+	return u
+}
+
+// SetAddress sets the "address" field.
+func (u *RegistrarUpsert) SetAddress(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldAddress, v)
+	return u
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateAddress() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldAddress)
+	return u
+}
+
+// SetSource sets the "source" field.
+func (u *RegistrarUpsert) SetSource(v string) *RegistrarUpsert {
+	u.Set(registrar.FieldSource, v)
+	return u
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateSource() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldSource)
+	return u
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *RegistrarUpsert) SetTimeFirst(v time.Time) *RegistrarUpsert {
+	u.Set(registrar.FieldTimeFirst, v)
+	return u
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateTimeFirst() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldTimeFirst)
+	return u
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *RegistrarUpsert) SetTimeLast(v time.Time) *RegistrarUpsert {
+	u.Set(registrar.FieldTimeLast, v)
+	return u
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *RegistrarUpsert) UpdateTimeLast() *RegistrarUpsert {
+	u.SetExcluded(registrar.FieldTimeLast)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *RegistrarUpsertOne) UpdateNewValues() *RegistrarUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *RegistrarUpsertOne) Ignore() *RegistrarUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RegistrarUpsertOne) DoNothing() *RegistrarUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RegistrarCreate.OnConflict
+// documentation for more info.
+func (u *RegistrarUpsertOne) Update(set func(*RegistrarUpsert)) *RegistrarUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RegistrarUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *RegistrarUpsertOne) SetName(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateName() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *RegistrarUpsertOne) SetURL(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateURL() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetCountryCode sets the "country_code" field.
+func (u *RegistrarUpsertOne) SetCountryCode(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetCountryCode(v)
+	})
+}
+
+// UpdateCountryCode sets the "country_code" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateCountryCode() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateCountryCode()
+	})
+}
+
+// SetPhone sets the "phone" field.
+func (u *RegistrarUpsertOne) SetPhone(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetPhone(v)
+	})
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdatePhone() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdatePhone()
+	})
+}
+
+// SetFax sets the "fax" field.
+func (u *RegistrarUpsertOne) SetFax(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetFax(v)
+	})
+}
+
+// UpdateFax sets the "fax" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateFax() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateFax()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *RegistrarUpsertOne) SetAddress(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateAddress() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// SetSource sets the "source" field.
+func (u *RegistrarUpsertOne) SetSource(v string) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetSource(v)
+	})
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateSource() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateSource()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *RegistrarUpsertOne) SetTimeFirst(v time.Time) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateTimeFirst() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *RegistrarUpsertOne) SetTimeLast(v time.Time) *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *RegistrarUpsertOne) UpdateTimeLast() *RegistrarUpsertOne {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *RegistrarUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for RegistrarCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RegistrarUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *RegistrarUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *RegistrarUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // RegistrarCreateBulk is the builder for creating many Registrar entities in bulk.
 type RegistrarCreateBulk struct {
 	config
 	err      error
 	builders []*RegistrarCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Registrar entities in the database.
@@ -393,6 +753,7 @@ func (rcb *RegistrarCreateBulk) Save(ctx context.Context) ([]*Registrar, error) 
 					_, err = mutators[i+1].Mutate(root, rcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = rcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, rcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -443,6 +804,236 @@ func (rcb *RegistrarCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (rcb *RegistrarCreateBulk) ExecX(ctx context.Context) {
 	if err := rcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Registrar.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.RegistrarUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (rcb *RegistrarCreateBulk) OnConflict(opts ...sql.ConflictOption) *RegistrarUpsertBulk {
+	rcb.conflict = opts
+	return &RegistrarUpsertBulk{
+		create: rcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (rcb *RegistrarCreateBulk) OnConflictColumns(columns ...string) *RegistrarUpsertBulk {
+	rcb.conflict = append(rcb.conflict, sql.ConflictColumns(columns...))
+	return &RegistrarUpsertBulk{
+		create: rcb,
+	}
+}
+
+// RegistrarUpsertBulk is the builder for "upsert"-ing
+// a bulk of Registrar nodes.
+type RegistrarUpsertBulk struct {
+	create *RegistrarCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *RegistrarUpsertBulk) UpdateNewValues() *RegistrarUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Registrar.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *RegistrarUpsertBulk) Ignore() *RegistrarUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *RegistrarUpsertBulk) DoNothing() *RegistrarUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the RegistrarCreateBulk.OnConflict
+// documentation for more info.
+func (u *RegistrarUpsertBulk) Update(set func(*RegistrarUpsert)) *RegistrarUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&RegistrarUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *RegistrarUpsertBulk) SetName(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateName() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetURL sets the "url" field.
+func (u *RegistrarUpsertBulk) SetURL(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetURL(v)
+	})
+}
+
+// UpdateURL sets the "url" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateURL() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateURL()
+	})
+}
+
+// SetCountryCode sets the "country_code" field.
+func (u *RegistrarUpsertBulk) SetCountryCode(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetCountryCode(v)
+	})
+}
+
+// UpdateCountryCode sets the "country_code" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateCountryCode() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateCountryCode()
+	})
+}
+
+// SetPhone sets the "phone" field.
+func (u *RegistrarUpsertBulk) SetPhone(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetPhone(v)
+	})
+}
+
+// UpdatePhone sets the "phone" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdatePhone() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdatePhone()
+	})
+}
+
+// SetFax sets the "fax" field.
+func (u *RegistrarUpsertBulk) SetFax(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetFax(v)
+	})
+}
+
+// UpdateFax sets the "fax" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateFax() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateFax()
+	})
+}
+
+// SetAddress sets the "address" field.
+func (u *RegistrarUpsertBulk) SetAddress(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetAddress(v)
+	})
+}
+
+// UpdateAddress sets the "address" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateAddress() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateAddress()
+	})
+}
+
+// SetSource sets the "source" field.
+func (u *RegistrarUpsertBulk) SetSource(v string) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetSource(v)
+	})
+}
+
+// UpdateSource sets the "source" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateSource() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateSource()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *RegistrarUpsertBulk) SetTimeFirst(v time.Time) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateTimeFirst() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *RegistrarUpsertBulk) SetTimeLast(v time.Time) *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *RegistrarUpsertBulk) UpdateTimeLast() *RegistrarUpsertBulk {
+	return u.Update(func(s *RegistrarUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *RegistrarUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the RegistrarCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for RegistrarCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *RegistrarUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
@@ -24,6 +25,7 @@ type WhoisCreate struct {
 	config
 	mutation *WhoisMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetQuery sets the "query" field.
@@ -248,6 +250,7 @@ func (wc *WhoisCreate) createSpec() (*Whois, *sqlgraph.CreateSpec) {
 		_node = &Whois{config: wc.config}
 		_spec = sqlgraph.NewCreateSpec(whois.Table, sqlgraph.NewFieldSpec(whois.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = wc.conflict
 	if value, ok := wc.mutation.Query(); ok {
 		_spec.SetField(whois.FieldQuery, field.TypeString, value)
 		_node.Query = value
@@ -379,11 +382,342 @@ func (wc *WhoisCreate) createSpec() (*Whois, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Whois.Create().
+//		SetQuery(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.WhoisUpsert) {
+//			SetQuery(v+v).
+//		}).
+//		Exec(ctx)
+func (wc *WhoisCreate) OnConflict(opts ...sql.ConflictOption) *WhoisUpsertOne {
+	wc.conflict = opts
+	return &WhoisUpsertOne{
+		create: wc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (wc *WhoisCreate) OnConflictColumns(columns ...string) *WhoisUpsertOne {
+	wc.conflict = append(wc.conflict, sql.ConflictColumns(columns...))
+	return &WhoisUpsertOne{
+		create: wc,
+	}
+}
+
+type (
+	// WhoisUpsertOne is the builder for "upsert"-ing
+	//  one Whois node.
+	WhoisUpsertOne struct {
+		create *WhoisCreate
+	}
+
+	// WhoisUpsert is the "OnConflict" setter.
+	WhoisUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetQuery sets the "query" field.
+func (u *WhoisUpsert) SetQuery(v string) *WhoisUpsert {
+	u.Set(whois.FieldQuery, v)
+	return u
+}
+
+// UpdateQuery sets the "query" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateQuery() *WhoisUpsert {
+	u.SetExcluded(whois.FieldQuery)
+	return u
+}
+
+// SetServer sets the "server" field.
+func (u *WhoisUpsert) SetServer(v string) *WhoisUpsert {
+	u.Set(whois.FieldServer, v)
+	return u
+}
+
+// UpdateServer sets the "server" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateServer() *WhoisUpsert {
+	u.SetExcluded(whois.FieldServer)
+	return u
+}
+
+// SetRaw sets the "raw" field.
+func (u *WhoisUpsert) SetRaw(v string) *WhoisUpsert {
+	u.Set(whois.FieldRaw, v)
+	return u
+}
+
+// UpdateRaw sets the "raw" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateRaw() *WhoisUpsert {
+	u.SetExcluded(whois.FieldRaw)
+	return u
+}
+
+// SetCountry sets the "country" field.
+func (u *WhoisUpsert) SetCountry(v string) *WhoisUpsert {
+	u.Set(whois.FieldCountry, v)
+	return u
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateCountry() *WhoisUpsert {
+	u.SetExcluded(whois.FieldCountry)
+	return u
+}
+
+// SetCreated sets the "created" field.
+func (u *WhoisUpsert) SetCreated(v time.Time) *WhoisUpsert {
+	u.Set(whois.FieldCreated, v)
+	return u
+}
+
+// UpdateCreated sets the "created" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateCreated() *WhoisUpsert {
+	u.SetExcluded(whois.FieldCreated)
+	return u
+}
+
+// SetUpdated sets the "updated" field.
+func (u *WhoisUpsert) SetUpdated(v time.Time) *WhoisUpsert {
+	u.Set(whois.FieldUpdated, v)
+	return u
+}
+
+// UpdateUpdated sets the "updated" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateUpdated() *WhoisUpsert {
+	u.SetExcluded(whois.FieldUpdated)
+	return u
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *WhoisUpsert) SetTimeFirst(v time.Time) *WhoisUpsert {
+	u.Set(whois.FieldTimeFirst, v)
+	return u
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateTimeFirst() *WhoisUpsert {
+	u.SetExcluded(whois.FieldTimeFirst)
+	return u
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *WhoisUpsert) SetTimeLast(v time.Time) *WhoisUpsert {
+	u.Set(whois.FieldTimeLast, v)
+	return u
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *WhoisUpsert) UpdateTimeLast() *WhoisUpsert {
+	u.SetExcluded(whois.FieldTimeLast)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *WhoisUpsertOne) UpdateNewValues() *WhoisUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *WhoisUpsertOne) Ignore() *WhoisUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *WhoisUpsertOne) DoNothing() *WhoisUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the WhoisCreate.OnConflict
+// documentation for more info.
+func (u *WhoisUpsertOne) Update(set func(*WhoisUpsert)) *WhoisUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&WhoisUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetQuery sets the "query" field.
+func (u *WhoisUpsertOne) SetQuery(v string) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetQuery(v)
+	})
+}
+
+// UpdateQuery sets the "query" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateQuery() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateQuery()
+	})
+}
+
+// SetServer sets the "server" field.
+func (u *WhoisUpsertOne) SetServer(v string) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetServer(v)
+	})
+}
+
+// UpdateServer sets the "server" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateServer() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateServer()
+	})
+}
+
+// SetRaw sets the "raw" field.
+func (u *WhoisUpsertOne) SetRaw(v string) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetRaw(v)
+	})
+}
+
+// UpdateRaw sets the "raw" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateRaw() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateRaw()
+	})
+}
+
+// SetCountry sets the "country" field.
+func (u *WhoisUpsertOne) SetCountry(v string) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetCountry(v)
+	})
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateCountry() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateCountry()
+	})
+}
+
+// SetCreated sets the "created" field.
+func (u *WhoisUpsertOne) SetCreated(v time.Time) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetCreated(v)
+	})
+}
+
+// UpdateCreated sets the "created" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateCreated() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateCreated()
+	})
+}
+
+// SetUpdated sets the "updated" field.
+func (u *WhoisUpsertOne) SetUpdated(v time.Time) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetUpdated(v)
+	})
+}
+
+// UpdateUpdated sets the "updated" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateUpdated() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateUpdated()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *WhoisUpsertOne) SetTimeFirst(v time.Time) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateTimeFirst() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *WhoisUpsertOne) SetTimeLast(v time.Time) *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *WhoisUpsertOne) UpdateTimeLast() *WhoisUpsertOne {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *WhoisUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for WhoisCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *WhoisUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *WhoisUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *WhoisUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // WhoisCreateBulk is the builder for creating many Whois entities in bulk.
 type WhoisCreateBulk struct {
 	config
 	err      error
 	builders []*WhoisCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Whois entities in the database.
@@ -412,6 +746,7 @@ func (wcb *WhoisCreateBulk) Save(ctx context.Context) ([]*Whois, error) {
 					_, err = mutators[i+1].Mutate(root, wcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = wcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, wcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -462,6 +797,222 @@ func (wcb *WhoisCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (wcb *WhoisCreateBulk) ExecX(ctx context.Context) {
 	if err := wcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Whois.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.WhoisUpsert) {
+//			SetQuery(v+v).
+//		}).
+//		Exec(ctx)
+func (wcb *WhoisCreateBulk) OnConflict(opts ...sql.ConflictOption) *WhoisUpsertBulk {
+	wcb.conflict = opts
+	return &WhoisUpsertBulk{
+		create: wcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (wcb *WhoisCreateBulk) OnConflictColumns(columns ...string) *WhoisUpsertBulk {
+	wcb.conflict = append(wcb.conflict, sql.ConflictColumns(columns...))
+	return &WhoisUpsertBulk{
+		create: wcb,
+	}
+}
+
+// WhoisUpsertBulk is the builder for "upsert"-ing
+// a bulk of Whois nodes.
+type WhoisUpsertBulk struct {
+	create *WhoisCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *WhoisUpsertBulk) UpdateNewValues() *WhoisUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Whois.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *WhoisUpsertBulk) Ignore() *WhoisUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *WhoisUpsertBulk) DoNothing() *WhoisUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the WhoisCreateBulk.OnConflict
+// documentation for more info.
+func (u *WhoisUpsertBulk) Update(set func(*WhoisUpsert)) *WhoisUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&WhoisUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetQuery sets the "query" field.
+func (u *WhoisUpsertBulk) SetQuery(v string) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetQuery(v)
+	})
+}
+
+// UpdateQuery sets the "query" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateQuery() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateQuery()
+	})
+}
+
+// SetServer sets the "server" field.
+func (u *WhoisUpsertBulk) SetServer(v string) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetServer(v)
+	})
+}
+
+// UpdateServer sets the "server" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateServer() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateServer()
+	})
+}
+
+// SetRaw sets the "raw" field.
+func (u *WhoisUpsertBulk) SetRaw(v string) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetRaw(v)
+	})
+}
+
+// UpdateRaw sets the "raw" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateRaw() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateRaw()
+	})
+}
+
+// SetCountry sets the "country" field.
+func (u *WhoisUpsertBulk) SetCountry(v string) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetCountry(v)
+	})
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateCountry() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateCountry()
+	})
+}
+
+// SetCreated sets the "created" field.
+func (u *WhoisUpsertBulk) SetCreated(v time.Time) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetCreated(v)
+	})
+}
+
+// UpdateCreated sets the "created" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateCreated() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateCreated()
+	})
+}
+
+// SetUpdated sets the "updated" field.
+func (u *WhoisUpsertBulk) SetUpdated(v time.Time) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetUpdated(v)
+	})
+}
+
+// UpdateUpdated sets the "updated" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateUpdated() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateUpdated()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *WhoisUpsertBulk) SetTimeFirst(v time.Time) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateTimeFirst() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *WhoisUpsertBulk) SetTimeLast(v time.Time) *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *WhoisUpsertBulk) UpdateTimeLast() *WhoisUpsertBulk {
+	return u.Update(func(s *WhoisUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *WhoisUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the WhoisCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for WhoisCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *WhoisUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

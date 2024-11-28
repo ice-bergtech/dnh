@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/dnsentry"
@@ -23,6 +24,7 @@ type NameserverCreate struct {
 	config
 	mutation *NameserverMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetName sets the "name" field.
@@ -187,6 +189,7 @@ func (nc *NameserverCreate) createSpec() (*Nameserver, *sqlgraph.CreateSpec) {
 		_node = &Nameserver{config: nc.config}
 		_spec = sqlgraph.NewCreateSpec(nameserver.Table, sqlgraph.NewFieldSpec(nameserver.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = nc.conflict
 	if value, ok := nc.mutation.Name(); ok {
 		_spec.SetField(nameserver.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -282,11 +285,212 @@ func (nc *NameserverCreate) createSpec() (*Nameserver, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Nameserver.Create().
+//		SetName(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NameserverUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (nc *NameserverCreate) OnConflict(opts ...sql.ConflictOption) *NameserverUpsertOne {
+	nc.conflict = opts
+	return &NameserverUpsertOne{
+		create: nc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (nc *NameserverCreate) OnConflictColumns(columns ...string) *NameserverUpsertOne {
+	nc.conflict = append(nc.conflict, sql.ConflictColumns(columns...))
+	return &NameserverUpsertOne{
+		create: nc,
+	}
+}
+
+type (
+	// NameserverUpsertOne is the builder for "upsert"-ing
+	//  one Nameserver node.
+	NameserverUpsertOne struct {
+		create *NameserverCreate
+	}
+
+	// NameserverUpsert is the "OnConflict" setter.
+	NameserverUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetName sets the "name" field.
+func (u *NameserverUpsert) SetName(v string) *NameserverUpsert {
+	u.Set(nameserver.FieldName, v)
+	return u
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *NameserverUpsert) UpdateName() *NameserverUpsert {
+	u.SetExcluded(nameserver.FieldName)
+	return u
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *NameserverUpsert) SetTimeFirst(v time.Time) *NameserverUpsert {
+	u.Set(nameserver.FieldTimeFirst, v)
+	return u
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *NameserverUpsert) UpdateTimeFirst() *NameserverUpsert {
+	u.SetExcluded(nameserver.FieldTimeFirst)
+	return u
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *NameserverUpsert) SetTimeLast(v time.Time) *NameserverUpsert {
+	u.Set(nameserver.FieldTimeLast, v)
+	return u
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *NameserverUpsert) UpdateTimeLast() *NameserverUpsert {
+	u.SetExcluded(nameserver.FieldTimeLast)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *NameserverUpsertOne) UpdateNewValues() *NameserverUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *NameserverUpsertOne) Ignore() *NameserverUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NameserverUpsertOne) DoNothing() *NameserverUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NameserverCreate.OnConflict
+// documentation for more info.
+func (u *NameserverUpsertOne) Update(set func(*NameserverUpsert)) *NameserverUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NameserverUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *NameserverUpsertOne) SetName(v string) *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *NameserverUpsertOne) UpdateName() *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *NameserverUpsertOne) SetTimeFirst(v time.Time) *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *NameserverUpsertOne) UpdateTimeFirst() *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *NameserverUpsertOne) SetTimeLast(v time.Time) *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *NameserverUpsertOne) UpdateTimeLast() *NameserverUpsertOne {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *NameserverUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for NameserverCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NameserverUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *NameserverUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *NameserverUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // NameserverCreateBulk is the builder for creating many Nameserver entities in bulk.
 type NameserverCreateBulk struct {
 	config
 	err      error
 	builders []*NameserverCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Nameserver entities in the database.
@@ -315,6 +519,7 @@ func (ncb *NameserverCreateBulk) Save(ctx context.Context) ([]*Nameserver, error
 					_, err = mutators[i+1].Mutate(root, ncb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = ncb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, ncb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -365,6 +570,152 @@ func (ncb *NameserverCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (ncb *NameserverCreateBulk) ExecX(ctx context.Context) {
 	if err := ncb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Nameserver.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.NameserverUpsert) {
+//			SetName(v+v).
+//		}).
+//		Exec(ctx)
+func (ncb *NameserverCreateBulk) OnConflict(opts ...sql.ConflictOption) *NameserverUpsertBulk {
+	ncb.conflict = opts
+	return &NameserverUpsertBulk{
+		create: ncb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (ncb *NameserverCreateBulk) OnConflictColumns(columns ...string) *NameserverUpsertBulk {
+	ncb.conflict = append(ncb.conflict, sql.ConflictColumns(columns...))
+	return &NameserverUpsertBulk{
+		create: ncb,
+	}
+}
+
+// NameserverUpsertBulk is the builder for "upsert"-ing
+// a bulk of Nameserver nodes.
+type NameserverUpsertBulk struct {
+	create *NameserverCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *NameserverUpsertBulk) UpdateNewValues() *NameserverUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Nameserver.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *NameserverUpsertBulk) Ignore() *NameserverUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *NameserverUpsertBulk) DoNothing() *NameserverUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the NameserverCreateBulk.OnConflict
+// documentation for more info.
+func (u *NameserverUpsertBulk) Update(set func(*NameserverUpsert)) *NameserverUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&NameserverUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetName sets the "name" field.
+func (u *NameserverUpsertBulk) SetName(v string) *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetName(v)
+	})
+}
+
+// UpdateName sets the "name" field to the value that was provided on create.
+func (u *NameserverUpsertBulk) UpdateName() *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateName()
+	})
+}
+
+// SetTimeFirst sets the "time_first" field.
+func (u *NameserverUpsertBulk) SetTimeFirst(v time.Time) *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetTimeFirst(v)
+	})
+}
+
+// UpdateTimeFirst sets the "time_first" field to the value that was provided on create.
+func (u *NameserverUpsertBulk) UpdateTimeFirst() *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateTimeFirst()
+	})
+}
+
+// SetTimeLast sets the "time_last" field.
+func (u *NameserverUpsertBulk) SetTimeLast(v time.Time) *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.SetTimeLast(v)
+	})
+}
+
+// UpdateTimeLast sets the "time_last" field to the value that was provided on create.
+func (u *NameserverUpsertBulk) UpdateTimeLast() *NameserverUpsertBulk {
+	return u.Update(func(s *NameserverUpsert) {
+		s.UpdateTimeLast()
+	})
+}
+
+// Exec executes the query.
+func (u *NameserverUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the NameserverCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for NameserverCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *NameserverUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

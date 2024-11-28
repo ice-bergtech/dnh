@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/ice-bergtech/dnh/src/internal/model_ent/asninfo"
@@ -21,6 +22,7 @@ type ASNInfoCreate struct {
 	config
 	mutation *ASNInfoMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetAsn sets the "asn" field.
@@ -170,6 +172,7 @@ func (aic *ASNInfoCreate) createSpec() (*ASNInfo, *sqlgraph.CreateSpec) {
 		_node = &ASNInfo{config: aic.config}
 		_spec = sqlgraph.NewCreateSpec(asninfo.Table, sqlgraph.NewFieldSpec(asninfo.FieldID, field.TypeInt))
 	)
+	_spec.OnConflict = aic.conflict
 	if value, ok := aic.mutation.Asn(); ok {
 		_spec.SetField(asninfo.FieldAsn, field.TypeInt, value)
 		_node.Asn = value
@@ -249,11 +252,225 @@ func (aic *ASNInfoCreate) createSpec() (*ASNInfo, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ASNInfo.Create().
+//		SetAsn(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ASNInfoUpsert) {
+//			SetAsn(v+v).
+//		}).
+//		Exec(ctx)
+func (aic *ASNInfoCreate) OnConflict(opts ...sql.ConflictOption) *ASNInfoUpsertOne {
+	aic.conflict = opts
+	return &ASNInfoUpsertOne{
+		create: aic,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (aic *ASNInfoCreate) OnConflictColumns(columns ...string) *ASNInfoUpsertOne {
+	aic.conflict = append(aic.conflict, sql.ConflictColumns(columns...))
+	return &ASNInfoUpsertOne{
+		create: aic,
+	}
+}
+
+type (
+	// ASNInfoUpsertOne is the builder for "upsert"-ing
+	//  one ASNInfo node.
+	ASNInfoUpsertOne struct {
+		create *ASNInfoCreate
+	}
+
+	// ASNInfoUpsert is the "OnConflict" setter.
+	ASNInfoUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetAsn sets the "asn" field.
+func (u *ASNInfoUpsert) SetAsn(v int) *ASNInfoUpsert {
+	u.Set(asninfo.FieldAsn, v)
+	return u
+}
+
+// UpdateAsn sets the "asn" field to the value that was provided on create.
+func (u *ASNInfoUpsert) UpdateAsn() *ASNInfoUpsert {
+	u.SetExcluded(asninfo.FieldAsn)
+	return u
+}
+
+// AddAsn adds v to the "asn" field.
+func (u *ASNInfoUpsert) AddAsn(v int) *ASNInfoUpsert {
+	u.Add(asninfo.FieldAsn, v)
+	return u
+}
+
+// SetCountry sets the "country" field.
+func (u *ASNInfoUpsert) SetCountry(v string) *ASNInfoUpsert {
+	u.Set(asninfo.FieldCountry, v)
+	return u
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *ASNInfoUpsert) UpdateCountry() *ASNInfoUpsert {
+	u.SetExcluded(asninfo.FieldCountry)
+	return u
+}
+
+// SetRegistry sets the "registry" field.
+func (u *ASNInfoUpsert) SetRegistry(v string) *ASNInfoUpsert {
+	u.Set(asninfo.FieldRegistry, v)
+	return u
+}
+
+// UpdateRegistry sets the "registry" field to the value that was provided on create.
+func (u *ASNInfoUpsert) UpdateRegistry() *ASNInfoUpsert {
+	u.SetExcluded(asninfo.FieldRegistry)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *ASNInfoUpsertOne) UpdateNewValues() *ASNInfoUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//	    OnConflict(sql.ResolveWithIgnore()).
+//	    Exec(ctx)
+func (u *ASNInfoUpsertOne) Ignore() *ASNInfoUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ASNInfoUpsertOne) DoNothing() *ASNInfoUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ASNInfoCreate.OnConflict
+// documentation for more info.
+func (u *ASNInfoUpsertOne) Update(set func(*ASNInfoUpsert)) *ASNInfoUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ASNInfoUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAsn sets the "asn" field.
+func (u *ASNInfoUpsertOne) SetAsn(v int) *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetAsn(v)
+	})
+}
+
+// AddAsn adds v to the "asn" field.
+func (u *ASNInfoUpsertOne) AddAsn(v int) *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.AddAsn(v)
+	})
+}
+
+// UpdateAsn sets the "asn" field to the value that was provided on create.
+func (u *ASNInfoUpsertOne) UpdateAsn() *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateAsn()
+	})
+}
+
+// SetCountry sets the "country" field.
+func (u *ASNInfoUpsertOne) SetCountry(v string) *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetCountry(v)
+	})
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *ASNInfoUpsertOne) UpdateCountry() *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateCountry()
+	})
+}
+
+// SetRegistry sets the "registry" field.
+func (u *ASNInfoUpsertOne) SetRegistry(v string) *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetRegistry(v)
+	})
+}
+
+// UpdateRegistry sets the "registry" field to the value that was provided on create.
+func (u *ASNInfoUpsertOne) UpdateRegistry() *ASNInfoUpsertOne {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateRegistry()
+	})
+}
+
+// Exec executes the query.
+func (u *ASNInfoUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for ASNInfoCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ASNInfoUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *ASNInfoUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *ASNInfoUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // ASNInfoCreateBulk is the builder for creating many ASNInfo entities in bulk.
 type ASNInfoCreateBulk struct {
 	config
 	err      error
 	builders []*ASNInfoCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the ASNInfo entities in the database.
@@ -282,6 +499,7 @@ func (aicb *ASNInfoCreateBulk) Save(ctx context.Context) ([]*ASNInfo, error) {
 					_, err = mutators[i+1].Mutate(root, aicb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = aicb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, aicb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -332,6 +550,159 @@ func (aicb *ASNInfoCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (aicb *ASNInfoCreateBulk) ExecX(ctx context.Context) {
 	if err := aicb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.ASNInfo.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ASNInfoUpsert) {
+//			SetAsn(v+v).
+//		}).
+//		Exec(ctx)
+func (aicb *ASNInfoCreateBulk) OnConflict(opts ...sql.ConflictOption) *ASNInfoUpsertBulk {
+	aicb.conflict = opts
+	return &ASNInfoUpsertBulk{
+		create: aicb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+func (aicb *ASNInfoCreateBulk) OnConflictColumns(columns ...string) *ASNInfoUpsertBulk {
+	aicb.conflict = append(aicb.conflict, sql.ConflictColumns(columns...))
+	return &ASNInfoUpsertBulk{
+		create: aicb,
+	}
+}
+
+// ASNInfoUpsertBulk is the builder for "upsert"-ing
+// a bulk of ASNInfo nodes.
+type ASNInfoUpsertBulk struct {
+	create *ASNInfoCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+func (u *ASNInfoUpsertBulk) UpdateNewValues() *ASNInfoUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.ASNInfo.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+func (u *ASNInfoUpsertBulk) Ignore() *ASNInfoUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *ASNInfoUpsertBulk) DoNothing() *ASNInfoUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the ASNInfoCreateBulk.OnConflict
+// documentation for more info.
+func (u *ASNInfoUpsertBulk) Update(set func(*ASNInfoUpsert)) *ASNInfoUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&ASNInfoUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetAsn sets the "asn" field.
+func (u *ASNInfoUpsertBulk) SetAsn(v int) *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetAsn(v)
+	})
+}
+
+// AddAsn adds v to the "asn" field.
+func (u *ASNInfoUpsertBulk) AddAsn(v int) *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.AddAsn(v)
+	})
+}
+
+// UpdateAsn sets the "asn" field to the value that was provided on create.
+func (u *ASNInfoUpsertBulk) UpdateAsn() *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateAsn()
+	})
+}
+
+// SetCountry sets the "country" field.
+func (u *ASNInfoUpsertBulk) SetCountry(v string) *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetCountry(v)
+	})
+}
+
+// UpdateCountry sets the "country" field to the value that was provided on create.
+func (u *ASNInfoUpsertBulk) UpdateCountry() *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateCountry()
+	})
+}
+
+// SetRegistry sets the "registry" field.
+func (u *ASNInfoUpsertBulk) SetRegistry(v string) *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.SetRegistry(v)
+	})
+}
+
+// UpdateRegistry sets the "registry" field to the value that was provided on create.
+func (u *ASNInfoUpsertBulk) UpdateRegistry() *ASNInfoUpsertBulk {
+	return u.Update(func(s *ASNInfoUpsert) {
+		s.UpdateRegistry()
+	})
+}
+
+// Exec executes the query.
+func (u *ASNInfoUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("model_ent: OnConflict was set for builder %d. Set it on the ASNInfoCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("model_ent: missing options for ASNInfoCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *ASNInfoUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

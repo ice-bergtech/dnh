@@ -98,7 +98,12 @@ paths:
       summary: Start a Scan
       tags:
         - Scanning
-
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DataRequest'
       operationId: startScan
       responses:
         '200':
@@ -123,6 +128,13 @@ paths:
 
 components:
   schemas:
+    DataRequest:
+      type: object
+      properties:
+        data:
+          type: string
+        meta:
+          type: object
     DataResponse:
       type: object
       properties:
