@@ -58,7 +58,7 @@ var (
 	// DomainsColumns holds the columns for the "domains" table.
 	DomainsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "name", Type: field.TypeString},
+		{Name: "name", Type: field.TypeString, Unique: true},
 		{Name: "ports", Type: field.TypeJSON},
 		{Name: "time_first", Type: field.TypeTime},
 		{Name: "time_last", Type: field.TypeTime},

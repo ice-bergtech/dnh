@@ -9,7 +9,7 @@ import (
 	"github.com/ice-bergtech/dnh/src/internal/model_ent"
 )
 
-type ScanInput struct {
+type ScanInputs struct {
 	Domain string
 	IP     string
 }
